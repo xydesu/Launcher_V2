@@ -397,5 +397,4 @@ namespace KartRider
             }
         }
     }
-
 }

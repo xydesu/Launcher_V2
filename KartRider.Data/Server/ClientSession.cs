@@ -447,13 +447,24 @@ namespace KartRider
                         }
                         return;
                     }
-                    else if (hash == Adler32Helper.GenerateAdler32_ASCII("LoRqEventRewardPacket", 0) || hash == Adler32Helper.GenerateAdler32_ASCII("PqVipGradeCheck", 0))
+                    else if (hash == Adler32Helper.GenerateAdler32_ASCII("LoRqEventRewardPacket", 0))
                     {
                         using (OutPacket outPacket = new OutPacket("LoRpEventRewardPacket"))
                         {
-                            // outPacket.WriteHexString("00 00 00 00 01 00 00 00 00 00 00 00 11 00 00 00 CF 6B E5 65 7B 76 55 5F 0C FF 86 98 D6 53 45 51 E1 6E 78 5E D0 8F 84 76 78 5E D0 8F 7C 99 27 54 01 FF 72 79 00 00 00 00 00 00 00 00 00 00 00 00");
                             outPacket.WriteInt(0);
                             outPacket.WriteInt(0);
+                            this.Parent.Client.Send(outPacket);
+                        }
+                        return;
+                    }
+                    else if (hash == Adler32Helper.GenerateAdler32_ASCII("PqVipGradeCheck", 0))
+                    {
+                        using (OutPacket outPacket = new OutPacket("PrVipGradeCheck"))
+                        {
+                            outPacket.WriteShort(0);
+                            outPacket.WriteByte(0);
+                            outPacket.WriteByte(0);
+                            outPacket.WriteDateTime(DateTime.Now);
                             this.Parent.Client.Send(outPacket);
                         }
                         return;
@@ -462,35 +473,16 @@ namespace KartRider
                     {
                         using (OutPacket outPacket = new OutPacket("PrLoginVipInfo"))
                         {
-                            outPacket.WriteUShort(0);
-                            if (ProfileService.ProfileConfigs[Nickname].Rider.Premium == 0)
-                                outPacket.WriteInt(0);
-                            else if (ProfileService.ProfileConfigs[Nickname].Rider.Premium == 1)
-                                outPacket.WriteInt(10000);
-                            else if (ProfileService.ProfileConfigs[Nickname].Rider.Premium == 2)
-                                outPacket.WriteInt(30000);
-                            else if (ProfileService.ProfileConfigs[Nickname].Rider.Premium == 3)
-                                outPacket.WriteInt(60000);
-                            else if (ProfileService.ProfileConfigs[Nickname].Rider.Premium == 4)
-                                outPacket.WriteInt(120000);
-                            else if (ProfileService.ProfileConfigs[Nickname].Rider.Premium == 5)
-                                outPacket.WriteInt(200000);
-                            else
-                                outPacket.WriteInt(0);
-                            outPacket.WriteUShort((ushort)ProfileService.ProfileConfigs[Nickname].Rider.Premium);
+                            outPacket.WriteShort((short)ProfileService.ProfileConfigs[Nickname].Rider.Premium);
+                            outPacket.WriteByte(0);
+                            outPacket.WriteByte(0);
+                            outPacket.WriteByte(0);
                             outPacket.WriteDateTime(DateTime.Now);
-                            outPacket.WriteInt(0);
                             this.Parent.Client.Send(outPacket);
                         }
                         using (OutPacket outPacket = new OutPacket("PcSlaveNotice"))
                         {
                             outPacket.WriteString("单机版完全免费, GitHub: https://github.com/yanygm/Launcher_V2");
-                            this.Parent.Client.Send(outPacket);
-                        }
-                        using (OutPacket outPacket = new OutPacket("LoRpEventRewardPacket"))
-                        {
-                            outPacket.WriteInt(0);
-                            outPacket.WriteInt(0);
                             this.Parent.Client.Send(outPacket);
                         }
                         return;

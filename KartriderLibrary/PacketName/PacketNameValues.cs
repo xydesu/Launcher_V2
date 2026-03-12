@@ -1611,5 +1611,7 @@ namespace KartRider_PacketName
 		PrPromiseEventEnterPacket = 2162428409,
 		PqReturnMissionRequestDataPacket = 3567914206,
 		PrReturnMissionRequestDataPacket = 3569945823,
+		PqRotationModeDataPacket = 1973160296,
+		PrRotationModeDataPacket = 1974667625,
 	}
 }

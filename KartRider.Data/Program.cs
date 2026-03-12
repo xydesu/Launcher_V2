@@ -69,6 +69,8 @@ namespace KartRider
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             SetAdaptiveConsoleEncoding();
 
+            // Console.WriteLine(Common.Utilities.Adler32Helper.GenerateAdler32_ASCII("PrRotationModeDataPacket"));
+
             if (File.Exists(FileName.Load_CC))
             {
                 string textValue = System.IO.File.ReadAllText(FileName.Load_CC);
@@ -174,32 +176,47 @@ namespace KartRider
             {
                 // 1. 检测操作系统类型
                 bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            
+
                 // 2. 优先尝试 UTF-8（跨平台通用）
                 targetEncoding = Encoding.UTF8;
 
                 // 3. Windows 中文环境特殊处理（部分终端默认 GBK）
                 if (isWindows)
                 {
-                    // 获取系统默认区域语言
-                    var systemCulture = CultureInfo.InstalledUICulture;
-                    bool isChineseCulture = systemCulture.Name.StartsWith("zh-");
-
-                    // 中文系统尝试使用 GBK（CP936），避免 UTF-8 在部分老终端乱码
-                    if (isChineseCulture)
+                    try
                     {
-                        try
+                        // 注册表路径
+                        string codePageRegPath = "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Nls\\CodePage";
+
+                        // 读取 OEMCP 值（返回 object 类型，需判断是否为 null）
+                        object oemcpObj = Registry.GetValue(codePageRegPath, "OEMCP", null);
+
+                        // 正确判断：是否读取到有效值，且能转换为 int
+                        if (oemcpObj != null && int.TryParse(oemcpObj.ToString(), out int oemcp))
                         {
-                            targetEncoding = Encoding.GetEncoding(936); // 936 对应 GBK
+                            try
+                            {
+                                // 获取对应编码
+                                targetEncoding = Encoding.GetEncoding(oemcp);
+                            }
+                            catch (ArgumentException)
+                            {
+                                // 编码不支持时回退到 UTF-8
+                                targetEncoding = Encoding.UTF8;
+                            }
                         }
-                        catch (ArgumentException)
+                        else
                         {
-                            // 极少数情况系统不支持 GBK，则 fallback 到 UTF-8
+                            // 未读取到 OEMCP 值
                             targetEncoding = Encoding.UTF8;
                         }
                     }
+                    catch (Exception ex)
+                    {
+                        // 捕获注册表读取异常（如权限不足）
+                        targetEncoding = Encoding.UTF8;
+                    }
                 }
-
                 // 4. 应用编码设置（输出/输入保持一致）
                 Console.OutputEncoding = targetEncoding;
                 Console.InputEncoding = targetEncoding;

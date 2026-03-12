@@ -367,23 +367,33 @@ namespace KartRider.Common.Network
 
         public void Send(OutPacket pPacket)
         {
-            IPEndPoint clientEndPoint = this._socket.RemoteEndPoint as IPEndPoint;
-            if (clientEndPoint == null) return;
-            string clientId = ClientManager.GetClientId(clientEndPoint);
-            var clientGroup = ClientManager.ClientGroups[clientId];
-            var nickname = clientGroup.Nickname;
-            string currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-            Console.WriteLine($"[{currentTime}][{nickname}] " + (PacketName)BitConverter.ToUInt32(pPacket.ToArray(), 0) + ": " + BitConverter.ToString(pPacket.ToArray()).Replace("-", " "));
             try
             {
-                if (this.mDisconnected == 0)
+                if (this.mDisconnected == 0 && this._socket != null && this._socket.Connected)
                 {
+                    IPEndPoint clientEndPoint = this._socket.RemoteEndPoint as IPEndPoint;
+                    if (clientEndPoint != null)
+                    {
+                        string clientId = ClientManager.GetClientId(clientEndPoint);
+                        if (ClientManager.ClientGroups.ContainsKey(clientId))
+                        {
+                            var clientGroup = ClientManager.ClientGroups[clientId];
+                            var nickname = clientGroup.Nickname;
+                            string currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                            Console.WriteLine($"[{currentTime}][{nickname}] " + (PacketName)BitConverter.ToUInt32(pPacket.ToArray(), 0) + ": " + BitConverter.ToString(pPacket.ToArray()).Replace("-", " "));
+                        }
+                    }
                     this.mSendSegments.Enqueue(new ByteArraySegment(pPacket.ToArray(), true));
                     if (Interlocked.CompareExchange(ref this.mSending, 1, 0) == 0)
                     {
                         this.BeginSend();
                     }
                 }
+            }
+            catch (ObjectDisposedException objectDisposedException)
+            {
+                Console.WriteLine("[SOCKET ERR] {0}", objectDisposedException.ToString());
+                this.Disconnect();
             }
             catch (Exception exception)
             {
@@ -394,10 +404,26 @@ namespace KartRider.Common.Network
 
         public void SendRaw(byte[] pBuffer)
         {
-            this.mSendSegments.Enqueue(new ByteArraySegment(pBuffer, false));
-            if (Interlocked.CompareExchange(ref this.mSending, 1, 0) == 0)
+            try
             {
-                this.BeginSend();
+                if (this.mDisconnected == 0 && this._socket != null && this._socket.Connected)
+                {
+                    this.mSendSegments.Enqueue(new ByteArraySegment(pBuffer, false));
+                    if (Interlocked.CompareExchange(ref this.mSending, 1, 0) == 0)
+                    {
+                        this.BeginSend();
+                    }
+                }
+            }
+            catch (ObjectDisposedException objectDisposedException)
+            {
+                Console.WriteLine("[SOCKET ERR] {0}", objectDisposedException.ToString());
+                this.Disconnect();
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine("Disconnected session 12 {0}", exception.ToString());
+                this.Disconnect();
             }
         }
 
