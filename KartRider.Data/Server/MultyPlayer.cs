@@ -186,7 +186,7 @@ public static class MultyPlayer
             outPacket.WriteInt(room.GetPlayerCount()); // player count
             for (int i = 0; i < 8; i++)
             {
-                if (RoomManager.TryGetSlotDetail(roomId, (byte)i) is Player p3)
+                if (RoomManager.TryGetIdDetail(roomId, i) is Player p3)
                 {
                     outPacket.WriteInt(p3.ID); // player id
                     outPacket.WriteUInt(room.TimeData[p3.ID]);
@@ -1206,7 +1206,7 @@ public static class MultyPlayer
         /* ---- Player ---- */
         for (int i = 0; i < 8; i++)
         {
-            var Object = RoomManager.TryGetSlotDetail(roomId, (byte)i);
+            var Object = RoomManager.TryGetIdDetail(roomId, i);
             if (Object is Player p)
             {
                 Console.WriteLine("Player Nickname = {0}, SlotId = {1}", p.Nickname, p.SlotId);
@@ -1266,6 +1266,7 @@ public static class MultyPlayer
             }
             else if (Object is Ai a)
             {
+                Console.WriteLine("Ai ID = {0}, SlotId = {1}", a.ID, a.SlotId);
                 outPacket.WriteInt(7);
                 outPacket.WriteShort(a.Character);
                 outPacket.WriteShort(a.Rid);
@@ -1564,4 +1565,3 @@ public class RoomList
     public byte SpeedType { get; set; }
     public byte GameType { get; set; }
 }
-

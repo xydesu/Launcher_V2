@@ -111,9 +111,24 @@ public class GameRoom
             {
                 if (_slots[i] == null)
                 {
+                    int newId;
+                    var availableIds = _blueIDs.Except(_IDs).ToList();
+                    if (availableIds.Count > 0)
+                    {
+                        newId = availableIds.Min();
+                    }
+                    else
+                    {
+                        // 如果所有ID都被使用，找到一个未使用的ID
+                        newId = 0;
+                        while (_IDs.Contains(newId))
+                        {
+                            newId++;
+                        }
+                    }
                     _slots[i] = new Player
                     {
-                        ID = _blueIDs.Except(_IDs).ToList().DefaultIfEmpty().Min(),
+                        ID = newId,
                         SlotId = i,
                         Nickname = nickname,
                         PlayerType = playerType,
@@ -135,9 +150,24 @@ public class GameRoom
             {
                 if (_slots[i] == null)
                 {
+                    int newId;
+                    var availableIds = _redIDs.Except(_IDs).ToList();
+                    if (availableIds.Count > 0)
+                    {
+                        newId = availableIds.Min();
+                    }
+                    else
+                    {
+                        // 如果所有ID都被使用，找到一个未使用的ID
+                        newId = 0;
+                        while (_IDs.Contains(newId))
+                        {
+                            newId++;
+                        }
+                    }
                     _slots[i] = new Player
                     {
-                        ID = _redIDs.Except(_IDs).ToList().DefaultIfEmpty().Min(),
+                        ID = newId,
                         SlotId = i,
                         Nickname = nickname,
                         PlayerType = playerType,
@@ -159,9 +189,24 @@ public class GameRoom
             {
                 if (_slots[i] == null)
                 {
+                    int newId;
+                    var availableIds = _allIDs.Except(_IDs).ToList();
+                    if (availableIds.Count > 0)
+                    {
+                        newId = availableIds.Min();
+                    }
+                    else
+                    {
+                        // 如果所有ID都被使用，找到一个未使用的ID
+                        newId = 0;
+                        while (_IDs.Contains(newId))
+                        {
+                            newId++;
+                        }
+                    }
                     _slots[i] = new Player
                     {
-                        ID = _allIDs.Except(_IDs).ToList().DefaultIfEmpty().Min(),
+                        ID = newId,
                         SlotId = i,
                         Nickname = nickname,
                         PlayerType = playerType,
@@ -238,7 +283,29 @@ public class GameRoom
             {
                 if (_slots[i] == null)
                 {
-                    aiData.ID = _IDs.Contains(Id) ? _blueIDs.Except(_IDs).ToList().DefaultIfEmpty().Min() : Id;
+                    if (_IDs.Contains(Id))
+                    {
+                        int newId;
+                        var availableIds = _blueIDs.Except(_IDs).ToList();
+                        if (availableIds.Count > 0)
+                        {
+                            newId = availableIds.Min();
+                        }
+                        else
+                        {
+                            // 如果所有ID都被使用，找到一个未使用的ID
+                            newId = 0;
+                            while (_IDs.Contains(newId))
+                            {
+                                newId++;
+                            }
+                        }
+                        aiData.ID = newId;
+                    }
+                    else
+                    {
+                        aiData.ID = Id;
+                    }
                     _slots[i] = aiData;
                     _slots[i].SlotId = i;
                     _IDs.Add(aiData.ID);
@@ -253,7 +320,29 @@ public class GameRoom
             {
                 if (_slots[i] == null)
                 {
-                    aiData.ID = _IDs.Contains(Id) ? _redIDs.Except(_IDs).ToList().DefaultIfEmpty().Min() : Id;
+                    if (_IDs.Contains(Id))
+                    {
+                        int newId;
+                        var availableIds = _redIDs.Except(_IDs).ToList();
+                        if (availableIds.Count > 0)
+                        {
+                            newId = availableIds.Min();
+                        }
+                        else
+                        {
+                            // 如果所有ID都被使用，找到一个未使用的ID
+                            newId = 0;
+                            while (_IDs.Contains(newId))
+                            {
+                                newId++;
+                            }
+                        }
+                        aiData.ID = newId;
+                    }
+                    else
+                    {
+                        aiData.ID = Id;
+                    }
                     _slots[i] = aiData;
                     _slots[i].SlotId = i;
                     _IDs.Add(aiData.ID);
@@ -268,7 +357,29 @@ public class GameRoom
             {
                 if (_slots[i] == null)
                 {
-                    aiData.ID = _IDs.Contains(Id) ? _allIDs.Except(_IDs).ToList().DefaultIfEmpty().Min() : Id;
+                    if (_IDs.Contains(Id))
+                    {
+                        int newId;
+                        var availableIds = _allIDs.Except(_IDs).ToList();
+                        if (availableIds.Count > 0)
+                        {
+                            newId = availableIds.Min();
+                        }
+                        else
+                        {
+                            // 如果所有ID都被使用，找到一个未使用的ID
+                            newId = 0;
+                            while (_IDs.Contains(newId))
+                            {
+                                newId++;
+                            }
+                        }
+                        aiData.ID = newId;
+                    }
+                    else
+                    {
+                        aiData.ID = Id;
+                    }
                     _slots[i] = aiData;
                     _slots[i].SlotId = i;
                     _IDs.Add(aiData.ID);
