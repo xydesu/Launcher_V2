@@ -24,7 +24,7 @@ public static class MultyPlayer
     public static ConcurrentDictionary<string, IPEndPoint> Udps = new ConcurrentDictionary<string, IPEndPoint>();
     public static Dictionary<short, AICharacter> aiCharacterDict = new Dictionary<short, AICharacter>();
     public static Dictionary<short, AIKart> aiKartDict = new Dictionary<short, AIKart>();
-    public static Dictionary<string, RoomList> roomList = new Dictionary<string, RoomList>();
+    public static Dictionary<string, byte> StartTimeAttack = new Dictionary<string, byte>();
     public static SpecialKartConfig kartConfig = new SpecialKartConfig();
     public static int[] teamPoints = { 10, 8, 6, 5, 4, 3, 2, 1 };
 
@@ -295,6 +295,7 @@ public static class MultyPlayer
             BroadCast(roomId, outPacket);
         }
         room.StartTicks = 0;
+        room.Started = false;
         Console.WriteLine("EndTicks = {0}", room.EndTicks + 5000);
     }
 
@@ -415,6 +416,7 @@ public static class MultyPlayer
                 room.TimeData = new Dictionary<int, uint>();
                 room.Ranking = new Dictionary<int, int>();
                 room.EndTicks = 0;
+                room.Started = true;
                 Console.WriteLine("StartTicks = {0}", room.StartTicks);
             }
             //finish
@@ -464,10 +466,10 @@ public static class MultyPlayer
                     oPacket.WriteShort((short)_room.Key);
                     oPacket.WriteString(_room.Value.RoomName); // 房间名称
                     oPacket.WriteUInt(_room.Value.track); // 赛道
-                    oPacket.WriteByte(_room.Value.Lock); // 是否上锁
+                    oPacket.WriteBool(_room.Value.Lock); // 是否上锁
                     oPacket.WriteByte(_room.Value.GameType); // 模式
                     oPacket.WriteByte(_room.Value.SpeedType); // 速度模式
-                    oPacket.WriteByte(0);
+                    oPacket.WriteBool(_room.Value.Started); // 房间状态
                     oPacket.WriteByte(8); // 房间最大人数
                     oPacket.WriteByte((byte)_room.Value.GetCount()); // 房间人数
                     oPacket.WriteHexString("00 00 00 00 00 00");
@@ -487,6 +489,7 @@ public static class MultyPlayer
             iPacket.ReadBytes(length);
             byte channel = (byte)(iPacket.ReadByte() - 1);
             var channelData = GameSupport.Channels.ContainsKey(channel) ? GameSupport.Channels[channel] : null;
+            StartTimeAttack[nickname] = channelData.CreateSpeed;
             Console.WriteLine("Channel Switch, channel = {0}", channelData.Name);
 
             using (OutPacket oPacket = new OutPacket("PrChannelSwitch"))
@@ -497,14 +500,6 @@ public static class MultyPlayer
                 oPacket.WriteEndPoint(serverEndPoint);
                 Parent.Client.Send(oPacket);
             }
-            roomList.TryAdd(nickname, new RoomList());
-            roomList[nickname].RandomTrackGameType = 0;
-            if (channelData.GameType == 2 || channelData.GameType == 4 || channelData.GameType == 14 || channelData.GameType == 54)
-            {
-                roomList[nickname].RandomTrackGameType = 1;
-            }
-            roomList[nickname].SpeedType = channelData.CreateSpeed;
-            roomList[nickname].GameType = channelData.GameType;
             return;
         }
         else if (hash == Adler32Helper.GenerateAdler32_ASCII("PqChannelMovein", 0))
@@ -528,41 +523,13 @@ public static class MultyPlayer
             }
             return;
         }
-        else if (hash == Adler32Helper.GenerateAdler32_ASCII("PqMissionAttendPacket", 0))
-        {
-            using (OutPacket oPacket = new OutPacket("PrMissionAttendPacket"))
-            {
-                oPacket.WriteInt(0);
-                oPacket.WriteInt(0);
-                oPacket.WriteInt(0);
-
-                oPacket.WriteInt(0);
-                oPacket.WriteInt(0);
-                oPacket.WriteDateTime(DateTime.Now);
-                oPacket.WriteDateTime(DateTime.Now);
-                oPacket.WriteInt(0);
-
-                oPacket.WriteDateTime(DateTime.Now);
-                oPacket.WriteInt(0);
-                Parent.Client.Send(oPacket);
-            }
-            return;
-        }
         else if (hash == Adler32Helper.GenerateAdler32_ASCII("ChCreateRoomRequestPacket", 0))
         {
-            if (!roomList.ContainsKey(nickname))
-            {
-                roomList.TryAdd(nickname, new RoomList());
-                roomList[nickname].RandomTrackGameType = 1;
-                roomList[nickname].SpeedType = 7;
-                roomList[nickname].GameType = 2;
-            }
-
             string RoomName = iPacket.ReadString();    //room name
             Console.WriteLine("RoomName = {0}, len = {1}", RoomName, RoomName.Length);
             string Password = iPacket.ReadString();
             Console.WriteLine("Password = {0}, len = {1}", Password, Password.Length);
-            var unk1 = iPacket.ReadByte(); //7c
+            byte GameType = iPacket.ReadEncodedByte(); //7c
             iPacket.ReadInt();
             var AiCount = iPacket.ReadInt();
             Console.WriteLine("AiCount = {0}", AiCount);
@@ -572,11 +539,16 @@ public static class MultyPlayer
             iPacket.ReadBytes(29);
             byte AiSwitch = iPacket.ReadByte();
             Console.WriteLine("AiSwitch = {0}", AiSwitch);
-            var roomData = roomList[nickname];
+
             var RoomId = RoomManager.CreateRoom();
             var Room = RoomManager.GetRoom(RoomId);
             Console.WriteLine("CreateRoom = {0}", RoomId);
-            if (roomData.GameType == 3 || roomData.GameType == 4)
+            byte randomTrackGameType = 0;
+            if (GameType == 2 || GameType == 4 || GameType == 14 || GameType == 54)
+            {
+                randomTrackGameType = 1;
+            }
+            if (GameType == 3 || GameType == 4)
             {
                 RoomManager.AddPlayer(RoomId, nickname, 2, 2, Parent);
                 Player player = RoomManager.GetPlayer(RoomId, nickname);
@@ -590,7 +562,7 @@ public static class MultyPlayer
                     oPacket.WriteByte(1);
                     oPacket.WriteByte(1);
                     oPacket.WriteByte(2);
-                    oPacket.WriteByte(unk1);
+                    oPacket.WriteEncByte(GameType);
                     Parent.Client.Send(oPacket);
                 }
             }
@@ -608,25 +580,24 @@ public static class MultyPlayer
                     oPacket.WriteByte(1);
                     oPacket.WriteByte(0);
                     oPacket.WriteByte(8);
-                    oPacket.WriteByte(unk1);
+                    oPacket.WriteEncByte(GameType);
                     Parent.Client.Send(oPacket);
                 }
             }
             Room.RoomName = RoomName;
             if (Password != "")
             {
-                Room.Lock = 1;
+                Room.Lock = true;
             }
             Room.LockPwd = Password;
-            Room.SpeedType = roomData.SpeedType;
-            Room.GameType = roomData.GameType;
-            Room.RandomTrackGameType = roomData.RandomTrackGameType;
-            Room.unk1 = unk1;
+            Room.SpeedType = StartTimeAttack[nickname];
+            Room.GameType = GameType;
+            Room.RandomTrackGameType = randomTrackGameType;
             Room.RoomData = RoomData;
             if (AiCount > 0 && AiSwitch == 6)
             {
                 // 新增 AI 数量
-                AddAis(Room, AiCount - 1, roomData.RandomTrackGameType);
+                AddAis(Room, AiCount - 1, randomTrackGameType);
             }
             return;
         }
@@ -927,6 +898,7 @@ public static class MultyPlayer
                 Position(roomId, oPacket);
                 Parent.Client.Send(oPacket);
             }
+            GrSlotDataPacket(roomId);
             return;
         }
         else if (hash == Adler32Helper.GenerateAdler32_ASCII("ChJoinRoomRequestPacket"))
@@ -959,7 +931,7 @@ public static class MultyPlayer
                                     outPacket.WriteByte(0);
                                     outPacket.WriteByte(2);
                                     outPacket.WriteByte(2);
-                                    outPacket.WriteByte(room.unk1);
+                                    outPacket.WriteEncByte(room.GameType);
                                     outPacket.WriteBytes(new byte[5]);
                                     Parent.Client.Send(outPacket);
                                 }
@@ -973,7 +945,7 @@ public static class MultyPlayer
                                     outPacket.WriteByte(0);
                                     outPacket.WriteByte(2);
                                     outPacket.WriteByte(2);
-                                    outPacket.WriteByte(room.unk1);
+                                    outPacket.WriteEncByte(room.GameType);
                                     outPacket.WriteBytes(new byte[5]);
                                     Parent.Client.Send(outPacket);
                                 }
@@ -986,7 +958,7 @@ public static class MultyPlayer
                         outPacket.WriteByte(1);
                         outPacket.WriteByte(0);
                         outPacket.WriteByte(0);
-                        outPacket.WriteByte(room.unk1);
+                        outPacket.WriteEncByte(room.GameType);
                         outPacket.WriteBytes(new byte[5]);
                         Parent.Client.Send(outPacket);
                     }
@@ -1001,7 +973,7 @@ public static class MultyPlayer
                             outPacket.WriteByte(1);
                             outPacket.WriteByte(0);
                             outPacket.WriteByte(0);
-                            outPacket.WriteByte(room.unk1);
+                            outPacket.WriteEncByte(room.GameType);
                             outPacket.WriteBytes(new byte[5]);
                             Parent.Client.Send(outPacket);
                         }
@@ -1013,7 +985,7 @@ public static class MultyPlayer
                             outPacket.WriteByte(0);
                             outPacket.WriteByte(0);
                             outPacket.WriteByte(8);
-                            outPacket.WriteByte(room.unk1);
+                            outPacket.WriteEncByte(room.GameType);
                             outPacket.WriteBytes(new byte[5]);
                             Parent.Client.Send(outPacket);
                         }
@@ -1027,7 +999,7 @@ public static class MultyPlayer
                     outPacket.WriteByte(2);
                     outPacket.WriteByte(0);
                     outPacket.WriteByte(0);
-                    outPacket.WriteByte(room.unk1);
+                    outPacket.WriteEncByte(room.GameType);
                     outPacket.WriteBytes(new byte[5]);
                     Parent.Client.Send(outPacket);
                 }
@@ -1136,11 +1108,11 @@ public static class MultyPlayer
             room.RoomName = RoomName;
             if (RoomPassword.Length > 0)
             {
-                room.Lock = 1;
+                room.Lock = true;
             }
             else
             {
-                room.Lock = 0;
+                room.Lock = false;
             }
             room.LockPwd = RoomPassword;
 
@@ -1250,9 +1222,9 @@ public static class MultyPlayer
                 {
                     outPacket.WriteByte(0);
                 }
-                outPacket.WriteByte(p.SlotId);
+                outPacket.WriteInt(p.ID);
 
-                outPacket.WriteBytes(new byte[33]);
+                outPacket.WriteBytes(new byte[30]);
 
                 outPacket.WriteInt(1500);
                 outPacket.WriteInt(1499);
@@ -1550,11 +1522,11 @@ public static class MultyPlayer
         {
             for (int i = 0; i < 8; i++)
             {
-                if (RoomManager.TryGetSlotDetail(roomId, (byte)i) is Player player)
+                if (RoomManager.TryGetIdDetail(roomId, i) is Player player)
                 {
                     oPacket.WriteInt(player.PlayerType);
                 }
-                else if (RoomManager.TryGetSlotDetail(roomId, (byte)i) is Ai ai)
+                else if (RoomManager.TryGetIdDetail(roomId, i) is Ai ai)
                 {
                     oPacket.WriteInt(7);
                 }

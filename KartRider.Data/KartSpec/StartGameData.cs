@@ -99,17 +99,13 @@ namespace KartRider
             var speedType = new SpeedType();
             string version = ProfileService.SettingConfig.Version;
             byte speed = ProfileService.SettingConfig.SpeedType;
-            // int roomId = RoomManager.TryGetRoomId(Nickname);
-            // if (roomId == -1)
-            // {
-            //     version = ProfileService.SettingConfig.Version;
-            //     speed = ProfileService.SettingConfig.SpeedType;
-            // }
-            // else
-            // {
-            //     var room = RoomManager.GetRoom(roomId);
-            //     speed = room.SpeedType;
-            // }
+            int roomId = RoomManager.TryGetRoomId(Nickname);
+            if (roomId != -1)
+            {
+                var room = RoomManager.GetRoom(roomId);
+                StartTimeAttack_SpeedType = room.SpeedType;
+            }
+
             speedType.SpeedTypeData(version, speed);
 
             int StartPosition = oPacket.Position;

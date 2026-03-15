@@ -19,10 +19,10 @@ public class GameRoom
     public int RoomMaster { get; set; } = 0;
     public byte[] RoomData { get; set;} = new byte[32];
     public byte RandomTrackGameType { get; set; } = 0;
-    public byte unk1 { get; set; } = 0;
     public float redGauge { get; set; } = 0;
     public float blueGauge { get; set; } = 0;
-    public byte Lock { get; set; } = 0;
+    public bool Lock { get; set; } = false;
+    public bool Started { get; set;} = false;
     public string LockPwd { get; set; } = "";
     public byte RelayType = 0; //0 - UDP 1 - TCP
     public Dictionary<int, uint> TimeData { get; set; } = new Dictionary<int, uint>();
@@ -250,7 +250,7 @@ public class GameRoom
         }
         _slots[slotId] = null; // 清空格子
 
-        if (GetPlayerCount() > 0)
+        if (removedMember is Player && GetPlayerCount() > 0)
         {
             for (byte i = 0; i < 8; i++)
             {

@@ -383,10 +383,10 @@ namespace KartRider
                     }
                     else if (hash == Adler32Helper.GenerateAdler32_ASCII("LoRqEventRewardPacket", 0))
                     {
+                        byte[] data = iPacket.ReadBytes(iPacket.Available);
                         using (OutPacket outPacket = new OutPacket("LoRpEventRewardPacket"))
                         {
-                            outPacket.WriteInt(0);
-                            outPacket.WriteInt(0);
+                            outPacket.WriteBytes(data);
                             this.Parent.Client.Send(outPacket);
                         }
                         return;
@@ -408,15 +408,34 @@ namespace KartRider
                         using (OutPacket outPacket = new OutPacket("PrLoginVipInfo"))
                         {
                             outPacket.WriteShort((short)ProfileService.ProfileConfigs[Nickname].Rider.Premium);
-                            outPacket.WriteByte(0);
-                            outPacket.WriteByte(0);
-                            outPacket.WriteByte(0);
+                            if (ProfileService.ProfileConfigs[Nickname].Rider.Premium == 0)
+                                outPacket.WriteInt(0);
+                            else if (ProfileService.ProfileConfigs[Nickname].Rider.Premium == 1)
+                                outPacket.WriteInt(10000);
+                            else if (ProfileService.ProfileConfigs[Nickname].Rider.Premium == 2)
+                                outPacket.WriteInt(30000);
+                            else if (ProfileService.ProfileConfigs[Nickname].Rider.Premium == 3)
+                                outPacket.WriteInt(60000);
+                            else if (ProfileService.ProfileConfigs[Nickname].Rider.Premium == 4)
+                                outPacket.WriteInt(120000);
+                            else if (ProfileService.ProfileConfigs[Nickname].Rider.Premium == 5)
+                                outPacket.WriteInt(200000);
+                            else
+                                outPacket.WriteInt(0);
+                            outPacket.WriteShort((short)ProfileService.ProfileConfigs[Nickname].Rider.Premium);
+                            outPacket.WriteByte();
                             outPacket.WriteDateTime(DateTime.Now);
+                            outPacket.WriteInt();
                             this.Parent.Client.Send(outPacket);
                         }
                         using (OutPacket outPacket = new OutPacket("PcSlaveNotice"))
                         {
                             outPacket.WriteString("单机版完全免费, GitHub: https://github.com/yanygm/Launcher_V2");
+                            this.Parent.Client.Send(outPacket);
+                        }
+                        using (OutPacket outPacket = new OutPacket("LoRpEventRewardPacket"))
+                        {
+                            outPacket.WriteBytes(new byte[8]);
                             this.Parent.Client.Send(outPacket);
                         }
                         return;
@@ -3380,7 +3399,8 @@ namespace KartRider
                     {
                         using (OutPacket outPacket = new OutPacket("PrReturnMissionSetPacket"))
                         {
-                            outPacket.WriteHexString("00 00 00 00 00");
+                            outPacket.WriteInt();
+                            outPacket.WriteByte();
                             this.Parent.Client.Send(outPacket);
                         }
                         return;
@@ -3699,6 +3719,26 @@ namespace KartRider
                             outPacket.WriteInt(0);
                             this.Parent.Client.Send(outPacket);
                         }
+                        return;
+                    }
+                    else if (hash == Adler32Helper.GenerateAdler32_ASCII("PqMissionAttendPacket", 0))
+                    {
+                        // using (OutPacket oPacket = new OutPacket("PrMissionAttendPacket"))
+                        // {
+                        //     oPacket.WriteInt(0);
+                        //     oPacket.WriteInt(0);
+                        //     oPacket.WriteInt(0);
+
+                        //     oPacket.WriteInt(0);
+                        //     oPacket.WriteInt(0);
+                        //     oPacket.WriteDateTime(DateTime.Now);
+                        //     oPacket.WriteDateTime(DateTime.Now);
+                        //     oPacket.WriteInt(0);
+
+                        //     oPacket.WriteDateTime(DateTime.Now);
+                        //     oPacket.WriteInt(0);
+                        //     this.Parent.Client.Send(oPacket);
+                        // }
                         return;
                     }
                     else
