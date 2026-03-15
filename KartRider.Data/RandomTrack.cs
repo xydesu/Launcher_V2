@@ -104,9 +104,18 @@ namespace KartRider
                 }
                 else
                 {
-                    int randomIndex = random.Next(track.Count);
-                    var selectedTrack = track.ElementAt(randomIndex).Value;
-                    return Adler32Helper.GenerateAdler32_UNICODE(selectedTrack, 0);
+                    Random AllRandom = new Random();
+                    var validTracks = track.Where(t => t.Value.Contains("_I") || t.Value.Contains("_R") || t.Value.Contains("_C") || t.Value.Contains("_K") || t.Value.Contains("_DIY")).ToList();
+                    if (validTracks.Count > 0)
+                    {
+                        int randomIndex = AllRandom.Next(validTracks.Count);
+                        var selectedTrack = validTracks.ElementAt(randomIndex).Value;
+                        return Adler32Helper.GenerateAdler32_UNICODE(selectedTrack, 0);
+                    }
+                    else
+                    {
+                        return Adler32Helper.GenerateAdler32_UNICODE(RandomTrack.GameTrack, 0);
+                    }
                 }
             }
             else if (RandomTrackSetRandomTrack == "Unknown")
