@@ -255,13 +255,18 @@ public class GameRoom
                     }
                 }
             }
-            shouldDeleteRoom = GetPlayerCount() == 0;
         }
         else if (removedMember is Ai ai)
         {
             _IDs.Remove(ai.ID);
         }
         _slots[slotId] = null; // 清空格子
+
+        // 如果移除的是玩家，检查剩余玩家数量
+        if (removedMember is Player)
+        {
+            shouldDeleteRoom = GetPlayerCount() == 0;
+        }
 
         MultyPlayer.GrSlotDataPacket(RoomId);
         return true;
