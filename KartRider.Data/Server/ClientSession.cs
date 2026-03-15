@@ -275,6 +275,12 @@ namespace KartRider
                         ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartBoosterEffect12 = iPacket.ReadShort();
                         ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Unknown5 = iPacket.ReadShort();
                         ProfileService.Save(Nickname);
+                        int roomId = RoomManager.TryGetRoomId(nickname);
+                        if (roomId == -1)
+                        {
+                            return;
+                        }
+                        MultyPlayer.GrSlotDataPacket(RoomId);
                         return;
                     }
                     else if (hash == Adler32Helper.GenerateAdler32_ASCII("PqGetRiderInfo", 0))
