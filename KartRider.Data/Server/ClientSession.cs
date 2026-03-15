@@ -275,7 +275,7 @@ namespace KartRider
                         ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartBoosterEffect12 = iPacket.ReadShort();
                         ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Unknown5 = iPacket.ReadShort();
                         ProfileService.Save(Nickname);
-                        int roomId = RoomManager.TryGetRoomId(nickname);
+                        int roomId = RoomManager.TryGetRoomId(Nickname);
                         if (roomId == -1)
                         {
                             return;
