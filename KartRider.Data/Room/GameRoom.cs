@@ -29,11 +29,10 @@ public class GameRoom
     public Dictionary<int, int> Ranking { get; set; } = new Dictionary<int, int>();
 
     // 8个格子（0-7）
-    private RoomMember[] _slots = new RoomMember[8];
-    public List<int> _IDs = new List<int>(8);
-    public List<int> _allIDs = Enumerable.Range(0, 8).ToList();
-    public List<int> _blueIDs = Enumerable.Range(0, 4).ToList();
-    public List<int> _redIDs = Enumerable.Range(4, 8).ToList();
+    public RoomMember[] _slots = new RoomMember[8];
+    public RoomMember[] _IDs = new RoomMember[8];
+    public List<int> _blueIDs = new List<int>();
+    public List<int> _redIDs = new List<int>();
 
     // 构造函数：初始化房间ID（由外部传入唯一ID）
     public GameRoom(int roomId)
@@ -100,7 +99,7 @@ public class GameRoom
 
     public RoomMember GetIdMember(int Id)
     {
-        return _slots.FirstOrDefault(x => x is Player player && player.ID == Id || x is Ai ai && ai.ID == Id) ?? null;
+        return IsValidSlotId((byte)Id) ? _IDs[Id] : null;
     }
 
     // 尝试添加玩家（成功后自动检查是否需要删除房间）
@@ -112,34 +111,18 @@ public class GameRoom
             {
                 if (_slots[i] == null)
                 {
-                    int newId;
-                    var availableIds = _blueIDs.Except(_IDs).ToList();
-                    if (availableIds.Count > 0)
-                    {
-                        newId = availableIds.Min();
-                    }
-                    else
-                    {
-                        // 如果所有ID都被使用，找到一个未使用的ID
-                        newId = 0;
-                        while (_IDs.Contains(newId))
-                        {
-                            newId++;
-                        }
-                    }
+                    int id = Array.IndexOf(_IDs, null);
+                    _blueIDs.Add(id);
                     _slots[i] = new Player
                     {
-                        ID = newId,
+                        ID = id,
                         SlotId = i,
                         Nickname = nickname,
                         PlayerType = playerType,
                         Team = team,
                         Session = client
                     };
-                    if (_slots[i] is Player player)
-                    {
-                        _IDs.Add(player.ID);
-                    }
+                    _IDs[id] = _slots[i];
                     return i;
                 }
             }
@@ -151,34 +134,18 @@ public class GameRoom
             {
                 if (_slots[i] == null)
                 {
-                    int newId;
-                    var availableIds = _redIDs.Except(_IDs).ToList();
-                    if (availableIds.Count > 0)
-                    {
-                        newId = availableIds.Min();
-                    }
-                    else
-                    {
-                        // 如果所有ID都被使用，找到一个未使用的ID
-                        newId = 0;
-                        while (_IDs.Contains(newId))
-                        {
-                            newId++;
-                        }
-                    }
+                    int id = Array.IndexOf(_IDs, null);
+                    _redIDs.Add(id);
                     _slots[i] = new Player
                     {
-                        ID = newId,
+                        ID = id,
                         SlotId = i,
                         Nickname = nickname,
                         PlayerType = playerType,
                         Team = team,
                         Session = client
                     };
-                    if (_slots[i] is Player player)
-                    {
-                        _IDs.Add(player.ID);
-                    }
+                    _IDs[id] = _slots[i];
                     return i;
                 }
             }
@@ -190,34 +157,17 @@ public class GameRoom
             {
                 if (_slots[i] == null)
                 {
-                    int newId;
-                    var availableIds = _allIDs.Except(_IDs).ToList();
-                    if (availableIds.Count > 0)
-                    {
-                        newId = availableIds.Min();
-                    }
-                    else
-                    {
-                        // 如果所有ID都被使用，找到一个未使用的ID
-                        newId = 0;
-                        while (_IDs.Contains(newId))
-                        {
-                            newId++;
-                        }
-                    }
+                    int id = Array.IndexOf(_IDs, null);
                     _slots[i] = new Player
                     {
-                        ID = newId,
+                        ID = id,
                         SlotId = i,
                         Nickname = nickname,
                         PlayerType = playerType,
                         Team = team,
                         Session = client
                     };
-                    if (_slots[i] is Player player)
-                    {
-                        _IDs.Add(player.ID);
-                    }
+                    _IDs[id] = _slots[i];
                     return i;
                 }
             }
@@ -242,12 +192,20 @@ public class GameRoom
 
         if (removedMember is Player player)
         {
-            _IDs.Remove(player.ID);
+            _IDs[player.ID] = null;
+            if (player.Team == 2)
+            {
+                _blueIDs.Remove(player.ID);
+            }
+            else if (player.Team == 1)
+            {
+                _redIDs.Remove(player.ID);
+            }
             if (player.ID == RoomMaster)
             {
-                for (byte i = 0; i < 8; i++)
+                foreach (RoomMember Object in _slots)
                 {
-                    if (_slots[i] is Player p)
+                    if (Object is Player p)
                     {
                         RoomMaster = p.ID;
                         p.PlayerType = 2;
@@ -258,7 +216,15 @@ public class GameRoom
         }
         else if (removedMember is Ai ai)
         {
-            _IDs.Remove(ai.ID);
+            _IDs[ai.ID] = null;
+            if (ai.Team == 2)
+            {
+                _blueIDs.Remove(ai.ID);
+            }
+            else if (ai.Team == 1)
+            {
+                _redIDs.Remove(ai.ID);
+            }
         }
         _slots[slotId] = null; // 清空格子
 
@@ -273,7 +239,7 @@ public class GameRoom
     }
 
     // 其他方法：设置AI、获取格子信息等（沿用之前的逻辑，略）
-    public byte TrySetAi(Ai aiData, int Id, byte team)
+    public byte TrySetAi(Ai aiData, byte team)
     {
         if (aiData == null)
             throw new ArgumentNullException(nameof(aiData), "AI数据不能为null");
@@ -284,32 +250,12 @@ public class GameRoom
             {
                 if (_slots[i] == null)
                 {
-                    if (_IDs.Contains(Id))
-                    {
-                        int newId;
-                        var availableIds = _blueIDs.Except(_IDs).ToList();
-                        if (availableIds.Count > 0)
-                        {
-                            newId = availableIds.Min();
-                        }
-                        else
-                        {
-                            // 如果所有ID都被使用，找到一个未使用的ID
-                            newId = 0;
-                            while (_IDs.Contains(newId))
-                            {
-                                newId++;
-                            }
-                        }
-                        aiData.ID = newId;
-                    }
-                    else
-                    {
-                        aiData.ID = Id;
-                    }
+                    int id = Array.IndexOf(_IDs, null);
+                    _blueIDs.Add(id);
+                    aiData.ID = id;
                     _slots[i] = aiData;
                     _slots[i].SlotId = i;
-                    _IDs.Add(aiData.ID);
+                    _IDs[id] = _slots[i];
                     return i;
                 }
             }
@@ -321,32 +267,12 @@ public class GameRoom
             {
                 if (_slots[i] == null)
                 {
-                    if (_IDs.Contains(Id))
-                    {
-                        int newId;
-                        var availableIds = _redIDs.Except(_IDs).ToList();
-                        if (availableIds.Count > 0)
-                        {
-                            newId = availableIds.Min();
-                        }
-                        else
-                        {
-                            // 如果所有ID都被使用，找到一个未使用的ID
-                            newId = 0;
-                            while (_IDs.Contains(newId))
-                            {
-                                newId++;
-                            }
-                        }
-                        aiData.ID = newId;
-                    }
-                    else
-                    {
-                        aiData.ID = Id;
-                    }
+                    int id = Array.IndexOf(_IDs, null);
+                    _redIDs.Add(id);
+                    aiData.ID = id;
                     _slots[i] = aiData;
                     _slots[i].SlotId = i;
-                    _IDs.Add(aiData.ID);
+                    _IDs[id] = _slots[i];
                     return i;
                 }
             }
@@ -358,32 +284,11 @@ public class GameRoom
             {
                 if (_slots[i] == null)
                 {
-                    if (_IDs.Contains(Id))
-                    {
-                        int newId;
-                        var availableIds = _allIDs.Except(_IDs).ToList();
-                        if (availableIds.Count > 0)
-                        {
-                            newId = availableIds.Min();
-                        }
-                        else
-                        {
-                            // 如果所有ID都被使用，找到一个未使用的ID
-                            newId = 0;
-                            while (_IDs.Contains(newId))
-                            {
-                                newId++;
-                            }
-                        }
-                        aiData.ID = newId;
-                    }
-                    else
-                    {
-                        aiData.ID = Id;
-                    }
+                    int id = Array.IndexOf(_IDs, null);
+                    aiData.ID = id;
                     _slots[i] = aiData;
                     _slots[i].SlotId = i;
-                    _IDs.Add(aiData.ID);
+                    _IDs[id] = _slots[i];
                     return i;
                 }
             }
@@ -393,14 +298,6 @@ public class GameRoom
         {
             return 255; // 未知队伍
         }
-    }
-
-    // 获取指定格子的成员
-    public RoomMember GetSlot(byte slotId)
-    {
-        if (!IsValidSlotId(slotId))
-            throw new ArgumentOutOfRangeException(nameof(slotId), "格子ID必须在0-7之间");
-        return _slots[slotId];
     }
 
     public bool ChangeSlotId(byte slotId, byte newSlotId)
@@ -414,18 +311,6 @@ public class GameRoom
         _slots[newSlotId] = _slots[slotId];
         _slots[slotId] = null;
         return true;
-    }
-
-    public byte IdGetSlotId(int Id)
-    {
-        for (byte i = 0; i < 8; i++)
-        {
-            if (_slots[i] != null && _slots[i] is Ai ai && ai.ID == Id)
-                return i;
-            else if (_slots[i] != null && _slots[i] is Player player && player.ID == Id)
-                return i;
-        }
-        return 255;
     }
 
     private bool IsValidSlotId(byte slotId) => slotId >= 0 && slotId < 8;

@@ -79,13 +79,12 @@ public static class RoomManager
                 return -1;
 
             // 2. 遍历房间所有格子，查找目标玩家
-            for (byte slotId = 0; slotId < 8; slotId++)
+            foreach (var member in room._slots)
             {
-                var member = room.GetSlotMember(slotId);
                 // 匹配玩家类型且昵称一致
                 if (member is Player player && player.Nickname == nickname)
                 {
-                    return slotId; // 返回玩家所在的格子ID
+                    return player.SlotId; // 返回玩家所在的格子ID
                 }
             }
         }
@@ -110,7 +109,7 @@ public static class RoomManager
         if (room == null)
             return false;
 
-        var member = room.GetSlot(slotId);
+        var member = room.GetSlotMember(slotId);
         string originalNick = (member as Player)?.Nickname;
 
         bool removed = room.RemoveMember(slotId, out bool shouldDeleteRoom);
@@ -166,7 +165,7 @@ public static class RoomManager
         return detail;
     }
 
-    // 扩展：获取指定位置的详细成员信息（玩家昵称或AI属性）
+    // 扩展：获取指定ID的详细成员信息（玩家昵称或AI属性）
     public static object TryGetIdDetail(int roomId, int Id)
     {
         object detail = null;
@@ -196,9 +195,8 @@ public static class RoomManager
                 return null;
 
             // 2. 遍历房间的8个格子，查找昵称匹配的玩家
-            for (byte slotId = 0; slotId < 8; slotId++)
+            foreach (var member in room._slots)
             {
-                var member = room.GetSlotMember(slotId);
                 // 严格匹配昵称（含大小写）
                 if (member is Player player && player.Nickname == nickname)
                 {

@@ -208,9 +208,9 @@ namespace KartRider
                             {
                                 if (room.RelayType == 0) //UDP
                                 {
-                                    for (int i = 0; i < 8; i++)
+                                    foreach (RoomMember Object in room._slots)
                                     {
-                                        if (RoomManager.TryGetSlotDetail(roomId, (byte)i) is Player player)
+                                        if (Object is Player player)
                                         {
                                             OutPacket oPacket = new OutPacket();
 

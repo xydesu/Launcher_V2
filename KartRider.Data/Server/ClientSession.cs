@@ -438,11 +438,6 @@ namespace KartRider
                             outPacket.WriteString("单机版完全免费, GitHub: https://github.com/yanygm/Launcher_V2");
                             this.Parent.Client.Send(outPacket);
                         }
-                        using (OutPacket outPacket = new OutPacket("LoRpEventRewardPacket"))
-                        {
-                            outPacket.WriteBytes(new byte[8]);
-                            this.Parent.Client.Send(outPacket);
-                        }
                         return;
                     }
                     else if (hash == Adler32Helper.GenerateAdler32_ASCII("ChReRqEnterMyRoomPacket", 0) || hash == Adler32Helper.GenerateAdler32_ASCII("ChRqEnterRandomMyRoomPacket", 0))
