@@ -31,8 +31,6 @@ public class GameRoom
     // 8个格子（0-7）
     public RoomMember[] _slots = new RoomMember[8];
     public RoomMember[] _IDs = new RoomMember[8];
-    public List<int> _blueIDs = new List<int>();
-    public List<int> _redIDs = new List<int>();
 
     // 构造函数：初始化房间ID（由外部传入唯一ID）
     public GameRoom(int roomId)
@@ -112,7 +110,6 @@ public class GameRoom
                 if (_slots[i] == null)
                 {
                     int id = Array.IndexOf(_IDs, null);
-                    _blueIDs.Add(id);
                     _slots[i] = new Player
                     {
                         ID = id,
@@ -135,7 +132,6 @@ public class GameRoom
                 if (_slots[i] == null)
                 {
                     int id = Array.IndexOf(_IDs, null);
-                    _redIDs.Add(id);
                     _slots[i] = new Player
                     {
                         ID = id,
@@ -193,17 +189,9 @@ public class GameRoom
         if (removedMember is Player player)
         {
             _IDs[player.ID] = null;
-            if (player.Team == 2)
-            {
-                _blueIDs.Remove(player.ID);
-            }
-            else if (player.Team == 1)
-            {
-                _redIDs.Remove(player.ID);
-            }
             if (player.ID == RoomMaster)
             {
-                foreach (RoomMember Object in _slots)
+                foreach (RoomMember Object in _IDs)
                 {
                     if (Object is Player p)
                     {
@@ -217,14 +205,6 @@ public class GameRoom
         else if (removedMember is Ai ai)
         {
             _IDs[ai.ID] = null;
-            if (ai.Team == 2)
-            {
-                _blueIDs.Remove(ai.ID);
-            }
-            else if (ai.Team == 1)
-            {
-                _redIDs.Remove(ai.ID);
-            }
         }
         _slots[slotId] = null; // 清空格子
 
@@ -251,7 +231,6 @@ public class GameRoom
                 if (_slots[i] == null)
                 {
                     int id = Array.IndexOf(_IDs, null);
-                    _blueIDs.Add(id);
                     aiData.ID = id;
                     _slots[i] = aiData;
                     _slots[i].SlotId = i;
@@ -268,7 +247,6 @@ public class GameRoom
                 if (_slots[i] == null)
                 {
                     int id = Array.IndexOf(_IDs, null);
-                    _redIDs.Add(id);
                     aiData.ID = id;
                     _slots[i] = aiData;
                     _slots[i].SlotId = i;

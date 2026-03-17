@@ -917,7 +917,32 @@ public static class MultyPlayer
             Console.WriteLine("ChJoinRoomRequestPacket, roomId = {0}, unk = {1}, pwd = {2}", roomId, unk, pwd);
 
             var room = RoomManager.GetRoom(roomId);
-            if (pwd == room.LockPwd)
+            if (room == null)
+            {
+                using (OutPacket outPacket = new OutPacket("ChJoinRoomReplyPacket"))
+                {
+                    outPacket.WriteByte(1);
+                    outPacket.WriteByte(0);
+                    outPacket.WriteByte(0);
+                    outPacket.WriteEncByte(0);
+                    outPacket.WriteBytes(new byte[5]);
+                    Parent.Client.Send(outPacket);
+                }
+                return;
+            }
+            if (pwd != room.LockPwd)
+            {
+                using (OutPacket outPacket = new OutPacket("ChJoinRoomReplyPacket"))
+                {
+                    outPacket.WriteByte(2);
+                    outPacket.WriteByte(0);
+                    outPacket.WriteByte(0);
+                    outPacket.WriteEncByte(room.GameType);
+                    outPacket.WriteBytes(new byte[5]);
+                    Parent.Client.Send(outPacket);
+                }
+            }
+            else
             {
                 int slot = Array.IndexOf(room._slots, null);
                 if (slot == -1)
@@ -935,7 +960,7 @@ public static class MultyPlayer
                 }
                 if (room.GameType == 3 || room.GameType == 4)
                 {
-                    if(slot < 4)
+                    if (slot < 4)
                     {
                         RoomManager.AddPlayer(roomId, nickname, 2, 2, Parent);
                         using (OutPacket outPacket = new OutPacket("ChJoinRoomReplyPacket"))
@@ -966,6 +991,7 @@ public static class MultyPlayer
                 }
                 else
                 {
+                    RoomManager.AddPlayer(roomId, nickname, 0, 2, Parent);
                     using (OutPacket outPacket = new OutPacket("ChJoinRoomReplyPacket"))
                     {
                         outPacket.WriteByte(0);
@@ -975,18 +1001,6 @@ public static class MultyPlayer
                         outPacket.WriteBytes(new byte[5]);
                         Parent.Client.Send(outPacket);
                     }
-                }
-            }
-            else
-            {
-                using (OutPacket outPacket = new OutPacket("ChJoinRoomReplyPacket"))
-                {
-                    outPacket.WriteByte(2);
-                    outPacket.WriteByte(0);
-                    outPacket.WriteByte(0);
-                    outPacket.WriteEncByte(room.GameType);
-                    outPacket.WriteBytes(new byte[5]);
-                    Parent.Client.Send(outPacket);
                 }
             }
             return;
