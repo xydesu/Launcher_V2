@@ -39,12 +39,14 @@ public class GameRoom
     }
 
     // 统计当前房间内的玩家数量（不包含AI）
-    public int GetPlayerCount()
+    public int GetPlayerCount(byte team = 0)
     {
         int count = 0;
         foreach (var member in _slots)
         {
-            if (member is Player) // 仅统计玩家类型
+            if (member is Player && team == 0) // 仅统计玩家类型
+                count++;
+            else if (member is Player player && player.Team == team)
                 count++;
         }
         return count;
