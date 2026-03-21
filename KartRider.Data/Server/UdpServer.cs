@@ -168,8 +168,8 @@ namespace KartRider
                         uint accountID = p.ReadUInt();
                         uint hash = p.ReadUInt();
 
-                        string nickname = ClientManager.UserNOToNickname[accountID] ?? "Unknown";
-                        if (nickname == "Unknown" || nickname == "")
+                        string nickname = "";
+                        if (!ClientManager.UserNOToNickname.TryGetValue(accountID, out nickname) || string.IsNullOrEmpty(nickname))
                         {
                             return;
                         }
@@ -300,7 +300,6 @@ namespace KartRider
                 }
                 else
                 {
-                    Console.WriteLine($"发送失败（数据包太小）：{buffer.Length}");
                     return false;
                 }
             }

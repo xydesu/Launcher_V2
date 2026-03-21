@@ -158,7 +158,7 @@ public static class MultyPlayer
     static void Set_startTrigger(SessionGroup Parent, GameRoom room)
     {
         var onceTimer = new System.Timers.Timer();
-        onceTimer.Interval = 3000;
+        onceTimer.Interval = 1000;
         onceTimer.Elapsed += new System.Timers.ElapsedEventHandler((s, _event) => startTrigger(Parent, room, s, _event));
         onceTimer.AutoReset = false;
         onceTimer.Start();
@@ -441,7 +441,7 @@ public static class MultyPlayer
             {
                 return;
             }
-            iPacket.ReadInt();
+            int slot = iPacket.ReadInt();
             uint item = iPacket.ReadUInt();
             byte type = iPacket.ReadByte();
             if (item == uint.MaxValue && iPacket.Length == 77)
@@ -456,7 +456,7 @@ public static class MultyPlayer
                 short skill = GameSupport.RandomItemSkill(nickname, room.GameType);
                 using (OutPacket oPacket = new OutPacket("GameSlotPacket"))
                 {
-                    oPacket.WriteInt();
+                    oPacket.WriteInt(slot);
                     oPacket.WriteUInt(item);
                     oPacket.WriteByte(type);
                     oPacket.WriteBytes(data1);
@@ -466,17 +466,17 @@ public static class MultyPlayer
                     oPacket.WriteByte(2);
                     oPacket.WriteShort(skill);
                     oPacket.WriteBytes(data3);
-                    Parent.Client.Send(oPacket);
+                    BroadCast(roomId, oPacket);
                 }
             }
-            if (type == 11)
+            else if (type == 11)
             {
                 var uni = iPacket.ReadByte();
                 var skill = iPacket.ReadShort();
                 List<short> skills = V2Specs.GetSkills(nickname);
                 if (skills.Contains(13) && skill == 3)
                 {
-                    GameSupport.AttackedSkill(Parent, nickname, type, uni, 10);
+                    GameSupport.AttackedSkill(roomId, slot, nickname, type, uni, 10);
                 }
                 
                 // Ensure profile is loaded before accessing
@@ -486,7 +486,7 @@ public static class MultyPlayer
                     {
                         if (kartSkills.TryGetValue(skill, out var targetSkill))
                         {
-                            GameSupport.AttackedSkill(Parent, nickname, type, uni, targetSkill);
+                            GameSupport.AttackedSkill(roomId, slot, nickname, type, uni, targetSkill);
                         }
                     }
                 }
@@ -501,7 +501,7 @@ public static class MultyPlayer
                 List<short> skills = V2Specs.GetSkills(nickname);
                 if (skills.Contains(14) && skill == 5)
                 {
-                    GameSupport.AddItemSkill(Parent, nickname, 6);
+                    GameSupport.AddItemSkill(roomId, slot, nickname, 6);
                 }
                 
                 // Ensure profile is loaded before accessing
@@ -511,7 +511,7 @@ public static class MultyPlayer
                     {
                         if (kartSkills.TryGetValue(skill, out var targetSkill))
                         {
-                            GameSupport.AddItemSkill(Parent, nickname, targetSkill);
+                            GameSupport.AddItemSkill(roomId, slot, nickname, targetSkill);
                         }
                     }
                 }
@@ -608,7 +608,7 @@ public static class MultyPlayer
                 oPacket.WriteInt(0);
                 oPacket.WriteShort(channel);
                 oPacket.WriteShort(iPacket.ReadShort());
-                oPacket.WriteEndPoint(IPAddress.Parse(ProfileService.SettingConfig.ServerIP == "127.0.0.1" ? serverEndPoint.Address.ToString() : ProfileService.SettingConfig.ServerIP), ProfileService.SettingConfig.ServerPort);
+                oPacket.WriteEndPoint(ProfileService.SettingConfig.ServerIP == "127.0.0.1" ? serverEndPoint.Address : IPAddress.Parse(ProfileService.SettingConfig.ServerIP), ProfileService.SettingConfig.ServerPort);
                 Parent.Client.Send(oPacket);
             }
             return;
@@ -628,8 +628,8 @@ public static class MultyPlayer
             using (OutPacket oPacket = new OutPacket("PrChannelMoveIn"))
             {
                 oPacket.WriteByte(1);
-                oPacket.WriteEndPoint(IPAddress.Parse(ProfileService.SettingConfig.ServerIP == "127.0.0.1" ? serverEndPoint.Address.ToString() : ProfileService.SettingConfig.ServerIP), ProfileService.SettingConfig.ServerPort);
-                oPacket.WriteEndPoint(IPAddress.Parse(ProfileService.SettingConfig.ServerIP == "127.0.0.1" ? serverEndPoint.Address.ToString() : ProfileService.SettingConfig.ServerIP), (ushort)(ProfileService.SettingConfig.ServerPort + 1));
+                oPacket.WriteEndPoint(ProfileService.SettingConfig.ServerIP == "127.0.0.1" ? serverEndPoint.Address : IPAddress.Parse(ProfileService.SettingConfig.ServerIP), ProfileService.SettingConfig.ServerPort);
+                oPacket.WriteEndPoint(ProfileService.SettingConfig.ServerIP == "127.0.0.1" ? serverEndPoint.Address : IPAddress.Parse(ProfileService.SettingConfig.ServerIP), (ushort)(ProfileService.SettingConfig.ServerPort + 1));
                 Parent.Client.Send(oPacket);
             }
             return;
@@ -1403,7 +1403,7 @@ public static class MultyPlayer
         outPacket.WriteBytes(new byte[7]);
     }
 
-    static void BroadCast(int roomId, OutPacket outPacket, string Self = "", byte team = 0)
+    public static void BroadCast(int roomId, OutPacket outPacket, string Self = "", byte team = 0)
     {
         var room = RoomManager.GetRoom(roomId);
         if (room == null)

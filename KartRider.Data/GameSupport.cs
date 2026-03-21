@@ -424,12 +424,12 @@ namespace KartRider
             return skill;
         }
 
-        public static void AddItemSkill(SessionGroup Parent, string Nickname, short skill)
+        public static void AddItemSkill(int roomId, int slot, string Nickname, short skill)
         {
             skill = GameSupport.GetItemSkill(Nickname, skill);
             using (OutPacket oPacket = new OutPacket("GameSlotPacket"))
             {
-                oPacket.WriteInt();
+                oPacket.WriteInt(slot);
                 oPacket.WriteUInt(uint.MaxValue);
                 oPacket.WriteByte(10);
                 oPacket.WriteHexString("001000");
@@ -439,16 +439,16 @@ namespace KartRider
                 oPacket.WriteByte(2);
                 oPacket.WriteShort(skill);
                 oPacket.WriteBytes(new byte[5]);
-                Parent.Client.Send(oPacket);
+                MultyPlayer.BroadCast(roomId, oPacket);
             }
         }
 
-        public static void AttackedSkill(SessionGroup Parent, string Nickname, byte type, byte uni, short skill)
+        public static void AttackedSkill(int roomId, int slot, string Nickname, byte type, byte uni, short skill)
         {
             skill = GameSupport.GetItemSkill(Nickname, skill);
             using (OutPacket oPacket = new OutPacket("GameSlotPacket"))
             {
-                oPacket.WriteInt();
+                oPacket.WriteInt(slot);
                 oPacket.WriteUInt();
                 oPacket.WriteByte(type);
                 oPacket.WriteByte(uni);
@@ -458,7 +458,7 @@ namespace KartRider
                 oPacket.WriteByte(2);
                 oPacket.WriteShort(skill);
                 oPacket.WriteBytes(new byte[5]);
-                Parent.Client.Send(oPacket);
+                MultyPlayer.BroadCast(roomId, oPacket);
             }
         }
     }

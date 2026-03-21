@@ -21,6 +21,10 @@ namespace KartRider
 
         public static SessionGroup MySession { get; set; }
 
+        public static UdpServer P2PServer = new UdpServer("P2P", ProfileService.SettingConfig.ServerPort);
+
+        public static UdpServer UDPServer = new UdpServer("UDP", (ushort)(ProfileService.SettingConfig.ServerPort + 1));
+
         public static int DataTime()
         {
             DateTime dt = DateTime.Now;
@@ -58,10 +62,8 @@ namespace KartRider
         public static void Start()
         {
             // 启动服务端
-            var server1 = new UdpServer("P2P", ProfileService.SettingConfig.ServerPort);
-            var server2 = new UdpServer("UDP", (ushort)(ProfileService.SettingConfig.ServerPort + 1));
-            server1.Start();
-            server2.Start();
+            P2PServer.Start();
+            UDPServer.Start();
 
             if (RouterListener.Listener == null)
             {
