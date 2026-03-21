@@ -424,12 +424,12 @@ namespace KartRider
             return skill;
         }
 
-        public static void AddItemSkill(int roomId, int slot, string Nickname, short skill)
+        public static void AddItemSkill(int roomId, int id, string Nickname, short skill)
         {
             skill = GameSupport.GetItemSkill(Nickname, skill);
             using (OutPacket oPacket = new OutPacket("GameSlotPacket"))
             {
-                oPacket.WriteInt(slot);
+                oPacket.WriteInt(id);
                 oPacket.WriteUInt(uint.MaxValue);
                 oPacket.WriteByte(10);
                 oPacket.WriteHexString("001000");
@@ -443,12 +443,12 @@ namespace KartRider
             }
         }
 
-        public static void AttackedSkill(int roomId, int slot, string Nickname, byte type, byte uni, short skill)
+        public static void AttackedSkill(int roomId, int id, string Nickname, byte type, byte uni, short skill)
         {
             skill = GameSupport.GetItemSkill(Nickname, skill);
             using (OutPacket oPacket = new OutPacket("GameSlotPacket"))
             {
-                oPacket.WriteInt(slot);
+                oPacket.WriteInt(id);
                 oPacket.WriteUInt();
                 oPacket.WriteByte(type);
                 oPacket.WriteByte(uni);
