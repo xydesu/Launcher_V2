@@ -29,7 +29,7 @@ namespace KartRider
 
         public void FlyingPet_Spec(string Nickname)
         {
-            short FlyingPetID = ProfileService.ProfileConfigs[Nickname].RiderItem.Set_FlyingPet;
+            ushort FlyingPetID = ProfileService.ProfileConfigs[Nickname].RiderItem.Set_FlyingPet;
             if (FlyingPet.flyingName.ContainsKey(FlyingPetID))
             {
                 string Name = FlyingPet.flyingName[FlyingPetID];

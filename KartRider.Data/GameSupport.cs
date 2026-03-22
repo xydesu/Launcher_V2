@@ -268,8 +268,6 @@ namespace KartRider
         public static void PrQuestUX2ndPacket(OutPacket outPacket)
         {
             int All_Quest = quest.Count;
-            outPacket.WriteInt(1);
-            outPacket.WriteInt(1);
             outPacket.WriteInt(All_Quest);
             foreach (var item in quest)
             {
@@ -288,44 +286,44 @@ namespace KartRider
 
         public static void GetRider(string Nickname, OutPacket outPacket)
         {
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Character);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Paint);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Kart);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Plate);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Goggle);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Balloon);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Unknown1);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_HeadBand);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_HeadPhone);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_HandGearL);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Unknown2);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Uniform);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Decal);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Pet);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_FlyingPet);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Aura);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_SkidMark);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_SpecialKit);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_RidColor);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_BonusCard);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_BossModeCard);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartPlant1);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartPlant2);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartPlant3);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartPlant4);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Unknown3);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_FishingPole);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Tachometer);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Dye);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartSN);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Character);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Paint);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Kart);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Plate);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Goggle);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Balloon);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Unknown1);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_HeadBand);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_HeadPhone);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_HandGearL);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Unknown2);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Uniform);   
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Decal);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Pet);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_FlyingPet);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Aura);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_SkidMark);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_SpecialKit);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_RidColor);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_BonusCard);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_BossModeCard);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartPlant1);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartPlant2);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartPlant3);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartPlant4);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Unknown3);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_FishingPole);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Tachometer);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Dye);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartSN);
             outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Unknown4);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartCoating);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartTailLamp);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_slotBg);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartCoating12);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartTailLamp12);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartBoosterEffect12);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Unknown5);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartCoating);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartTailLamp);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_slotBg);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartCoating12);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartTailLamp12);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartBoosterEffect12);
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Unknown5);
         }
 
         public static void PrGetRiderInfo(string nickname, SessionGroup Parent)

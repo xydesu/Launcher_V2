@@ -310,7 +310,7 @@ public static class MultyPlayer
                     outPacket.WriteInt(p3.ID); // player id
                     outPacket.WriteUInt(room.TimeData[p3.ID]);
                     outPacket.WriteByte();
-                    outPacket.WriteShort(ProfileService.ProfileConfigs[p3.Nickname].RiderItem.Set_Kart);
+                    outPacket.WriteUShort(ProfileService.ProfileConfigs[p3.Nickname].RiderItem.Set_Kart);
                     int playerRanking = room.Ranking[p3.ID];
                     int playerPoint = room.TimeData[p3.ID] == uint.MaxValue ? 0 : teamPoints[playerRanking];
                     Console.WriteLine("Player {0} 排名 {1} 得分 {2}", p3.ID, playerRanking, playerPoint);
@@ -343,7 +343,7 @@ public static class MultyPlayer
                     outPacket.WriteBytes(new byte[12]);
                     outPacket.WriteInt(1);
                     outPacket.WriteByte(0);
-                    outPacket.WriteShort(ProfileService.ProfileConfigs[p3.Nickname].RiderItem.Set_Character);
+                    outPacket.WriteUShort(ProfileService.ProfileConfigs[p3.Nickname].RiderItem.Set_Character);
                     outPacket.WriteBytes(new byte[49]);
                     outPacket.WriteHexString("FF");
                     outPacket.WriteBytes(new byte[37]);

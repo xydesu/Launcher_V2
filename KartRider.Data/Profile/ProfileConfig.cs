@@ -138,81 +138,81 @@ namespace Profile
 
     public class RiderItemData
     {
-        public short Set_Character { get; set; } = 3;
+        public ushort Set_Character { get; set; } = 3;
 
-        public short Set_Paint { get; set; } = 1;
+        public ushort Set_Paint { get; set; } = 1;
 
-        public short Set_Kart { get; set; } = 0;
+        public ushort Set_Kart { get; set; } = 0;
 
-        public short Set_Plate { get; set; } = 0;
+        public ushort Set_Plate { get; set; } = 0;
 
-        public short Set_Goggle { get; set; } = 0;
+        public ushort Set_Goggle { get; set; } = 0;
 
-        public short Set_Balloon { get; set; } = 0;
+        public ushort Set_Balloon { get; set; } = 0;
 
-        public short Set_Unknown1 { get; set; } = 0;
+        public ushort Set_Unknown1 { get; set; } = 0;
 
-        public short Set_HeadBand { get; set; } = 0;
+        public ushort Set_HeadBand { get; set; } = 0;
 
-        public short Set_HeadPhone { get; set; } = 0;
+        public ushort Set_HeadPhone { get; set; } = 0;
 
-        public short Set_HandGearL { get; set; } = 0;
+        public ushort Set_HandGearL { get; set; } = 0;
 
-        public short Set_Unknown2 { get; set; } = 0;
+        public ushort Set_Unknown2 { get; set; } = 0;
 
-        public short Set_Uniform { get; set; } = 0;
+        public ushort Set_Uniform { get; set; } = 0;
 
-        public short Set_Decal { get; set; } = 0;
+        public ushort Set_Decal { get; set; } = 0;
 
-        public short Set_Pet { get; set; } = 0;
+        public ushort Set_Pet { get; set; } = 0;
 
-        public short Set_FlyingPet { get; set; } = 0;
+        public ushort Set_FlyingPet { get; set; } = 0;
 
-        public short Set_Aura { get; set; } = 0;
+        public ushort Set_Aura { get; set; } = 0;
 
-        public short Set_SkidMark { get; set; } = 0;
+        public ushort Set_SkidMark { get; set; } = 0;
 
-        public short Set_SpecialKit { get; set; } = 0;
+        public ushort Set_SpecialKit { get; set; } = 0;
 
-        public short Set_RidColor { get; set; } = 0;
+        public ushort Set_RidColor { get; set; } = 0;
 
-        public short Set_BonusCard { get; set; } = 0;
+        public ushort Set_BonusCard { get; set; } = 0;
 
-        public short Set_BossModeCard { get; set; } = 0;
+        public ushort Set_BossModeCard { get; set; } = 0;
 
-        public short Set_KartPlant1 { get; set; } = 0;
+        public ushort Set_KartPlant1 { get; set; } = 0;
 
-        public short Set_KartPlant2 { get; set; } = 0;
+        public ushort Set_KartPlant2 { get; set; } = 0;
 
-        public short Set_KartPlant3 { get; set; } = 0;
+        public ushort Set_KartPlant3 { get; set; } = 0;
 
-        public short Set_KartPlant4 { get; set; } = 0;
+        public ushort Set_KartPlant4 { get; set; } = 0;
 
-        public short Set_Unknown3 { get; set; } = 0;
+        public ushort Set_Unknown3 { get; set; } = 0;
 
-        public short Set_FishingPole { get; set; } = 0;
+        public ushort Set_FishingPole { get; set; } = 0;
 
-        public short Set_Tachometer { get; set; } = 0;
+        public ushort Set_Tachometer { get; set; } = 0;
 
-        public short Set_Dye { get; set; } = 1;
+        public ushort Set_Dye { get; set; } = 1;
 
-        public short Set_KartSN { get; set; } = 0;
+        public ushort Set_KartSN { get; set; } = 0;
 
         public byte Set_Unknown4 { get; set; } = 0;
 
-        public short Set_KartCoating { get; set; } = 0;
+        public ushort Set_KartCoating { get; set; } = 0;
 
-        public short Set_KartTailLamp { get; set; } = 0;
+        public ushort Set_KartTailLamp { get; set; } = 0;
 
-        public short Set_slotBg { get; set; } = 0;
+        public ushort Set_slotBg { get; set; } = 0;
 
-        public short Set_KartCoating12 { get; set; } = 0;
+        public ushort Set_KartCoating12 { get; set; } = 0;
 
-        public short Set_KartTailLamp12 { get; set; } = 0;
+        public ushort Set_KartTailLamp12 { get; set; } = 0;
 
-        public short Set_KartBoosterEffect12 { get; set; } = 0;
+        public ushort Set_KartBoosterEffect12 { get; set; } = 0;
 
-        public short Set_Unknown5 { get; set; } = 0;
+        public ushort Set_Unknown5 { get; set; } = 0;
     }
 
     public class MyRoomData
@@ -375,4 +375,3 @@ namespace Profile
         public byte HideCompetitiveRank { get; set; } = 0;
     }
 }
-

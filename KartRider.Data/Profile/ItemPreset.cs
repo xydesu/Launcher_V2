@@ -27,7 +27,7 @@ namespace Profile
 
     public class ItemPreset
     {
-        public short ID { get; set; }
+        public ushort ID { get; set; }
 
         public byte Badge { get; set; }
 
@@ -35,81 +35,81 @@ namespace Profile
 
         public string Name { get; set; } = "";
 
-        public short Character { get; set; }
+        public ushort Character { get; set; }
 
-        public short Paint { get; set; }
+        public ushort Paint { get; set; }
 
-        public short Kart { get; set; }
+        public ushort Kart { get; set; }
 
-        public short Plate { get; set; }
+        public ushort Plate { get; set; }
 
-        public short Goggle { get; set; }
+        public ushort Goggle { get; set; }
 
-        public short Balloon { get; set; }
+        public ushort Balloon { get; set; }
 
-        public short Unknown1 { get; set; }
+        public ushort Unknown1 { get; set; }
 
-        public short HeadBand { get; set; }
+        public ushort HeadBand { get; set; }
 
-        public short HeadPhone { get; set; }
+        public ushort HeadPhone { get; set; }
 
-        public short HandGearL { get; set; }
+        public ushort HandGearL { get; set; }
 
-        public short Unknown2 { get; set; }
+        public ushort Unknown2 { get; set; }
 
-        public short Uniform { get; set; }
+        public ushort Uniform { get; set; }
 
-        public short Decal { get; set; }
+        public ushort Decal { get; set; }
 
-        public short Pet { get; set; }
+        public ushort Pet { get; set; }
 
-        public short FlyingPet { get; set; }
+        public ushort FlyingPet { get; set; }
 
-        public short Aura { get; set; }
+        public ushort Aura { get; set; }
 
-        public short SkidMark { get; set; }
+        public ushort SkidMark { get; set; }
 
-        public short SpecialKit { get; set; }
+        public ushort SpecialKit { get; set; }
 
-        public short RidColor { get; set; }
+        public ushort RidColor { get; set; }
 
-        public short BonusCard { get; set; }
+        public ushort BonusCard { get; set; }
 
-        public short BossModeCard { get; set; }
+        public ushort BossModeCard { get; set; }
 
-        public short KartPlant1 { get; set; }
+        public ushort KartPlant1 { get; set; }
 
-        public short KartPlant2 { get; set; }
+        public ushort KartPlant2 { get; set; }
 
-        public short KartPlant3 { get; set; }
+        public ushort KartPlant3 { get; set; }
 
-        public short KartPlant4 { get; set; }
+        public ushort KartPlant4 { get; set; }
 
-        public short Unknown3 { get; set; }
+        public ushort Unknown3 { get; set; }
 
-        public short FishingPole { get; set; }
+        public ushort FishingPole { get; set; }
 
-        public short Tachometer { get; set; }
+        public ushort Tachometer { get; set; }
 
-        public short Dye { get; set; }
+        public ushort Dye { get; set; }
 
-        public short KartSN { get; set; }
+        public ushort KartSN { get; set; }
 
         public byte Unknown4 { get; set; }
 
-        public short KartCoating { get; set; }
+        public ushort KartCoating { get; set; }
 
-        public short KartTailLamp { get; set; }
+        public ushort KartTailLamp { get; set; }
 
-        public short slotBg { get; set; }
+        public ushort slotBg { get; set; }
 
-        public short KartCoating12 { get; set; }
+        public ushort KartCoating12 { get; set; }
 
-        public short KartTailLamp12 { get; set; }
+        public ushort KartTailLamp12 { get; set; }
 
-        public short KartBoosterEffect12 { get; set; }
+        public ushort KartBoosterEffect12 { get; set; }
 
-        public short Unknown5 { get; set; }
+        public ushort Unknown5 { get; set; }
     }
 
     public class ItemPresetsService

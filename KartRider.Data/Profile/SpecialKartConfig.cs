@@ -13,19 +13,19 @@ public class SpecialKartConfig
     /// 特殊道具车：将指定道具变更为特殊道具
     /// </summary>
     public string SkillChangeDesc { get; set; }
-    public Dictionary<short, Dictionary<short, short>> SkillChange { get; set; } = new();
+    public Dictionary<ushort, Dictionary<short, short>> SkillChange { get; set; } = new();
 
     /// <summary>
     /// 特殊道具车：使用指定道具后获得特殊道具
     /// </summary>
     public string SkillMappingsDesc { get; set; }
-    public Dictionary<short, Dictionary<short, short>> SkillMappings { get; set; } = new();
+    public Dictionary<ushort, Dictionary<short, short>> SkillMappings { get; set; } = new();
 
     /// <summary>
     /// 特殊道具车：被指定道具攻击后获得特殊道具
     /// </summary>
     public string SkillAttackedDesc { get; set; }
-    public Dictionary<short, Dictionary<short, short>> SkillAttacked { get; set; } = new();
+    public Dictionary<ushort, Dictionary<short, short>> SkillAttacked { get; set; } = new();
 
     /// <summary>
     /// 将特殊道具车配置存储到JSON文件（存在时补充缺失内容，保留额外内容）
@@ -51,9 +51,9 @@ public class SpecialKartConfig
             var existingConfig = JsonHelper.DeserializeNoBom<SpecialKartConfig>(filePath);
 
             // 3.2 初始化现有配置的字典（避免null引用）
-            existingConfig.SkillChange ??= new Dictionary<short, Dictionary<short, short>>();
-            existingConfig.SkillMappings ??= new Dictionary<short, Dictionary<short, short>>();
-            existingConfig.SkillAttacked ??= new Dictionary<short, Dictionary<short, short>>();
+            existingConfig.SkillChange ??= new Dictionary<ushort, Dictionary<short, short>>();
+            existingConfig.SkillMappings ??= new Dictionary<ushort, Dictionary<short, short>>();
+            existingConfig.SkillAttacked ??= new Dictionary<ushort, Dictionary<short, short>>();
 
             // 3.3 补充缺失的描述文本
             existingConfig.SkillChangeDesc ??= defaultConfig.SkillChangeDesc;
@@ -150,9 +150,9 @@ public class SpecialKartConfig
         }
 
         // 确保字典不为null（避免后续使用时的null引用异常）
-        config.SkillChange ??= new Dictionary<short, Dictionary<short, short>>();
-        config.SkillMappings ??= new Dictionary<short, Dictionary<short, short>>();
-        config.SkillAttacked ??= new Dictionary<short, Dictionary<short, short>>();
+        config.SkillChange ??= new Dictionary<ushort, Dictionary<short, short>>();
+        config.SkillMappings ??= new Dictionary<ushort, Dictionary<short, short>>();
+        config.SkillAttacked ??= new Dictionary<ushort, Dictionary<short, short>>();
 
         Console.WriteLine($"道具车特性配置已成功从 {filePath} 读取");
         return config;
@@ -166,7 +166,7 @@ public class SpecialKartConfig
         return new SpecialKartConfig
         {
             SkillChangeDesc = "特殊道具车：将指定道具变更为特殊道具",
-            SkillChange = new Dictionary<short, Dictionary<short, short>>
+            SkillChange = new Dictionary<ushort, Dictionary<short, short>>
             {
                 { 1610, new Dictionary<short, short> { {9, 34} } },
                 { 1605, new Dictionary<short, short> { {4, 118} } },
@@ -214,7 +214,7 @@ public class SpecialKartConfig
             },
 
             SkillMappingsDesc = "特殊道具车：使用指定道具后获得特殊道具",
-            SkillMappings = new Dictionary<short, Dictionary<short, short>>
+            SkillMappings = new Dictionary<ushort, Dictionary<short, short>>
             {
                 { 1607, new Dictionary<short, short> { {5, 6} } },
                 { 1601, new Dictionary<short, short> { {131, 5} } },
@@ -233,7 +233,7 @@ public class SpecialKartConfig
             },
 
             SkillAttackedDesc = "特殊道具车：被指定道具攻击后获得特殊道具",
-            SkillAttacked = new Dictionary<short, Dictionary<short, short>>
+            SkillAttacked = new Dictionary<ushort, Dictionary<short, short>>
             {
                 { 1610, new Dictionary<short, short> { {4, 6} } },
                 { 1607, new Dictionary<short, short> { {7, 5} } },
@@ -256,5 +256,4 @@ public class SpecialKartConfig
             }
         };
     }
-
 }
