@@ -112,7 +112,7 @@ namespace RiderData
             var newkart = new List<NewKart>();
             if (File.Exists(filename.NewKart_LoadFile))
             {
-                newkart = JsonHelper.DeserializeNoBom<List<NewKart>>(filename.NewKart_LoadFile);
+                newkart = JsonHelper.DeserializeNoBom<List<NewKart>>(filename.NewKart_LoadFile) ?? new List<NewKart>();
             }
 
             int range = 100;//分批次数
@@ -152,7 +152,7 @@ namespace RiderData
             var newkart = new List<NewKart>();
             if (File.Exists(filename.NewKart_LoadFile))
             {
-                newkart = JsonHelper.DeserializeNoBom<List<NewKart>>(filename.NewKart_LoadFile);
+                newkart = JsonHelper.DeserializeNoBom<List<NewKart>>(filename.NewKart_LoadFile) ?? new List<NewKart>();
             }
             ushort kartid = ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Kart;
             if (kartid == 0)
@@ -188,7 +188,7 @@ namespace RiderData
             var newkart = new List<NewKart>();
             if (File.Exists(filename.NewKart_LoadFile))
             {
-                newkart = JsonHelper.DeserializeNoBom<List<NewKart>>(filename.NewKart_LoadFile);
+                newkart = JsonHelper.DeserializeNoBom<List<NewKart>>(filename.NewKart_LoadFile) ?? new List<NewKart>();
                 var targetItems = newkart.Where(kart => kart.KartID == ItemID && kart.KartSN == SN).ToList();
                 foreach (var item in targetItems)
                 {

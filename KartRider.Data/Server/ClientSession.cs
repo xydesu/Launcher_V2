@@ -51,15 +51,6 @@ namespace KartRider
                 var ClientGroup = ClientManager.ClientGroups[clientId];
                 string Nickname = ClientGroup.Nickname;
 
-                if (!ClientManager.ClientUdpAddrs.ContainsKey(Nickname))
-                {
-                    ClientManager.ClientUdpAddrs[Nickname] = clientEndPoint;
-                }
-                else if (!ClientManager.ClientP2pAddrs.ContainsKey(Nickname))
-                {
-                    ClientManager.ClientP2pAddrs[Nickname] = clientEndPoint;
-                }
-
                 iPacket.Position = 0;
                 uint hash = iPacket.ReadUInt();
                 string currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
@@ -69,7 +60,7 @@ namespace KartRider
                     iPacket.ReadInt();
                     iPacket.ReadInt();
                     string dataPacket = Base64Helper.Decode(iPacket.ReadString(true));
-                    DataPacket packet = JsonHelper.Deserialize<DataPacket>(dataPacket);
+                    DataPacket packet = JsonHelper.Deserialize<DataPacket>(dataPacket) ?? new DataPacket();
                     if (ClientManager.HasClientWithNickname(packet.Nickname))
                     {
                         using (OutPacket outPacket = new OutPacket("PrCnAuthenLogin"))
@@ -485,15 +476,22 @@ namespace KartRider
                         using (OutPacket outPacket = new OutPacket("RmSlotDataPacket"))
                         {
                             outPacket.WriteUInt(ClientManager.GetUserNO(Nickname));
-                            if (ClientManager.ClientP2pAddrs.TryGetValue(Nickname, out IPEndPoint endPoint))
+                            if (ClientManager.ClientP2pAddrs.TryGetValue(Nickname, out IPEndPoint P2pPoint))
                             {
-                                outPacket.WriteEndPoint(endPoint);
+                                outPacket.WriteEndPoint(P2pPoint);
                             }
                             else
                             {
-                                outPacket.WriteEndPoint(new IPEndPoint(IPAddress.Any, 0));
+                                outPacket.WriteEndPoint(new IPEndPoint(IPAddress.Any, (ushort)(ProfileService.SettingConfig.ServerPort + 1)));
                             }
-                            outPacket.WriteEndPoint(new IPEndPoint(IPAddress.Any, 0));
+                            if (ClientManager.ClientUdpAddrs.TryGetValue(Nickname, out IPEndPoint UdpPoint))
+                            {
+                                outPacket.WriteEndPoint(UdpPoint);
+                            }
+                            else
+                            {
+                                outPacket.WriteEndPoint(new IPEndPoint(IPAddress.Any, ProfileService.SettingConfig.ServerPort));
+                            }
                             outPacket.WriteString(Nickname);
                             GameSupport.GetRider(Nickname, outPacket);
                             outPacket.WriteUInt(ProfileService.ProfileConfigs[Nickname].Rider.RP);
@@ -786,7 +784,7 @@ namespace KartRider
                         var LevelList = new List<Level>();
                         if (File.Exists(filename.LevelData_LoadFile))
                         {
-                            LevelList = JsonHelper.DeserializeNoBom<List<Level>>(filename.LevelData_LoadFile);
+                            LevelList = JsonHelper.DeserializeNoBom<List<Level>>(filename.LevelData_LoadFile) ?? new List<Level>();
                         }
                         var existingLevelList = LevelList.FirstOrDefault(level => level.ID == Kart && level.SN == SN);
                         if (existingLevelList == null)
@@ -829,7 +827,7 @@ namespace KartRider
                         var LevelList = new List<Level>();
                         if (File.Exists(filename.LevelData_LoadFile))
                         {
-                            LevelList = JsonHelper.DeserializeNoBom<List<Level>>(filename.LevelData_LoadFile);
+                            LevelList = JsonHelper.DeserializeNoBom<List<Level>>(filename.LevelData_LoadFile) ?? new List<Level>();
                         }
                         var existingLevelList = LevelList.FirstOrDefault(level => level.ID == Kart && level.SN == SN);
 
@@ -903,7 +901,7 @@ namespace KartRider
                         var TuneList = new List<Tune>();
                         if (File.Exists(filename.TuneData_LoadFile))
                         {
-                            TuneList = JsonHelper.DeserializeNoBom<List<Tune>>(filename.TuneData_LoadFile);
+                            TuneList = JsonHelper.DeserializeNoBom<List<Tune>>(filename.TuneData_LoadFile) ?? new List<Tune>();
                         }
                         var existingList = TuneList.FirstOrDefault(tune => tune.ID == Kart && tune.SN == KartSN);
                         if (existingList != null)
@@ -1036,7 +1034,7 @@ namespace KartRider
                         var TuneList = new List<Tune>();
                         if (File.Exists(filename.TuneData_LoadFile))
                         {
-                            TuneList = JsonHelper.DeserializeNoBom<List<Tune>>(filename.TuneData_LoadFile);
+                            TuneList = JsonHelper.DeserializeNoBom<List<Tune>>(filename.TuneData_LoadFile) ?? new List<Tune>();
                         }
                         var existingList = TuneList.FirstOrDefault(tune => tune.ID == Kart && tune.SN == KartSN);
                         if (existingList != null)
@@ -1102,7 +1100,7 @@ namespace KartRider
                         var TuneList = new List<Tune>();
                         if (File.Exists(filename.TuneData_LoadFile))
                         {
-                            TuneList = JsonHelper.DeserializeNoBom<List<Tune>>(filename.TuneData_LoadFile);
+                            TuneList = JsonHelper.DeserializeNoBom<List<Tune>>(filename.TuneData_LoadFile) ?? new List<Tune>();
                         }
                         var existingList = TuneList.FirstOrDefault(tune => tune.ID == Kart && tune.SN == KartSN);
                         if (existingList != null)
@@ -3063,7 +3061,7 @@ namespace KartRider
                         var Level12List = new List<Level12>();
                         if (File.Exists(filename.Level12Data_LoadFile))
                         {
-                            Level12List = JsonHelper.DeserializeNoBom<List<Level12>>(filename.Level12Data_LoadFile);
+                            Level12List = JsonHelper.DeserializeNoBom<List<Level12>>(filename.Level12Data_LoadFile) ?? new List<Level12>();
                         }
                         var existingParts = Level12List.FirstOrDefault(level12 => level12.ID == kart && level12.SN == sn);
                         if (existingParts != null)
@@ -3158,7 +3156,7 @@ namespace KartRider
                         var Level12List = new List<Level12>();
                         if (File.Exists(filename.Level12Data_LoadFile))
                         {
-                            Level12List = JsonHelper.DeserializeNoBom<List<Level12>>(filename.Level12Data_LoadFile);
+                            Level12List = JsonHelper.DeserializeNoBom<List<Level12>>(filename.Level12Data_LoadFile) ?? new List<Level12>();
                         }
                         var existingParts = Level12List.FirstOrDefault(level12 => level12.ID == kart && level12.SN == sn);
                         if (existingParts != null)
@@ -3226,7 +3224,7 @@ namespace KartRider
                         var Level12List = new List<Level12>();
                         if (File.Exists(filename.Level12Data_LoadFile))
                         {
-                            Level12List = JsonHelper.DeserializeNoBom<List<Level12>>(filename.Level12Data_LoadFile);
+                            Level12List = JsonHelper.DeserializeNoBom<List<Level12>>(filename.Level12Data_LoadFile) ?? new List<Level12>();
                         }
                         var existingParts = Level12List.FirstOrDefault(level12 => level12.ID == kart && level12.SN == sn);
                         if (existingParts != null)
@@ -3371,7 +3369,7 @@ namespace KartRider
                         var Parts12List = new List<Parts12>();
                         if (File.Exists(filename.Level12Data_LoadFile))
                         {
-                            Parts12List = JsonHelper.DeserializeNoBom<List<Parts12>>(filename.Parts12Data_LoadFile);
+                            Parts12List = JsonHelper.DeserializeNoBom<List<Parts12>>(filename.Parts12Data_LoadFile) ?? new List<Parts12>();
                         }
                         var targetPart = Parts12List.FirstOrDefault(parts => parts.ID == kart1 && parts.SN == sn1);
                         if (targetPart != null)
@@ -3801,22 +3799,30 @@ namespace KartRider
                         {
                             outPacket.WriteInt(0);
                             outPacket.WriteInt(val1);
-                            this.Parent.Client.Send(outPacket);
+                            MultyPlayer.BroadCast(roomId, outPacket);
+                        }
+                        if (!room.ReqRelay)
+                        {
+                            room.ReqRelay = true;
+                        }
+                        else
+                        {
+                            room.RelayType = 1; //TCP
                         }
                         return;
                     }
                     else if (hash == Adler32Helper.GenerateAdler32_ASCII("ChClientP2pAddrPacket", 0))
                     {
                         var ClientP2pAddr = iPacket.ReadEndPoint();
-                        Console.WriteLine($"{ClientP2pAddr.Address}:{ClientP2pAddr.Port}");
-                        ClientManager.ClientP2pAddrs[Nickname] = new IPEndPoint(ClientManager.ClientP2pAddrs[Nickname].Address, ClientP2pAddr.Port);
+                        Console.WriteLine($"[{Nickname}] {ClientP2pAddr.Address}:{ClientP2pAddr.Port}");
+                        ClientManager.ClientP2pAddrs[Nickname] = new IPEndPoint(clientEndPoint.Address, ClientP2pAddr.Port);
                         return;
                     }
                     else if (hash == Adler32Helper.GenerateAdler32_ASCII("ChClientUdpAddrPacket", 0))
                     {
                         var ClientUdpAddr = iPacket.ReadEndPoint();
-                        Console.WriteLine($"{ClientUdpAddr.Address}:{ClientUdpAddr.Port}");
-                        ClientManager.ClientUdpAddrs[Nickname] = new IPEndPoint(ClientManager.ClientUdpAddrs[Nickname].Address, ClientUdpAddr.Port);
+                        Console.WriteLine($"[{Nickname}] {ClientUdpAddr.Address}:{ClientUdpAddr.Port}");
+                        ClientManager.ClientUdpAddrs[Nickname] = new IPEndPoint(clientEndPoint.Address, ClientUdpAddr.Port);
                         return;
                     }
                     else if (hash == Adler32Helper.GenerateAdler32_ASCII("PqStartTrainingCenter", 0))

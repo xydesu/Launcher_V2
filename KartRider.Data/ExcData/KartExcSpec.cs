@@ -93,7 +93,7 @@ namespace ExcData
             var TuneList = new List<Tune>();
             if (File.Exists(filename.TuneData_LoadFile))
             {
-                TuneList = JsonHelper.DeserializeNoBom<List<Tune>>(filename.TuneData_LoadFile);
+                TuneList = JsonHelper.DeserializeNoBom<List<Tune>>(filename.TuneData_LoadFile) ?? new List<Tune>();
             }
             ushort Set_Kart = ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Kart;
             ushort Set_KartSN = ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartSN;
@@ -160,7 +160,7 @@ namespace ExcData
             var PlantList = new List<Plant>();
             if (File.Exists(filename.PlantData_LoadFile))
             {
-                PlantList = JsonHelper.DeserializeNoBom<List<Plant>>(filename.PlantData_LoadFile);
+                PlantList = JsonHelper.DeserializeNoBom<List<Plant>>(filename.PlantData_LoadFile) ?? new List<Plant>();
             }
             ushort Set_Kart = ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Kart;
             ushort Set_KartSN = ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartSN;
@@ -1088,7 +1088,7 @@ namespace ExcData
             var LevelList = new List<Level>();
             if (File.Exists(filename.LevelData_LoadFile))
             {
-                LevelList = JsonHelper.DeserializeNoBom<List<Level>>(filename.LevelData_LoadFile);
+                LevelList = JsonHelper.DeserializeNoBom<List<Level>>(filename.LevelData_LoadFile) ?? new List<Level>();
             }
             ushort Set_Kart = ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Kart;
             ushort Set_KartSN = ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartSN;
@@ -1128,7 +1128,7 @@ namespace ExcData
             var PartsList = new List<Parts>();
             if (File.Exists(filename.PartsData_LoadFile))
             {
-                PartsList = JsonHelper.DeserializeNoBom<List<Parts>>(filename.PartsData_LoadFile);
+                PartsList = JsonHelper.DeserializeNoBom<List<Parts>>(filename.PartsData_LoadFile) ?? new List<Parts>();
             }
             ushort Set_Kart = ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Kart;
             ushort Set_KartSN = ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartSN;

@@ -163,7 +163,7 @@ namespace Profile
 
                 if (File.Exists(filename.ItemPresetsConfig))
                 {
-                    var loadedConfig = JsonHelper.DeserializeNoBom<ItemPresetConfig>(filename.ItemPresetsConfig);
+                    var loadedConfig = JsonHelper.DeserializeNoBom<ItemPresetConfig>(filename.ItemPresetsConfig) ?? new ItemPresetConfig();
 
                     if (loadedConfig?.ItemPresets != null)
                     {

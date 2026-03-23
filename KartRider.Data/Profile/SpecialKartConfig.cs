@@ -48,7 +48,7 @@ public class SpecialKartConfig
         if (File.Exists(filePath))
         {
             // 3.1 读取现有配置
-            var existingConfig = JsonHelper.DeserializeNoBom<SpecialKartConfig>(filePath);
+            var existingConfig = JsonHelper.DeserializeNoBom<SpecialKartConfig>(filePath) ?? new SpecialKartConfig();
 
             // 3.2 初始化现有配置的字典（避免null引用）
             existingConfig.SkillChange ??= new Dictionary<ushort, Dictionary<short, short>>();
@@ -143,7 +143,7 @@ public class SpecialKartConfig
             throw new FileNotFoundException("特殊道具车配置文件不存在", filePath);
         }
 
-        var config = JsonHelper.DeserializeNoBom<SpecialKartConfig>(filePath);
+        var config = JsonHelper.DeserializeNoBom<SpecialKartConfig>(filePath) ?? new SpecialKartConfig();
         if (config == null)
         {
             throw new Exception("配置文件解析失败，可能是JSON格式错误");

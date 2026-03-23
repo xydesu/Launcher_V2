@@ -105,7 +105,7 @@ namespace KartRider
                 var FavoriteTrackList = new Favorite_Track();
                 if (File.Exists(filename.FavoriteTrack_LoadFile))
                 {
-                    FavoriteTrackList = JsonHelper.DeserializeNoBom<Favorite_Track>(filename.FavoriteTrack_LoadFile);
+                    FavoriteTrackList = JsonHelper.DeserializeNoBom<Favorite_Track>(filename.FavoriteTrack_LoadFile) ?? new Favorite_Track();
                 }
                 List<uint> availableTracks = FavoriteTrackList.GetAllTracks();
                 if (availableTracks.Count > 0)

@@ -392,8 +392,12 @@ public static class MultyPlayer
             outPacket.WriteLong(room.EndTicks + 5000);
             BroadCast(roomId, outPacket);
         }
+
         room.StartTicks = 0;
         room.Started = false;
+        room.ReqRelay = false;
+        room.RelayType = 0; //0 - UDP 1 - TCP
+
         int firstID = room.Ranking.FirstOrDefault(x => x.Value == 0).Key;
         if (RoomManager.TryGetIdDetail(roomId, firstID) is Player p4)
         {
@@ -1287,16 +1291,22 @@ public static class MultyPlayer
                     outPacket.WriteInt(p.PlayerType); // Player Type, 2 = RoomMaster, 3 = AutoReady, 4 = Observer, 5 = Preparing, 7 = AI
                 }
                 outPacket.WriteUInt(ClientManager.GetUserNO(p.Nickname));
-                if (ClientManager.ClientP2pAddrs.TryGetValue(p.Nickname, out IPEndPoint endPoint))
+                if (ClientManager.ClientP2pAddrs.TryGetValue(p.Nickname, out IPEndPoint P2pPoint))
                 {
-                    outPacket.WriteEndPoint(endPoint);
-                    Console.WriteLine($"[P2P] {p.Nickname} {endPoint.Address} {endPoint.Port}");
+                    outPacket.WriteEndPoint(P2pPoint);
                 }
                 else
                 {
-                    outPacket.WriteEndPoint(new IPEndPoint(IPAddress.Any, 0));
+                    outPacket.WriteEndPoint(new IPEndPoint(IPAddress.Any, (ushort)(ProfileService.SettingConfig.ServerPort + 1)));
                 }
-                outPacket.WriteEndPoint(new IPEndPoint(IPAddress.Any, 0));
+                if (ClientManager.ClientUdpAddrs.TryGetValue(p.Nickname, out IPEndPoint UdpPoint))
+                {
+                    outPacket.WriteEndPoint(UdpPoint);
+                }
+                else
+                {
+                    outPacket.WriteEndPoint(new IPEndPoint(IPAddress.Any, ProfileService.SettingConfig.ServerPort));
+                }
                 outPacket.WriteString(p.Nickname);
                 outPacket.WriteShort(ProfileService.ProfileConfigs[p.Nickname].Rider.Emblem1);
                 outPacket.WriteShort(ProfileService.ProfileConfigs[p.Nickname].Rider.Emblem2);

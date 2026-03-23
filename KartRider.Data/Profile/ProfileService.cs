@@ -22,7 +22,7 @@ namespace Profile
         {
             if (File.Exists(FileName.Load_Settings))
             {
-                SettingConfig = JsonHelper.DeserializeNoBom<Setting>(FileName.Load_Settings);
+                SettingConfig = JsonHelper.DeserializeNoBom<Setting>(FileName.Load_Settings) ?? new Setting();
             }
             else
             {

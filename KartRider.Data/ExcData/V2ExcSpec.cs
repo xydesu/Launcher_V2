@@ -39,7 +39,7 @@ namespace ExcData
             var Level12List = new List<Level12>();
             if (File.Exists(filename.Level12Data_LoadFile))
             {
-                Level12List = JsonHelper.DeserializeNoBom<List<Level12>>(filename.Level12Data_LoadFile);
+                Level12List = JsonHelper.DeserializeNoBom<List<Level12>>(filename.Level12Data_LoadFile) ?? new List<Level12>();
             }
             List<short> skills = new List<short>();
             var existingLevel = Level12List.FirstOrDefault(Level12 => Level12.ID == ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Kart && Level12.SN == ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartSN);
@@ -100,12 +100,12 @@ namespace ExcData
             var Parts12List = new List<Parts12>();
             if (File.Exists(filename.Parts12Data_LoadFile))
             {
-                Parts12List = JsonHelper.DeserializeNoBom<List<Parts12>>(filename.Parts12Data_LoadFile);
+                Parts12List = JsonHelper.DeserializeNoBom<List<Parts12>>(filename.Parts12Data_LoadFile) ?? new List<Parts12>();
             }
             var Level12List = new List<Level12>();
             if (File.Exists(filename.Level12Data_LoadFile))
             {
-                Level12List = JsonHelper.DeserializeNoBom<List<Level12>>(filename.Level12Data_LoadFile);
+                Level12List = JsonHelper.DeserializeNoBom<List<Level12>>(filename.Level12Data_LoadFile) ?? new List<Level12>();
             }
 
             if (Kart.defaultExceedType > 0)

@@ -25,7 +25,7 @@ namespace ExcData
             var TuneList = new List<Tune>();
             if (File.Exists(filename.TuneData_LoadFile))
             {
-                TuneList = JsonHelper.DeserializeNoBom<List<Tune>>(filename.TuneData_LoadFile);
+                TuneList = JsonHelper.DeserializeNoBom<List<Tune>>(filename.TuneData_LoadFile) ?? new List<Tune>();
             }
             int range = 26;//分批次数
             int times = TuneList.Count / range + (TuneList.Count % range > 0 ? 1 : 0);
@@ -86,7 +86,7 @@ namespace ExcData
             var PlantList = new List<Plant>();
             if (File.Exists(filename.PlantData_LoadFile))
             {
-                PlantList = JsonHelper.DeserializeNoBom<List<Plant>>(filename.PlantData_LoadFile);
+                PlantList = JsonHelper.DeserializeNoBom<List<Plant>>(filename.PlantData_LoadFile) ?? new List<Plant>();
             }
             int range = 26;//分批次数
             int times = PlantList.Count / range + (PlantList.Count % range > 0 ? 1 : 0);
@@ -146,7 +146,7 @@ namespace ExcData
             var LevelList = new List<Level>();
             if (File.Exists(filename.LevelData_LoadFile))
             {
-                LevelList = JsonHelper.DeserializeNoBom<List<Level>>(filename.LevelData_LoadFile);
+                LevelList = JsonHelper.DeserializeNoBom<List<Level>>(filename.LevelData_LoadFile) ?? new List<Level>();
             }
             int range = 26;//分批次数
             int times = LevelList.Count / range + (LevelList.Count % range > 0 ? 1 : 0);
@@ -204,7 +204,7 @@ namespace ExcData
             var PartsList = new List<Parts>();
             if (File.Exists(filename.PartsData_LoadFile))
             {
-                PartsList = JsonHelper.DeserializeNoBom<List<Parts>>(filename.PartsData_LoadFile);
+                PartsList = JsonHelper.DeserializeNoBom<List<Parts>>(filename.PartsData_LoadFile) ?? new List<Parts>();
             }
             int range = 26;//分批次数
             int times = PartsList.Count / range + (PartsList.Count % range > 0 ? 1 : 0);
@@ -276,7 +276,7 @@ namespace ExcData
             var Level12List = new List<Level12>();
             if (File.Exists(filename.Level12Data_LoadFile))
             {
-                Level12List = JsonHelper.DeserializeNoBom<List<Level12>>(filename.Level12Data_LoadFile);
+                Level12List = JsonHelper.DeserializeNoBom<List<Level12>>(filename.Level12Data_LoadFile) ?? new List<Level12>();
             }
             int range = 26;//分批次数
             int times = Level12List.Count / range + (Level12List.Count % range > 0 ? 1 : 0);
@@ -339,7 +339,7 @@ namespace ExcData
             var Parts12List = new List<Parts12>();
             if (File.Exists(filename.Parts12Data_LoadFile))
             {
-                Parts12List = JsonHelper.DeserializeNoBom<List<Parts12>>(filename.Parts12Data_LoadFile);
+                Parts12List = JsonHelper.DeserializeNoBom<List<Parts12>>(filename.Parts12Data_LoadFile) ?? new List<Parts12>();
             }
             int range = 26;//分批次数
             int times = Parts12List.Count / range + (Parts12List.Count % range > 0 ? 1 : 0);
@@ -417,7 +417,7 @@ namespace ExcData
             var TuneList = new List<Tune>();
             if (File.Exists(filename.TuneData_LoadFile))
             {
-                TuneList = JsonHelper.DeserializeNoBom<List<Tune>>(filename.TuneData_LoadFile);
+                TuneList = JsonHelper.DeserializeNoBom<List<Tune>>(filename.TuneData_LoadFile) ?? new List<Tune>();
             }
             var existingList = TuneList.FirstOrDefault(list => list.ID == id && list.SN == sn);
             if (existingList == null)
@@ -449,7 +449,7 @@ namespace ExcData
             var PlantList = new List<Plant>();
             if (File.Exists(filename.PlantData_LoadFile))
             {
-                PlantList = JsonHelper.DeserializeNoBom<List<Plant>>(filename.PlantData_LoadFile);
+                PlantList = JsonHelper.DeserializeNoBom<List<Plant>>(filename.PlantData_LoadFile) ?? new List<Plant>();
             }
             var existingList = PlantList.FirstOrDefault(list => list.ID == id && list.SN == sn);
             if (existingList == null)
@@ -512,7 +512,7 @@ namespace ExcData
             var LevelList = new List<Level>();
             if (File.Exists(filename.LevelData_LoadFile))
             {
-                LevelList = JsonHelper.DeserializeNoBom<List<Level>>(filename.LevelData_LoadFile);
+                LevelList = JsonHelper.DeserializeNoBom<List<Level>>(filename.LevelData_LoadFile) ?? new List<Level>();
             }
             var existingList = LevelList.FirstOrDefault(list => list.ID == id && list.SN == sn);
             if (existingList == null)
@@ -544,12 +544,12 @@ namespace ExcData
             var Parts12List = new List<Parts12>();
             if (File.Exists(filename.Parts12Data_LoadFile))
             {
-                Parts12List = JsonHelper.DeserializeNoBom<List<Parts12>>(filename.Parts12Data_LoadFile);
+                Parts12List = JsonHelper.DeserializeNoBom<List<Parts12>>(filename.Parts12Data_LoadFile) ?? new List<Parts12>();
             }
             var PartsList = new List<Parts>();
             if (File.Exists(filename.PartsData_LoadFile))
             {
-                PartsList = JsonHelper.DeserializeNoBom<List<Parts>>(filename.PartsData_LoadFile);
+                PartsList = JsonHelper.DeserializeNoBom<List<Parts>>(filename.PartsData_LoadFile) ?? new List<Parts>();
             }
             var existing12List = Parts12List.FirstOrDefault(list => list.ID == id && list.SN == sn);
             if (Item_Cat_Id == 0)
@@ -712,7 +712,7 @@ namespace ExcData
             var Level12List = new List<Level12>();
             if (File.Exists(filename.Level12Data_LoadFile))
             {
-                Level12List = JsonHelper.DeserializeNoBom<List<Level12>>(filename.Level12Data_LoadFile);
+                Level12List = JsonHelper.DeserializeNoBom<List<Level12>>(filename.Level12Data_LoadFile) ?? new List<Level12>();
             }
             var existingList = Level12List.FirstOrDefault(list => list.ID == id && list.SN == sn);
             if (existingList == null)

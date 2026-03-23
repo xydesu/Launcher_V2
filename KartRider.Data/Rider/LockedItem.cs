@@ -19,7 +19,7 @@ namespace RiderData
             var LockedItemList = new List<Locked_Item>();
             if (File.Exists(filename.Locked_LoadFile))
             {
-                LockedItemList = JsonHelper.DeserializeNoBom<List<Locked_Item>>(filename.Locked_LoadFile);
+                LockedItemList = JsonHelper.DeserializeNoBom<List<Locked_Item>>(filename.Locked_LoadFile) ?? new List<Locked_Item>();
             }
             using (OutPacket outPacket = new OutPacket("PrLockedItemGet"))
             {
@@ -65,7 +65,7 @@ namespace RiderData
             var locked = new List<Locked_Item>();
             if (File.Exists(filename.Locked_LoadFile))
             {
-                locked = JsonHelper.DeserializeNoBom<List<Locked_Item>>(filename.Locked_LoadFile);
+                locked = JsonHelper.DeserializeNoBom<List<Locked_Item>>(filename.Locked_LoadFile) ?? new List<Locked_Item>();
                 var targetItems = locked.Where(kart => kart.ItemCatID == itemCatID && kart.ItemID == itemID && kart.ItemSN == itemSN).ToList();
                 foreach (var item in targetItems)
                 {

@@ -22,7 +22,7 @@ namespace RiderData
             var FavoriteItemList = new List<Favorite_Item>();
             if (File.Exists(filename.Favorite_LoadFile))
             {
-                FavoriteItemList = JsonHelper.DeserializeNoBom<List<Favorite_Item>>(filename.Favorite_LoadFile);
+                FavoriteItemList = JsonHelper.DeserializeNoBom<List<Favorite_Item>>(filename.Favorite_LoadFile) ?? new List<Favorite_Item>();
             }
             using (OutPacket outPacket = new OutPacket("PrFavoriteItemGet"))
             {
@@ -48,7 +48,7 @@ namespace RiderData
             var FavoriteItemList = new List<Favorite_Item>();
             if (File.Exists(filename.Favorite_LoadFile))
             {
-                FavoriteItemList = JsonHelper.DeserializeNoBom<List<Favorite_Item>>(filename.Favorite_LoadFile);
+                FavoriteItemList = JsonHelper.DeserializeNoBom<List<Favorite_Item>>(filename.Favorite_LoadFile) ?? new List<Favorite_Item>();
             }
             var existingItem = FavoriteItemList.FirstOrDefault(item => item.ItemCatID == itemCatID && item.ItemID == itemID && item.ItemSN == itemSN);
             if (existingItem == null)
@@ -69,7 +69,7 @@ namespace RiderData
             var FavoriteItemList = new List<Favorite_Item>();
             if (File.Exists(filename.Favorite_LoadFile))
             {
-                FavoriteItemList = JsonHelper.DeserializeNoBom<List<Favorite_Item>>(filename.Favorite_LoadFile);
+                FavoriteItemList = JsonHelper.DeserializeNoBom<List<Favorite_Item>>(filename.Favorite_LoadFile) ?? new List<Favorite_Item>();
             }
             var itemToRemove = FavoriteItemList.FirstOrDefault(item => item.ItemCatID == itemCatID && item.ItemID == itemID && item.ItemSN == itemSN);
             if (itemToRemove != null)
@@ -99,7 +99,7 @@ namespace RiderData
             var FavoriteTrackList = new Favorite_Track();
             if (File.Exists(filename.FavoriteTrack_LoadFile))
             {
-                FavoriteTrackList = JsonHelper.DeserializeNoBom<Favorite_Track>(filename.FavoriteTrack_LoadFile);
+                FavoriteTrackList = JsonHelper.DeserializeNoBom<Favorite_Track>(filename.FavoriteTrack_LoadFile) ?? new Favorite_Track();
             }
             using (OutPacket outPacket = new OutPacket("PrFavoriteTrackMapGet"))
             {
@@ -131,7 +131,7 @@ namespace RiderData
             var FavoriteTrackList = new Favorite_Track();
             if (File.Exists(filename.FavoriteTrack_LoadFile))
             {
-                FavoriteTrackList = JsonHelper.DeserializeNoBom<Favorite_Track>(filename.FavoriteTrack_LoadFile);
+                FavoriteTrackList = JsonHelper.DeserializeNoBom<Favorite_Track>(filename.FavoriteTrack_LoadFile) ?? new Favorite_Track();
             }
             FavoriteTrackList.AddTrack(theme, track);
             Save_TrackList(Nickname, FavoriteTrackList);
@@ -147,7 +147,7 @@ namespace RiderData
             var FavoriteTrackList = new Favorite_Track();
             if (File.Exists(filename.FavoriteTrack_LoadFile))
             {
-                FavoriteTrackList = JsonHelper.DeserializeNoBom<Favorite_Track>(filename.FavoriteTrack_LoadFile);
+                FavoriteTrackList = JsonHelper.DeserializeNoBom<Favorite_Track>(filename.FavoriteTrack_LoadFile) ?? new Favorite_Track();
             }
             FavoriteTrackList.RemoveTrack(theme, track);
             Save_TrackList(Nickname, FavoriteTrackList);

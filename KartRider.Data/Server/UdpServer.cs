@@ -178,11 +178,11 @@ namespace KartRider
                         var packetValue = (PacketName)packetName;
 
                         string currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                        if (ClientManager.ClientUdpAddrs.ContainsKey(nickname))
+                        if (_serverName == "UDP")
                         {
                             Console.WriteLine($"[UDP][{currentTime}][{nickname}] " + packetValue + ": " + BitConverter.ToString(p.ToArray()).Replace("-", " "));
                         }
-                        else if (ClientManager.ClientP2pAddrs.ContainsKey(nickname))
+                        else if (_serverName == "P2P")
                         {
                             Console.WriteLine($"[P2P][{currentTime}][{nickname}] " + packetValue + ": " + BitConverter.ToString(p.ToArray()).Replace("-", " "));
                         }
@@ -225,7 +225,7 @@ namespace KartRider
                                 {
                                     foreach (RoomMember Object in room._slots)
                                     {
-                                        if (Object is Player player)
+                                        if (Object is Player player && player.Nickname != nickname)
                                         {
                                             OutPacket oPacket = new OutPacket();
 
@@ -234,11 +234,21 @@ namespace KartRider
                                             oPacket.WriteInt((int)PacketName.GameSlotPacket);
 
                                             oPacket.WriteBytes(p.ReadBytes(p.Available));
-                                            if (player.Nickname != nickname && ClientManager.ClientUdpAddrs.TryGetValue(player.Nickname, out IPEndPoint endPoint))
+                                            if (ClientManager.ClientUdpAddrs.TryGetValue(player.Nickname, out IPEndPoint UdpPoint))
                                             {
-                                                BeginSend(oPacket, endPoint);
+                                                bool success = BeginSend(oPacket, UdpPoint);
+                                                if (success)
+                                                    Console.WriteLine($"[UDP][{currentTime}][{nickname}] " + packetValue + ": " + BitConverter.ToString(oPacket.ToArray()).Replace("-", " "));
                                             }
                                         }
+                                    }
+                                }
+                                else
+                                {
+                                    using (OutPacket oPacket = new OutPacket("GameSlotPacket"))
+                                    {
+                                        oPacket.WriteBytes(p.ReadBytes(p.Available));
+                                        MultyPlayer.BroadCast(roomId, oPacket, nickname);
                                     }
                                 }
                             }
@@ -257,6 +267,10 @@ namespace KartRider
             catch (ObjectDisposedException)
             {
                 // 服务端停止时触发，忽略
+            }
+            catch (SocketException ex)
+            {
+                Console.WriteLine($"[{_serverName}] 处理数据异常：{ex.Message}，错误码：{ex.SocketErrorCode}");
             }
             catch (Exception ex)
             {
