@@ -235,6 +235,7 @@ public class GameRoom
                 {
                     int id = Array.IndexOf(_IDs, null);
                     aiData.ID = id;
+                    aiData.Team = team;
                     _slots[i] = aiData;
                     _slots[i].SlotId = i;
                     _IDs[id] = _slots[i];
@@ -251,6 +252,7 @@ public class GameRoom
                 {
                     int id = Array.IndexOf(_IDs, null);
                     aiData.ID = id;
+                    aiData.Team = team;
                     _slots[i] = aiData;
                     _slots[i].SlotId = i;
                     _IDs[id] = _slots[i];
@@ -267,6 +269,7 @@ public class GameRoom
                 {
                     int id = Array.IndexOf(_IDs, null);
                     aiData.ID = id;
+                    aiData.Team = team;
                     _slots[i] = aiData;
                     _slots[i].SlotId = i;
                     _IDs[id] = _slots[i];

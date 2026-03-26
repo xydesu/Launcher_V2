@@ -874,15 +874,15 @@ public static class MultyPlayer
             {
                 return;
             }
-            byte slotId = iPacket.ReadByte();
-            if (RoomManager.TryGetSlotDetail(roomId, slotId) is Ai ai)
+            byte ID = iPacket.ReadByte();
+            if (RoomManager.TryGetIdDetail(roomId, ID) is Ai ai)
             {
                 room.RemoveMember(ai.SlotId, out bool DeleteAi);
                 using (OutPacket oPacket = new OutPacket("GrSlotDataBasicAi"))
                 {
                     oPacket.WriteInt(1);
                     oPacket.WriteByte(1);
-                    oPacket.WriteInt(slotId);
+                    oPacket.WriteInt(ID);
                     oPacket.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00");
                     Position(roomId, oPacket);
                     BroadCast(roomId, oPacket);
@@ -890,13 +890,13 @@ public static class MultyPlayer
             }
             else
             {
-                AddAi(Parent, roomId, slotId);
+                AddAi(Parent, roomId, ID);
             }
             using (OutPacket oPacket = new OutPacket("GrReplyBasicAiPacket"))
             {
                 oPacket.WriteByte(1);
                 oPacket.WriteHexString("00 00 00 00");
-                Parent.Client.Send(oPacket);
+                BroadCast(roomId, oPacket);
             }
             return;
         }
@@ -1488,7 +1488,7 @@ public static class MultyPlayer
         }
     }
 
-    static void AddAi(SessionGroup Parent, int roomId, int slot)
+    static void AddAi(SessionGroup Parent, int roomId, int ID)
     {
         var room = RoomManager.GetRoom(roomId);
         if (room == null)
@@ -1508,7 +1508,6 @@ public static class MultyPlayer
         }
         if (room.GameType == 3 || room.GameType == 4)
         {
-            byte team = slot < 4 ? (byte)2 : (byte)1;
             var Ais = new List<Ai>();
             for (int i = 0; i < 2; i++)
             {
@@ -1533,13 +1532,12 @@ public static class MultyPlayer
                         Kart = targetKartId,
                         Balloon = balloonId ?? 0,
                         HeadBand = headbandId ?? 0,
-                        Goggle = goggleId ?? 0,
-                        Team = i == 0 ? team : (byte)(3 - team)
+                        Goggle = goggleId ?? 0
                     });
                 }
             }
-            byte slot0 = room.TrySetAi(Ais[0], Ais[0].Team);
-            byte slot1 = room.TrySetAi(Ais[1], Ais[1].Team);
+            byte slot0 = room.TrySetAi(Ais[0], 2);
+            byte slot1 = room.TrySetAi(Ais[1], 1);
             if (slot0 != 255 && slot1 != 255)
             {
                 var ai0 = RoomManager.TryGetSlotDetail(roomId, slot0) as Ai;
