@@ -27,8 +27,10 @@ namespace RHOParser
             {
                 // Check for sound_bgm_korea.rho and sound_bgm_lotte.rho files
                 string inputDir = Path.GetDirectoryName(input);
-                bool koreaFileExists = File.Exists(Path.Combine(inputDir, "sound_bgm_korea.rho"));
-                bool lotteFileExists = File.Exists(Path.Combine(inputDir, "sound_bgm_lotte.rho"));
+                string korea = Path.Combine(inputDir, "sound_bgm_korea.rho");
+                bool koreaFileExists = File.Exists(korea);
+                string lotte = Path.Combine(inputDir, "sound_bgm_lotte.rho");
+                bool lotteFileExists = File.Exists(lotte);
                 Console.WriteLine($"Checking for Rho files in: {inputDir}");
                 Console.WriteLine($"sound_bgm_korea.rho exists: {koreaFileExists}");
                 Console.WriteLine($"sound_bgm_lotte.rho exists: {lotteFileExists}");
@@ -163,23 +165,25 @@ namespace RHOParser
                     // Add missing entries for files that exist
                     if (koreaFileExists && !koreaEntryExists)
                     {
+                        var Korea = new Rho(korea);
                         BinaryXmlTag koreaTag = new BinaryXmlTag("RhoFolder");
                         koreaTag.SetAttribute("name", "korea");
                         koreaTag.SetAttribute("fileName", "sound_bgm_korea.rho");
-                        koreaTag.SetAttribute("key", "3175846090");
-                        koreaTag.SetAttribute("dataHash", "650954873");
-                        koreaTag.SetAttribute("mediaSize", "5170944");
+                        koreaTag.SetAttribute("key", Korea.GetFileKey().ToString());
+                        koreaTag.SetAttribute("dataHash", Korea.GetDataHash().ToString());
+                        koreaTag.SetAttribute("mediaSize", Korea.baseStream.Length.ToString());
                         bgmFolder.Children.Add(koreaTag);
                     }
 
                     if (lotteFileExists && !lotteEntryExists)
                     {
+                        var Lotte = new Rho(lotte);
                         BinaryXmlTag lotteTag = new BinaryXmlTag("RhoFolder");
                         lotteTag.SetAttribute("name", "lotte");
                         lotteTag.SetAttribute("fileName", "sound_bgm_lotte.rho");
-                        lotteTag.SetAttribute("key", "3181744352");
-                        lotteTag.SetAttribute("dataHash", "3342181949");
-                        lotteTag.SetAttribute("mediaSize", "6950400");
+                        lotteTag.SetAttribute("key", Lotte.GetFileKey().ToString());
+                        lotteTag.SetAttribute("dataHash", Lotte.GetDataHash().ToString());
+                        lotteTag.SetAttribute("mediaSize", Lotte.baseStream.Length.ToString());
                         bgmFolder.Children.Add(lotteTag);
                     }
 
@@ -259,6 +263,9 @@ namespace RHOParser
                 PackFolderManager packFolderManager = new PackFolderManager();
                 try
                 {
+                    Console.WriteLine("当前游戏路径: " + RootDirectory);
+                    Console.WriteLine("开始读取游戏Data内文件...");
+                    Console.WriteLine("==============================");
                     packFolderManager.OpenDataFolder(input);
                 }
                 catch (Exception ex)

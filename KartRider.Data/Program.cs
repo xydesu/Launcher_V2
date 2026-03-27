@@ -127,9 +127,6 @@ namespace KartRider
                         await PatchUpdate.UpdateDataAsync(RootDirectory);
                     }
 
-                    Console.WriteLine("当前游戏路径: " + RootDirectory);
-                    Console.WriteLine("开始读取游戏Data内文件...");
-                    Console.WriteLine("==============================");
                     var packFolderManager = KartRhoFile.Dump(Path.GetFullPath(Path.Combine(RootDirectory, @"Data\aaa.pk")));
                     if (packFolderManager == null)
                     {

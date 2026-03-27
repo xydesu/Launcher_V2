@@ -26,51 +26,20 @@ namespace KartRider
             }
             try
             {
-                // 调用方法获取符合条件的文件列表
-                var matchingFiles = GetDataPack0Rho5Files(DataFolder);
-
-                foreach (var matchingFile in matchingFiles)
-                {
-                    var filename = Path.GetFileName(matchingFile);
-                    var gitFile = GitFiles.FirstOrDefault(file => file.name == filename);
-                    if (gitFile == null)
-                    {
-                        File.Delete(matchingFile);
-                    }
-                }
-
-                var aaa = Path.Combine(DataFolder, @"aaa.pk");
-                if (File.Exists(aaa))
-                {
-                    matchingFiles.Add(aaa);
-                }
-                var sound_bgm_korea = Path.Combine(DataFolder, @"sound_bgm_korea.rho");
-                if (File.Exists(sound_bgm_korea))
-                {
-                    matchingFiles.Add(sound_bgm_korea);
-                }
-                var sound_bgm_lotte = Path.Combine(DataFolder, @"sound_bgm_lotte.rho");
-                if (File.Exists(sound_bgm_lotte))
-                {
-                    matchingFiles.Add(sound_bgm_lotte);
-                }
-
-                // 输出结果
                 Console.WriteLine("==============================");
                 foreach (var Git in GitFiles)
                 {
-                    var gitFile = matchingFiles.FirstOrDefault(file => Path.GetFileName(file) == Git.name);
-                    if (gitFile != null)
+                    string savePath = Path.Combine(DataFolder, Git.name);
+                    if (File.Exists(savePath))
                     {
-                        string sha256Hash = "sha256:" + Update.CalculateSHA256(gitFile);
+                        string sha256Hash = "sha256:" + Update.CalculateSHA256(savePath);
                         if (Git.digest != sha256Hash)
                         {
-                            await Downloader(gitFile, Git.browser_download_url);
+                            await Downloader(savePath, Git.browser_download_url);
                         }
                     }
                     else
                     {
-                        string savePath = Path.Combine(DataFolder, Git.name);
                         await Downloader(savePath, Git.browser_download_url);
                     }
                 }
@@ -128,30 +97,7 @@ namespace KartRider
             }
         }
 
-        /// <summary>
-        /// 获取指定目录下（不包含子目录）DataPack0_开头且后缀为.rho5的文件
-        /// </summary>
-        /// <param name="directoryPath">目标目录路径</param>
-        /// <returns>符合条件的文件完整路径数组</returns>
-        public static List<string> GetDataPack0Rho5Files(string directoryPath)
-        {
-            // 先验证目录是否存在
-            if (!Directory.Exists(directoryPath))
-            {
-                Console.WriteLine($"目录不存在: {directoryPath}");
-                return new List<string>();
-            }
 
-            // 核心筛选：通配符 DataPack0_*.rho5 精准匹配「开头+后缀」
-            // SearchOption.TopDirectoryOnly 确保不搜索子目录
-            string[] matchingFiles = Directory.GetFiles(
-                path: directoryPath,
-                searchPattern: "DataPack0_*.rho5",
-                searchOption: SearchOption.TopDirectoryOnly
-            );
-
-            return new List<string>(matchingFiles);
-        }
 
         public static async Task<List<GitHubReleaseAsset>> GetGitFiles(string GameFolder)
         {
@@ -180,22 +126,20 @@ namespace KartRider
                             return null;
                         }
 
-                        // 2. 查找符合条件的文件：以DataPack0_开头，.rho5结尾
-                        // SearchOption.TopDirectoryOnly：仅查找当前目录（不递归子目录）
-                        // 如需递归查找子目录，改为 SearchOption.AllDirectories
-                        string[] rho5Files = Directory.GetFiles(
+                        // 2. 获取Data文件夹中的所有文件
+                        string[] allFiles = Directory.GetFiles(
                             DataFolder,
-                            "DataPack0_*.rho5",
+                            "*",
                             SearchOption.TopDirectoryOnly
                         );
 
-                        // 3. 遍历并删除每个符合条件的文件
-                        if (rho5Files.Length == 0)
+                        // 3. 遍历并删除每个文件
+                        if (allFiles.Length == 0)
                         {
                             return null;
                         }
 
-                        foreach (string filePath in rho5Files)
+                        foreach (string filePath in allFiles)
                         {
                             // 先检查文件是否存在（防止并发场景下文件已被删除）
                             if (File.Exists(filePath))
@@ -205,7 +149,7 @@ namespace KartRider
                             }
                         }
 
-                        Console.WriteLine("所有符合条件的文件处理完成。");
+                        Console.WriteLine("所有文件处理完成。");
                     }
                     catch (UnauthorizedAccessException ex)
                     {
