@@ -233,12 +233,6 @@ namespace KartRider
 
                     try
                     {
-                        InPacket inPacket = new InPacket(receiveBuffer);
-                        int no = inPacket.ReadInt();
-                        uint hash = inPacket.ReadUInt();
-                        int UserID = inPacket.ReadInt();
-                        int value = inPacket.ReadInt();
-                        string nickname = inPacket.ReadString();
                         string currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                         Console.WriteLine($"[MsgrServer][{currentTime}]: " + BitConverter.ToString(receiveBuffer).Replace("-", " "));
 

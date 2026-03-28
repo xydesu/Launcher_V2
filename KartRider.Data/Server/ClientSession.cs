@@ -2897,15 +2897,6 @@ namespace KartRider
                     {
                         return;
                     }
-                    else if (hash == Adler32Helper.GenerateAdler32_ASCII("PqMissionAttendUserStatePacket", 0))
-                    {
-                        using (OutPacket outPacket = new OutPacket("PrMissionAttendUserStatePacket"))
-                        {
-                            outPacket.WriteHexString("04 01");
-                            this.Parent.Client.Send(outPacket);
-                        }
-                        return;
-                    }
                     else if (hash == Adler32Helper.GenerateAdler32_ASCII("PqBoomhillExchangeInfo", 0))
                     {
                         short Type = iPacket.ReadShort();
@@ -3328,7 +3319,7 @@ namespace KartRider
                     {
                         using (OutPacket outPacket = new OutPacket("PrMissionAttendNRUserStatePacket"))
                         {
-                            outPacket.WriteHexString("BD 00");
+                            outPacket.WriteHexString("64 00");
                             this.Parent.Client.Send(outPacket);
                         }
                         return;
@@ -3337,8 +3328,7 @@ namespace KartRider
                     {
                         using (OutPacket outPacket = new OutPacket("PrMissionAttendUserStatePacket"))
                         {
-                            outPacket.WriteByte(0);
-                            outPacket.WriteByte(0);
+                            outPacket.WriteHexString("C4 00");
                             this.Parent.Client.Send(outPacket);
                         }
                         return;
