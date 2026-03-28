@@ -197,10 +197,11 @@ namespace KartRider
                             FileName.Load(this.Parent.Nickname);
                         }
                         var filename = FileName.FileNames[this.Parent.Nickname];
+                        string newfile = Path.GetFullPath(Path.Combine(FileName.ProfileDir, nickname));
 
                         if (Directory.Exists(filename.NicknameDir))
                         {
-                            if (Directory.Exists(Path.GetFullPath(Path.Combine(FileName.ProfileDir, nickname))))
+                            if (Directory.Exists(newfile))
                             {
                                 using (OutPacket outPacket = new OutPacket("SpRpRenameRidPacket"))
                                 {
@@ -215,17 +216,8 @@ namespace KartRider
                                     outPacket.WriteInt(0);
                                     this.Parent.Client.Send(outPacket);
                                 }
-                                Directory.Move(filename.NicknameDir, Path.GetFullPath(Path.Combine(FileName.ProfileDir, nickname)));
-                                if (ProfileService.SettingConfig.Name == this.Parent.Nickname)
-                                {
-                                    ProfileService.SettingConfig.Name = nickname;
-                                    ProfileService.SaveSettings();
-                                }
-                                ClientGroup play = ClientManager.ClientGroups[ProfileService.ProfileConfigs[this.Parent.Nickname].Rider.ClientId];
-                                play.Nickname = nickname;
-                                FileName.Load(nickname);
-                                FileName.FileNames.Remove(this.Parent.Nickname);
-                                this.Parent.Nickname = nickname;
+                                Directory.Move(filename.NicknameDir, newfile);
+                                this.Parent.Client.Disconnect();
                             }
                         }
                         return;
