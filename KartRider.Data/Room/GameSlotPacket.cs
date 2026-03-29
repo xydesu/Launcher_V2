@@ -55,7 +55,7 @@ public class SlotData
                     MultyPlayer.BroadCast(roomId, oPacket);
                 }
             }
-            else if (type == 10 || type == 12)
+            else if (type == 9 || type == 10 || type == 12)
             {
                 using (OutPacket oPacket = new OutPacket())
                 {
