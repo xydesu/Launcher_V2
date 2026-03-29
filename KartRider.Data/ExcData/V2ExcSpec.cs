@@ -219,7 +219,7 @@ namespace ExcData
                     Kart.chargeBoostBySpeedAdded = 0f;
                     Kart.driftGaugeFactor = 0f;
 
-                    Kart.startItemId = GameSupport.RandomItemSkill(Nickname, 2);
+                    Kart.startItemId = SlotData.RandomItemSkill(Nickname, 2);
                 }
                 else if (Kart.defaultExceedType == 2)//S
                 {

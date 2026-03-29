@@ -276,7 +276,16 @@ namespace KartRider
                         int roomId = RoomManager.TryGetRoomId(this.Parent.Nickname);
                         if (roomId != -1)
                         {
-                            MultyPlayer.GrSlotDataPacket(roomId);
+                            Player player = RoomManager.GetPlayer(roomId, this.Parent.Nickname);
+                            if (player != null)
+                            {
+                                using (OutPacket outPacket = new OutPacket("GrSlotItemOnPacket"))
+                                {
+                                    outPacket.WriteInt(player.ID);
+                                    GameSupport.GetRider(this.Parent.Nickname, outPacket);
+                                    MultyPlayer.BroadCast(roomId, outPacket, this.Parent.Nickname);
+                                }
+                            }
                         }
                         return;
                     }

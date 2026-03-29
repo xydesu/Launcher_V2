@@ -141,7 +141,7 @@ namespace KartRider
             updater.UpdateLocalXmlWithResource(FileName.ModelMax_LoadFile, ModelMax);
 
             SpecialKartConfig.SaveConfigToFile(FileName.SpecialKartConfig);
-            MultyPlayer.kartConfig = SpecialKartConfig.LoadConfigFromFile(FileName.SpecialKartConfig);
+            SlotData.kartConfig = SpecialKartConfig.LoadConfigFromFile(FileName.SpecialKartConfig);
         }
 
         private void GitHub_Click(object sender, EventArgs e)

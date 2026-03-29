@@ -24,7 +24,6 @@ public static class MultyPlayer
     public static Dictionary<short, AIKart> aiKartDict = new Dictionary<short, AIKart>();
     public static Dictionary<string, byte> StartTimeAttack = new Dictionary<string, byte>();
     public static Dictionary<string, bool> Ready = null;
-    public static SpecialKartConfig kartConfig = new SpecialKartConfig();
     public static int[] teamPoints = { 10, 8, 6, 5, 4, 3, 2, 1 };
 
     public static void milTime(uint time)
@@ -47,7 +46,7 @@ public static class MultyPlayer
         // 2. 判断是否超出uint范围（uint.MaxValue是4294967295）
         if (Environment.TickCount64 > uint.MaxValue)
         {
-            return uint.MaxValue; // 溢出时返回最大值
+            return (uint)(Environment.TickCount64 % uint.MaxValue); // 溢出时返回余数
         }
 
         // 3. 未溢出则直接转换
@@ -428,88 +427,7 @@ public static class MultyPlayer
         }
         if (hash == Adler32Helper.GenerateAdler32_ASCII("GameSlotPacket", 0))
         {
-            int roomId = RoomManager.TryGetRoomId(Parent.Nickname);
-            var room = RoomManager.GetRoom(roomId);
-            if (room == null)
-            {
-                return;
-            }
-            int id = iPacket.ReadInt();
-            uint item = iPacket.ReadUInt();
-            byte type = iPacket.ReadByte();
-            if (item == uint.MaxValue && iPacket.Length == 77)
-            {
-                byte[] data1 = iPacket.ReadBytes(25);
-                short id1 = iPacket.ReadShort();
-                byte unk1 = iPacket.ReadByte();
-                byte[] data2 = iPacket.ReadBytes(4);
-                iPacket.ReadByte();
-                iPacket.ReadShort();
-                byte[] data3 = iPacket.ReadBytes(29);
-                short skill = GameSupport.RandomItemSkill(Parent.Nickname, room.GameType);
-                using (OutPacket oPacket = new OutPacket("GameSlotPacket"))
-                {
-                    oPacket.WriteInt(id);
-                    oPacket.WriteUInt(item);
-                    oPacket.WriteByte(type);
-                    oPacket.WriteBytes(data1);
-                    oPacket.WriteShort(skill);
-                    oPacket.WriteByte(1);
-                    oPacket.WriteBytes(data2);
-                    oPacket.WriteByte(2);
-                    oPacket.WriteShort(skill);
-                    oPacket.WriteBytes(data3);
-                    BroadCast(roomId, oPacket);
-                }
-            }
-            else if (type == 11)
-            {
-                var uni = iPacket.ReadByte();
-                var skill = iPacket.ReadShort();
-                List<short> skills = V2Specs.GetSkills(Parent.Nickname);
-                if (skills.Contains(13) && skill == 3)
-                {
-                    GameSupport.AttackedSkill(roomId, id, Parent.Nickname, type, uni, 10);
-                }
-                
-                // Ensure profile is loaded before accessing
-                if (ProfileService.ProfileConfigs.ContainsKey(Parent.Nickname))
-                {
-                    if (kartConfig.SkillAttacked.TryGetValue(ProfileService.ProfileConfigs[Parent.Nickname].RiderItem.Set_Kart, out var kartSkills))
-                    {
-                        if (kartSkills.TryGetValue(skill, out var targetSkill))
-                        {
-                            GameSupport.AttackedSkill(roomId, id, Parent.Nickname, type, uni, targetSkill);
-                        }
-                    }
-                }
-                Console.WriteLine("GameSlotPacket, Attacked. Skill = {0}", skill);
-            }
-            else if (type == 18)
-            {
-                var uni = iPacket.ReadByte();
-                iPacket.ReadShort();
-                iPacket.ReadByte();
-                var skill = iPacket.ReadShort();
-                List<short> skills = V2Specs.GetSkills(Parent.Nickname);
-                if (skills.Contains(14) && skill == 5)
-                {
-                    GameSupport.AddItemSkill(roomId, id, Parent.Nickname, 6);
-                }
-                
-                // Ensure profile is loaded before accessing
-                if (ProfileService.ProfileConfigs.ContainsKey(Parent.Nickname))
-                {
-                    if (kartConfig.SkillMappings.TryGetValue(ProfileService.ProfileConfigs[Parent.Nickname].RiderItem.Set_Kart, out var kartSkills))
-                    {
-                        if (kartSkills.TryGetValue(skill, out var targetSkill))
-                        {
-                            GameSupport.AddItemSkill(roomId, id, Parent.Nickname, targetSkill);
-                        }
-                    }
-                }
-                Console.WriteLine("GameSlotPacket, Mapping. Skill = {0}", skill);
-            }
+            SlotData.GameSlotPacket(Parent, iPacket);
             return;
         }
         else if (hash == Adler32Helper.GenerateAdler32_ASCII("GameControlPacket"))
