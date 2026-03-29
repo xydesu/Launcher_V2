@@ -63,7 +63,8 @@ namespace RiderData
                 oPacket.WriteString(ProfileService.ProfileConfigs[Nickname].Rider.Card);
                 oPacket.WriteUInt(ProfileService.ProfileConfigs[Nickname].Rider.Lucci);
                 oPacket.WriteUInt(ProfileService.ProfileConfigs[Nickname].Rider.RP);
-                oPacket.WriteBytes(new byte[309]);
+                oPacket.WriteBytes(new byte[94]);
+                oPacket.WriteBytes(new byte[215]);
                 Parent.Client.Send(oPacket);
             }
         }

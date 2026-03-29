@@ -386,10 +386,10 @@ namespace KartRider
                     }
                     else if (hash == Adler32Helper.GenerateAdler32_ASCII("LoRqEventRewardPacket", 0))
                     {
-                        byte[] data = iPacket.ReadBytes(iPacket.Available);
                         using (OutPacket outPacket = new OutPacket("LoRpEventRewardPacket"))
                         {
-                            outPacket.WriteBytes(data);
+                            outPacket.WriteInt(0);
+                            outPacket.WriteInt(0);
                             this.Parent.Client.Send(outPacket);
                         }
                         return;
@@ -2915,7 +2915,7 @@ namespace KartRider
                     {
                         using (OutPacket outPacket = new OutPacket("PrBoomhillExchangeNeedNotice"))
                         {
-                            outPacket.WriteHexString("00 00 00 00 00");
+                            outPacket.WriteHexString("00 00 00 00 01");
                             this.Parent.Client.Send(outPacket);
                         }
                         return;
@@ -3357,8 +3357,7 @@ namespace KartRider
                     {
                         using (OutPacket outPacket = new OutPacket("PrReturnMissionSetPacket"))
                         {
-                            outPacket.WriteInt();
-                            outPacket.WriteByte();
+                            outPacket.WriteHexString("00 00 00 00 00");
                             this.Parent.Client.Send(outPacket);
                         }
                         return;

@@ -209,7 +209,7 @@ namespace KartRider
                 }
                 outPacket.WriteShort(5);//Grade
                 outPacket.WriteString(Nickname);
-                outPacket.WriteInt(1);//ClubMember
+                outPacket.WriteInt(0);//ClubMember
                 outPacket.WriteByte(5);//Level
                 IPEndPoint serverEndPoint = Parent.Client.Socket.LocalEndPoint as IPEndPoint;
                 if (serverEndPoint == null) return;
