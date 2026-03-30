@@ -63,7 +63,7 @@ namespace KartRider
                         using (OutPacket outPacket = new OutPacket("PrCnAuthenLogin"))
                         {
                             outPacket.WriteInt(7);
-                            outPacket.WriteString("pnlcdfngkdjfdhdermnkicqknmqrnjnkrlpdirerjrqkcllhpckngophnrrfclgiojmopomonkjilgmheoldpmmcdokgdqljqcnkrplffhflqdnchherghnhoihgfnon");
+                            outPacket.WriteString("pnlcdfngkdjfdhdermnkicqknmqrnjnkrlpdirerjrqkcllhkngophnrrfclgiojmopomonkjilgmheoldpmmcdokgdqljqcnkrplffhflqdnchherghnhoihgfnon");
                             outPacket.WriteByte(0);
                             outPacket.WriteString("https://www.tiancity.com/agreement");
                             this.Parent.Client.Send(outPacket);
@@ -74,7 +74,7 @@ namespace KartRider
                         using (OutPacket outPacket = new OutPacket("PrCnAuthenLogin"))
                         {
                             outPacket.WriteInt(1);
-                            outPacket.WriteString("pnlcdfngkdjfdhdermnkicqknmqrnjnkrlpdirerjrqkcllhpckngophnrrfclgiojmopomonkjilgmheoldpmmcdokgdqljqcnkrplffhflqdnchherghnhoihgfnon");
+                            outPacket.WriteString("pnlcdfngkdjfdhdermnkicqknmqrnjnkrlpdirerjrqkcllhkngophnrrfclgiojmopomonkjilgmheoldpmmcdokgdqljqcnkrplffhflqdnchherghnhoihgfnon");
                             outPacket.WriteByte(0);
                             outPacket.WriteString("https://www.tiancity.com/agreement");
                             this.Parent.Client.Send(outPacket);
@@ -92,7 +92,7 @@ namespace KartRider
                     }
                     return;
                 }
-                if (hash != Adler32Helper.GenerateAdler32(Encoding.ASCII.GetBytes("PcReportRaidOccur"), 0) && hash != Adler32Helper.GenerateAdler32(Encoding.ASCII.GetBytes("PqGameReportMyBadUdp"), 0))
+                if (hash != Adler32Helper.GenerateAdler32(Encoding.ASCII.GetBytes("ReportRaidOccur"), 0) && hash != Adler32Helper.GenerateAdler32(Encoding.ASCII.GetBytes("PqGameReportMyBadUdp"), 0))
                 {
                     if (hash == Adler32Helper.GenerateAdler32_ASCII("LoRqAddRacingTimePacket", 0))
                     {
@@ -440,7 +440,7 @@ namespace KartRider
                             outPacket.WriteInt();
                             this.Parent.Client.Send(outPacket);
                         }
-                        using (OutPacket outPacket = new OutPacket("PcSlaveNotice"))
+                        using (OutPacket outPacket = new OutPacket("SlaveNotice"))
                         {
                             outPacket.WriteString("单机版完全免费, https://yanygm.github.io/Launcher_V2/");
                             this.Parent.Client.Send(outPacket);
@@ -3719,11 +3719,6 @@ namespace KartRider
                         else
                         {
                             room.RelayType = 1; //TCP
-                            using (OutPacket oPacket = new OutPacket("PcSlaveNotice"))
-                            {
-                                oPacket.WriteString("网络异常，切换为服务器中转...");
-                                MultyPlayer.BroadCast(roomId, oPacket);
-                            }
                         }
                         return;
                     }
