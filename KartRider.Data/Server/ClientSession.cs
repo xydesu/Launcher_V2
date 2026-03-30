@@ -3609,8 +3609,8 @@ namespace KartRider
                         uint unk1 = iPacket.ReadUInt();
                         using (OutPacket outPacket = new OutPacket("PrGetMsgrFriendList"))
                         {
-                            outPacket.WriteInt(ClientManager.UserNOToNickname.Count);
-                            foreach(var User in ClientManager.UserNOToNickname)
+                            outPacket.WriteInt(ClientManager.UserNOToNickname.Count - 1);
+                            foreach(var User in ClientManager.UserNOToNickname.Where(u => u.Value != this.Parent.Nickname))
                             {
                                 outPacket.WriteUInt(User.Key);
                                 outPacket.WriteString(User.Value);
@@ -3637,8 +3637,8 @@ namespace KartRider
                     {
                         using (OutPacket outPacket = new OutPacket("PrRepeatGetMsgrFriendList"))
                         {
-                            outPacket.WriteInt(ClientManager.UserNOToNickname.Count);
-                            foreach (var User in ClientManager.UserNOToNickname)
+                            outPacket.WriteInt(ClientManager.UserNOToNickname.Count - 1);
+                            foreach (var User in ClientManager.UserNOToNickname.Where(u => u.Value != this.Parent.Nickname))
                             {
                                 outPacket.WriteUInt(User.Key);
                                 outPacket.WriteString(User.Value);

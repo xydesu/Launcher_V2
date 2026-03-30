@@ -12,6 +12,7 @@ public class GameRoom
     public string RoomName { get; set; }
     public uint track { get; set; } = 0;
     public uint trackTemp { get; set; } = 0;
+    public List<uint> trackList { get; set; } = new List<uint>();
     public uint StartTicks { get; set; } = 0;
     public uint EndTicks { get; set; } = 0;
     public byte SpeedType { get; set; } = 0;

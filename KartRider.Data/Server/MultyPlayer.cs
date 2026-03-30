@@ -740,7 +740,20 @@ public static class MultyPlayer
                 return;
             }
 
-            room.trackTemp = RandomTrack.GetRandomTrack(Parent.Nickname, room.RandomTrackGameType, room.track);
+            if (room.track < 100)
+            {
+                uint track;
+                do
+                {
+                    track = RandomTrack.GetRandomTrack(Parent.Nickname, room.RandomTrackGameType, room.track);
+                } while (room.trackList.Contains(track));
+                room.trackList.Add(track);
+                room.trackTemp = track;
+            }
+            else
+            {
+                room.trackTemp = room.track;
+            }
 
             using (OutPacket oPacket = new OutPacket("GrReplyStartPacket"))
             {
