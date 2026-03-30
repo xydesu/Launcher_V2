@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -26,6 +28,10 @@ namespace KartRider
         private volatile bool _isRunning;
         // 同步锁（防止重复启动/停止）
         private readonly object _lockObj = new object();
+
+        public static ConcurrentDictionary<string, ClientState> Clients = new ConcurrentDictionary<string, ClientState>();
+        public static ConcurrentDictionary<uint, List<string>> rooms = new ConcurrentDictionary<uint, List<string>>();
+        public static uint roomID = 1;
 
         /// <summary>
         /// 构造函数
@@ -233,10 +239,100 @@ namespace KartRider
 
                     try
                     {
-                        string currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                        Console.WriteLine($"[MsgrServer][{currentTime}]: " + BitConverter.ToString(receiveBuffer).Replace("-", " "));
+                        InPacket inPacket = new InPacket(receiveBuffer);
+                        int packetLength = inPacket.ReadInt();
+                        uint hash = inPacket.ReadUInt();
+                        var packetValue = (PacketName)hash;
 
-                        BeginSend(clientState, new OutPacket());
+                        if (packetValue == PacketName.PqEnterChatServer)
+                        {
+                            uint userNO = inPacket.ReadUInt();
+                            uint type = inPacket.ReadUInt();
+                            string nickname = inPacket.ReadString();
+                            Clients.AddOrUpdate(nickname, clientState, (key, oldState) =>
+                            {
+                                if (!ReferenceEquals(oldState, clientState))
+                                {
+                                    try
+                                    {
+                                        oldState.Client?.Close();
+                                    }
+                                    catch
+                                    {
+                                    }
+                                }
+                                return clientState;
+                            });
+                        }
+                        else if (packetValue == PacketName.PqInitInviteMsgrChat)
+                        {
+                            uint accountID1 = inPacket.ReadUInt();
+                            uint accountID2 = inPacket.ReadUInt();
+                            string nickname1 = inPacket.ReadString();
+                            string nickname2 = inPacket.ReadString();
+                            uint ID = roomID++;
+                            using (OutPacket outPacket = new OutPacket("PrInitInviteMsgrChat"))
+                            {
+                                outPacket.WriteUInt(accountID1);
+                                outPacket.WriteUInt(accountID2);
+                                outPacket.WriteString(nickname1);
+                                outPacket.WriteString(nickname2);
+                                outPacket.WriteUInt(ID);
+                                outPacket.WriteInt(0);
+                                Clients.TryGetValue(nickname1, out var clientState1);
+                                if (clientState1 != null)
+                                {
+                                    BeginSend(clientState1, outPacket);
+                                }
+                                Clients.TryGetValue(nickname2, out var clientState2);
+                                if (clientState2 != null)
+                                {
+                                    BeginSend(clientState2, outPacket);
+                                }
+                                rooms.TryAdd(ID, new List<string> { nickname1, nickname2 });
+                            }
+                        }
+                        else if (packetValue == PacketName.PqMsgrChat)
+                        {
+                            uint roomID = inPacket.ReadUInt();
+                            string nickname = inPacket.ReadString();
+                            string message = inPacket.ReadString();
+                            using (OutPacket outPacket = new OutPacket("PrMsgrChat"))
+                            {
+                                outPacket.WriteUInt(roomID);
+                                outPacket.WriteUInt(ClientManager.GetUserNO(nickname));
+                                outPacket.WriteString(nickname);
+                                outPacket.WriteString(message);
+                                outPacket.WriteInt(0);
+                                foreach (var member in rooms[roomID])
+                                {
+                                    if (Clients.TryGetValue(member, out var client))
+                                    {
+                                        BeginSend(client, outPacket);
+                                    }
+                                }
+                            }
+                        }
+                        else if (packetValue == PacketName.PqLeaveMsgrChat)
+                        {
+                            uint userNO = inPacket.ReadUInt();
+                            uint roomID = inPacket.ReadUInt();
+                            rooms[roomID].Remove(ClientManager.GetNickname(userNO));
+                            using (OutPacket outPacket = new OutPacket("PrLeaveMsgrChat"))
+                            {
+                                outPacket.WriteUInt(userNO);
+                                outPacket.WriteUInt(roomID);
+                                foreach (var member in rooms[roomID])
+                                {
+                                    if (Clients.TryGetValue(member, out var client))
+                                    {
+                                        BeginSend(client, outPacket);
+                                    }
+                                }
+                            }
+                        }
+                        string currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                        Console.WriteLine($"[MsgrServer][{currentTime}] " + (PacketName)hash + ": " + BitConverter.ToString(receiveBuffer).Replace("-", " "));
                     }
                     catch (Exception ex)
                     {
@@ -280,10 +376,17 @@ namespace KartRider
                 return false;
 
             byte[] buffer = outPacket.ToArray();
+            int packetLength = buffer.Length;
+            byte[] lengthPrefix = BitConverter.GetBytes(packetLength);
+            byte[] sendBuffer = new byte[lengthPrefix.Length + buffer.Length];
+            Buffer.BlockCopy(lengthPrefix, 0, sendBuffer, 0, lengthPrefix.Length);
+            Buffer.BlockCopy(buffer, 0, sendBuffer, lengthPrefix.Length, buffer.Length);
+            string currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            Console.WriteLine($"[MsgrServer][{currentTime}]: " + BitConverter.ToString(sendBuffer).Replace("-", " "));
             try
             {
                 NetworkStream stream = clientState.Client.GetStream();
-                stream.BeginWrite(buffer, 0, buffer.Length, EndSend, clientState);
+                stream.BeginWrite(sendBuffer, 0, sendBuffer.Length, EndSend, clientState);
                 return true;
             }
             catch (SocketException ex)
@@ -330,6 +433,15 @@ namespace KartRider
             try
             {
                 clientState.Client?.Close();
+                var disconnectedNicknames = Clients.Where(kv => kv.Value == clientState).Select(kv => kv.Key).ToList();
+                foreach (var nickname in disconnectedNicknames)
+                {
+                    Clients.TryRemove(nickname, out _);
+                    foreach (var room in rooms.Values)
+                    {
+                        room.Remove(nickname);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -340,7 +452,7 @@ namespace KartRider
         /// <summary>
         /// 客户端状态类
         /// </summary>
-        private class ClientState
+        public class ClientState
         {
             public TcpClient Client { get; set; }
             public byte[] Buffer { get; set; }

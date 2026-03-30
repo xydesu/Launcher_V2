@@ -858,7 +858,7 @@ namespace RHOParser
                             Console.WriteLine(fullName);
                             DateTime now = DateTime.Now;
                             byte[] data = packFileInfo.GetData();
-                            byte i = 0;
+                            byte i = 1;
                             using (MemoryStream stream = new MemoryStream(data))
                             {
                                 XDocument doc = XDocument.Load(stream);

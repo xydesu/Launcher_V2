@@ -3592,19 +3592,6 @@ namespace KartRider
                         ItemPresetsService.Save(this.Parent.Nickname);
                         return;
                     }
-                    else if (hash == Adler32Helper.GenerateAdler32_ASCII("PqWhereIsRider", 0))
-                    {
-                        uint unk1 = iPacket.ReadUInt();
-                        using (OutPacket outPacket = new OutPacket("PrWhereIsRider"))
-                        {
-                            outPacket.WriteUInt(unk1);
-                            outPacket.WriteInt(0);
-                            outPacket.WriteByte(13);
-                            outPacket.WriteBytes(new byte[5]);
-                            this.Parent.Client.Send(outPacket);
-                        }
-                        return;
-                    }
                     else if (hash == Adler32Helper.GenerateAdler32_ASCII("PqGetMyMsgrInfoPacket", 0))
                     {
                         uint unk1 = iPacket.ReadUInt();

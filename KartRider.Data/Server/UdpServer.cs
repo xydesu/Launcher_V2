@@ -170,10 +170,7 @@ namespace KartRider
                         uint hash = p.ReadUInt();
 
                         string nickname = "";
-                        if (!ClientManager.UserNOToNickname.TryGetValue(accountID, out nickname) || string.IsNullOrEmpty(nickname))
-                        {
-                            return;
-                        }
+                        ClientManager.UserNOToNickname.TryGetValue(accountID, out nickname);
 
                         uint packetName = p.ReadUInt();
                         var packetValue = (PacketName)packetName;

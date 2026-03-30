@@ -1206,6 +1206,36 @@ public static class MultyPlayer
             }
             return;
         }
+        else if (hash == Adler32Helper.GenerateAdler32_ASCII("PqWhereIsRider", 0))
+        {
+            uint ID = iPacket.ReadUInt();
+            int roomId = RoomManager.TryGetRoomId(ClientManager.GetNickname(ID));
+            var room = RoomManager.GetRoom(roomId);
+            if (roomId == -1)
+            {
+                using (OutPacket outPacket = new OutPacket("PrWhereIsRider"))
+                {
+                    outPacket.WriteUInt(ID);
+                    outPacket.WriteBytes(new byte[10]);
+                    Parent.Client.Send(outPacket);
+                }
+                return;
+            }
+            else
+            {
+                using (OutPacket outPacket = new OutPacket("PrWhereIsRider"))
+                {
+                    outPacket.WriteUInt(ID);
+                    outPacket.WriteInt(roomId);
+                    var channel = GameSupport.Channels.FirstOrDefault(c => c.Value.GameType == room.GameType).Key;
+                    outPacket.WriteInt(channel);
+                    outPacket.WriteByte(1);
+                    outPacket.WriteByte(1);
+                    Parent.Client.Send(outPacket);
+                }
+            }
+            return;
+        }
         else
         {
             return;
