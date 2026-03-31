@@ -1175,10 +1175,10 @@ public static class MultyPlayer
                 Console.WriteLine("TryGetRoomId Failed, Parent.Nickname = {0}", Parent.Nickname);
                 return;
             }
-            int TargetSlotIndex = iPacket.ReadInt();
-            if (RoomManager.TryGetSlotDetail(roomId, (byte)TargetSlotIndex) is Player p)
+            int ID = iPacket.ReadInt();
+            if (RoomManager.TryGetIdDetail(roomId, ID) is Player p)
             {
-                var player = RoomManager.RemovePlayer(roomId, (byte)TargetSlotIndex);
+                var player = RoomManager.RemovePlayer(roomId, p.SlotId);
                 if (player)
                 {
                     using (OutPacket outPacket = new OutPacket("ChLeaveRoomReplyPacket"))

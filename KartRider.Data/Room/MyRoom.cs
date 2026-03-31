@@ -236,18 +236,22 @@ public class MyRoomData
 
         if (!string.Equals(owner, Nickname, StringComparison.OrdinalIgnoreCase) && !ClientManager.NicknameToUserNO.ContainsKey(owner))
         {
-            ChRpEnterMyRoomPacket(Parent);
+            ChRpEnterMyRoomPacket(Parent, 3);
             return;
         } 
 
         EnsureProfileLoaded(owner);
         if (!ProfileService.ProfileConfigs.ContainsKey(owner))
         {
-            ChRpEnterMyRoomPacket(Parent);
+            ChRpEnterMyRoomPacket(Parent, 3);
             return;
         }
 
-        TryEnterMyRoom(owner, Nickname);
+        if (!TryEnterMyRoom(owner, Nickname))
+        {
+            ChRpEnterMyRoomPacket(Parent, 1);
+            return;
+        }
 
         using (OutPacket outPacket = new OutPacket("ChRpEnterMyRoomPacket"))
         {
@@ -268,12 +272,12 @@ public class MyRoomData
         }
     }
 
-    public static void ChRpEnterMyRoomPacket(SessionGroup Parent)
+    public static void ChRpEnterMyRoomPacket(SessionGroup Parent, byte errorCode = 3)
     {
         using (OutPacket outPacket = new OutPacket("ChRpEnterMyRoomPacket"))
         {
             outPacket.WriteString("");
-            outPacket.WriteByte(3); // 0：允许进入 3：玩家不存在 5：随机进入失败
+            outPacket.WriteByte(errorCode); // 0：允许进入 3：玩家不存在 5：随机进入失败
             outPacket.WriteShort(0);
             outPacket.WriteByte(0);
             outPacket.WriteByte(0);

@@ -449,9 +449,15 @@ namespace KartRider
                     }
                     else if (hash == Adler32Helper.GenerateAdler32_ASCII("ChReRqEnterMyRoomPacket", 0) || hash == Adler32Helper.GenerateAdler32_ASCII("ChRqEnterRandomMyRoomPacket", 0))
                     {
+                        var availableNicknames = ClientManager.NicknameToUserNO.Keys.Where(n => n != this.Parent.Nickname).ToList();
+                        if (availableNicknames.Count == 0)
+                        {
+                            MyRoomData.ChRpEnterMyRoomPacket(this.Parent, 5);
+                            return;
+                        }
                         Random random = new Random();
-                        int randomIndex = random.Next(ClientManager.NicknameToUserNO.Keys.Count);
-                        string targetNickname = ClientManager.NicknameToUserNO.Keys.ElementAt(randomIndex);
+                        int randomIndex = random.Next(availableNicknames.Count);
+                        string targetNickname = availableNicknames[randomIndex];
                         MyRoomData.ChRpEnterMyRoomPacket(this.Parent, this.Parent.Nickname, targetNickname);
                         return;
                     }
@@ -501,7 +507,7 @@ namespace KartRider
                         using (OutPacket outPacket = new OutPacket("ChRpMyroomCheckPassEtcPacket"))
                         {
                             outPacket.WriteInt(id);
-                            outPacket.WriteInt(0); // 1
+                            outPacket.WriteInt(0); // 1 允许查看
                             this.Parent.Client.Send(outPacket);
                         }
                         return;
