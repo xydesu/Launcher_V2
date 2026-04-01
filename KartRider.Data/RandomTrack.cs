@@ -11,18 +11,27 @@ using System.Xml.Linq;
 
 namespace KartRider
 {
+    public class Track
+    {
+        public uint hash { get; set; }
+        public string ID { get; set; }
+        public string Name { get; set; }
+        public string gameType { get; set; }
+        public bool basicAi { get; set; }
+    }
+
     public class RandomTrack
     {
-        public static Dictionary<uint, string> track = new Dictionary<uint, string>();
+        public static Dictionary<uint, Track> TrackList = new Dictionary<uint, Track>();
         public static XDocument randomTrack = new XDocument();
 
         public static string GameTrack = "village_R01";
 
         public static string GetTrackName(uint trackId)
         {
-            if (track.ContainsKey(trackId))
+            if (TrackList.ContainsKey(trackId))
             {
-                return track[trackId];
+                return TrackList[trackId].Name;
             }
             else
             {
@@ -30,7 +39,7 @@ namespace KartRider
             }
         }
 
-        public static uint GetRandomTrack(string Nickname, byte GameType, uint Track)
+        public static uint GetRandomTrack(string Nickname, byte GameType, uint Track, bool ai = false)
         {
             string RandomTrackGameType = "speed";
             string RandomTrackSetRandomTrack = "all";
@@ -115,12 +124,14 @@ namespace KartRider
                 else
                 {
                     Random AllRandom = new Random();
-                    var validTracks = track.Where(t => t.Value.Contains("_I") || t.Value.Contains("_R") || t.Value.Contains("_C") || t.Value.Contains("_K") || t.Value.Contains("_DIY")).ToList();
+                    var validTracks = TrackList.Values
+                        .Where(t => string.Equals(t.gameType, RandomTrackGameType, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(t.Name) && (ai ? t.basicAi == true : true))
+                        .Select(t => t.hash)
+                        .ToList();
                     if (validTracks.Count > 0)
                     {
                         int randomIndex = AllRandom.Next(validTracks.Count);
-                        var selectedTrack = validTracks.ElementAt(randomIndex).Value;
-                        return Adler32Helper.GenerateAdler32_UNICODE(selectedTrack, 0);
+                        return validTracks[randomIndex];
                     }
                     else
                     {
@@ -130,7 +141,7 @@ namespace KartRider
             }
             else if (RandomTrackSetRandomTrack == "Unknown")
             {
-                if (track.ContainsKey(Track))
+                if (TrackList.ContainsKey(Track))
                 {
                     return Track;
                 }

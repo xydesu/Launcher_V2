@@ -3,6 +3,7 @@ using KartRider;
 using System.Collections.Generic;
 using Profile;
 using System.Net;
+using System.Linq;
 
 namespace ExcData
 {
@@ -10,7 +11,7 @@ namespace ExcData
     {
         public static Dictionary<string, Dictionary<string, byte>> speedNames = new Dictionary<string, Dictionary<string, byte>>
         {
-            { "国服", new Dictionary<string, byte> { { "标准", 7 }, { "慢速S0", 3 }, { "普通S1", 0 }, { "快速S2", 1 }, { "高速S3", 2 } } },
+            { "国服", new Dictionary<string, byte> { { "标准", 7 }, { "S0", 3 }, { "S1", 0 }, { "S2", 1 }, { "S3", 2 } } },
             { "国服复古", new Dictionary<string, byte> { { "初级", 0 }, { "L3", 1 }, { "L2", 2 }, { "L1", 3 }, { "Pro", 4 } } },
             { "韩服复古", new Dictionary<string, byte> { { "初级", 0 }, { "L3", 1 }, { "L2", 2 }, { "L1", 3 }, { "Pro", 4 } } }
         };
@@ -383,6 +384,73 @@ namespace ExcData
             BoostAccelFactor = 0f;
             StartForwardAccelForceItem = 0f;
             StartForwardAccelForceSpeed = 0f;
+        }
+
+        /// <summary>
+        /// 解析返回 3个值：(版本string, 速度byte, 无限模式byte)
+        /// 包含“无限”或“無限”=4，不包含=MaxValue
+        /// 解析失败（缺版本/速度）返回 MaxValue
+        /// </summary>
+        public static (string version, byte speed, byte infinite)? Parse(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return null;
+            string lowerInput = input.ToLowerInvariant();
+
+            // 判断无限
+            bool hasInfinite = lowerInput.Contains("无限") || lowerInput.Contains("無限");
+            byte infinite = hasInfinite ? (byte)4 : byte.MaxValue;
+
+            // 匹配速度
+            string matchedSpeed = "";
+            byte speedValue = byte.MaxValue;
+
+            var allSpeedKeys = speedNames.Values.SelectMany(d => d.Keys)
+                .OrderByDescending(s => s.Length)
+                .ToList();
+
+            foreach (var speed in allSpeedKeys)
+            {
+                if (lowerInput.Contains(speed.ToLowerInvariant()))
+                {
+                    matchedSpeed = speed;
+                    break;
+                }
+            }
+
+            // 匹配版本
+            string finalVersion;
+
+            // 复古模式速度关键字
+            HashSet<string> _retroSpeeds = new HashSet<string> { "初级", "L3", "L2", "L1", "Pro" };
+
+            bool isHanfu = lowerInput.Contains("韩服复古") || lowerInput.Contains("韩服");
+
+            if (isHanfu)
+            {
+                finalVersion = "韩服复古";
+            }
+            else if (_retroSpeeds.Contains(matchedSpeed))
+            {
+                finalVersion = "国服复古";
+            }
+            else
+            {
+                finalVersion = "国服";
+            }
+
+            // 获取速度值
+            var speedDictionary = speedNames[finalVersion];
+            if (!speedDictionary.ContainsKey(matchedSpeed))
+            {
+                speedValue = byte.MaxValue; // 速度未找到，设置为MaxValue
+            }
+            else
+            {
+                speedValue = speedDictionary[matchedSpeed];
+            }
+
+            // 返回3个结果
+            return (finalVersion, speedValue, infinite);
         }
     }
 }

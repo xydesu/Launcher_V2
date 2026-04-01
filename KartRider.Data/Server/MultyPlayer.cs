@@ -742,7 +742,12 @@ public static class MultyPlayer
 
                 do
                 {
-                    track = RandomTrack.GetRandomTrack(Parent.Nickname, room.RandomTrackGameType, room.track);
+                    bool ai = false;
+                    if (room.GetAiCount() > 0)
+                    {
+                        ai = true;
+                    }
+                    track = RandomTrack.GetRandomTrack(Parent.Nickname, room.RandomTrackGameType, room.track, ai);
                 } while (room.trackList.Contains(track));
                 room.trackList.Add(track);
                 room.trackTemp = track;

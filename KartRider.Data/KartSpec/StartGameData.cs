@@ -104,6 +104,20 @@ namespace KartRider
             {
                 var room = RoomManager.GetRoom(roomId);
                 StartTimeAttack_SpeedType = room.SpeedType;
+                var parsed = SpeedType.Parse(room.RoomName);
+                if (parsed.HasValue)
+                {
+                    if (parsed.Value.infinite != byte.MaxValue)
+                    {
+                        StartTimeAttack_SpeedType = parsed.Value.infinite;
+                    }
+                    if (parsed.Value.speed != byte.MaxValue)
+                    {
+                        speed = parsed.Value.speed;
+                        version = parsed.Value.version;
+                    }
+                    Console.WriteLine($"RoomName: {room.RoomName}, 速度类型: {StartTimeAttack_SpeedType}, 版本: {version}, 速度: {speed}");
+                }
             }
 
             speedType.SpeedTypeData(version, speed);
@@ -115,7 +129,7 @@ namespace KartRider
             var Kart = new KartSpec();
             Kart.GetKartSpec(Nickname);
 
-            var excSpecs= new ExcSpecs();
+            var excSpecs = new ExcSpecs();
             ExcSpec.Use_TuneSpec(Nickname, excSpecs);
             ExcSpec.Use_PlantSpec(Nickname, excSpecs);
             ExcSpec.Use_KartLevelSpec(Nickname, excSpecs);

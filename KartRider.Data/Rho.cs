@@ -243,7 +243,11 @@ namespace RHOParser
                                 }
                             }
                         }
-                        if (fullName == $"track/common/randomTrack@{regionCode}.bml")
+                        if (fullName == $"track/common/randomTrack@{regionCode}.bml" ||
+                            fullName == $"track/common/randomTrack@{regionCode}.xml" ||
+                            fullName == $"track_/common/randomTrack@{regionCode}.bml" ||
+                            fullName == $"track_/common/randomTrack@{regionCode}.xml"
+                            )
                         {
                             Console.WriteLine(fullName);
                             byte[] data = packFileInfo.GetData();
@@ -252,20 +256,11 @@ namespace RHOParser
                                 RandomTrack.randomTrack = XDocument.Load(stream);
                             }
                         }
-                        if (fullName == $"track/common/trackLocale@{regionCode}.xml")
-                        {
-                            Console.WriteLine(fullName);
-                            byte[] data = packFileInfo.GetData();
-                            using (MemoryStream stream = new MemoryStream(data))
-                            {
-                                XmlDocument trackLocale = new XmlDocument();
-                                trackLocale.Load(stream);
-                                ProcessNodes(trackLocale.GetElementsByTagName("track"), "id");
-                                ProcessNodes(trackLocale.GetElementsByTagName("track_crz"), "refId", "crz");
-                                ProcessNodes(trackLocale.GetElementsByTagName("track_rvs"), "refId", "rvs");
-                            }
-                        }
-                        if (fullName == $"track/common/trackLocale@{regionCode}.bml")
+                        if (fullName == $"track/common/track@zz.bml" ||
+                            fullName == $"track/common/track@zz.xml" ||
+                            fullName == $"track_/common/track@zz.bml" ||
+                            fullName == $"track_/common/track@zz.xml"
+                            )
                         {
                             Console.WriteLine(fullName);
                             byte[] data = packFileInfo.GetData();
@@ -273,9 +268,22 @@ namespace RHOParser
                             {
                                 XmlDocument trackLocale = new XmlDocument();
                                 trackLocale.Load(stream);
-                                ProcessNodes(trackLocale.GetElementsByTagName("track"), "id");
-                                ProcessNodes(trackLocale.GetElementsByTagName("track_crz"), "refId", "crz");
-                                ProcessNodes(trackLocale.GetElementsByTagName("track_rvs"), "refId", "rvs");
+                                ProcessTrackList(trackLocale);
+                            }
+                        }
+                        if (fullName == $"track/common/trackLocale@{regionCode}.bml" ||
+                            fullName == $"track/common/trackLocale@{regionCode}.xml" ||
+                            fullName == $"track_/common/trackLocale@{regionCode}.bml" ||
+                            fullName == $"track_/common/trackLocale@{regionCode}.xml"
+                            )
+                        {
+                            Console.WriteLine(fullName);
+                            byte[] data = packFileInfo.GetData();
+                            using (MemoryStream stream = new MemoryStream(BmlToXml(fullName, data)))
+                            {
+                                XmlDocument trackLocale = new XmlDocument();
+                                trackLocale.Load(stream);
+                                ProcessTrackLocale(trackLocale);
                             }
                         }
                         if (fullName == "etc_/itemTable.kml")
@@ -1015,24 +1023,186 @@ namespace RHOParser
             }
         }
 
-        private static void ProcessNodes(XmlNodeList nodes, string attributeName, string suffix = "")
+        private static void ProcessTrackLocale(XmlDocument trackLocale)
         {
-            if (nodes == null) return;
-            foreach (XmlNode xn in nodes)
+            if (trackLocale == null) return;
+
+            var localeNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (XmlNode xn in trackLocale.GetElementsByTagName("track"))
             {
                 XmlElement xe = xn as XmlElement;
                 if (xe == null) continue;
-                string attributeValue = xe.GetAttribute(attributeName);
-                if (string.IsNullOrWhiteSpace(attributeValue))
+                string blocked = xe.GetAttribute("blocked");
+                if (blocked.Equals("true", StringComparison.OrdinalIgnoreCase)) continue;
+                string id = xe.GetAttribute("id");
+                if (string.IsNullOrWhiteSpace(id) || id.Contains("_S", StringComparison.OrdinalIgnoreCase)) continue;
+                string name = xe.GetAttribute("name");
+                bool basicAi = xe.GetAttribute("basicAi").Equals("true", StringComparison.OrdinalIgnoreCase);
+                AddOrUpdateTrackListEntry(id, name, basicAi);
+                localeNames[id] = name;
+            }
+
+            void processVariant(string elementName, string suffix)
+            {
+                foreach (XmlNode xn in trackLocale.GetElementsByTagName(elementName))
                 {
-                    Console.WriteLine($"警告：节点 {xn.Name} 缺少有效的 {attributeName} 属性");
-                    continue;
+                    XmlElement xe = xn as XmlElement;
+                    if (xe == null) continue;
+                    string blocked = xe.GetAttribute("blocked");
+                    if (blocked.Equals("true", StringComparison.OrdinalIgnoreCase)) continue;
+                    string refId = xe.GetAttribute("refId");
+                    if (string.IsNullOrWhiteSpace(refId) || refId.Contains("_S", StringComparison.OrdinalIgnoreCase)) continue;
+                    string variantId = $"{refId}_{suffix}";
+                    bool basicAi = xe.GetAttribute("basicAi").Equals("true", StringComparison.OrdinalIgnoreCase);
+
+                    string name;
+                    if (elementName == "track_rvs")
+                    {
+                        if (localeNames.TryGetValue(refId, out var baseName) && !string.IsNullOrWhiteSpace(baseName))
+                        {
+                            name = $"[反]{baseName}";
+                        }
+                        else
+                        {
+                            name = string.Empty;
+                        }
+                    }
+                    else
+                    {
+                        name = xe.GetAttribute("name");
+                        if (string.IsNullOrWhiteSpace(name) && localeNames.TryGetValue(refId, out var baseName))
+                        {
+                            name = baseName;
+                        }
+                        else if (string.IsNullOrWhiteSpace(name))
+                        {
+                            name = string.Empty;
+                        }
+                    }
+
+                    AddOrUpdateTrackListEntry(variantId, name, basicAi);
                 }
-                string trackIdentifier = string.IsNullOrEmpty(suffix) ? attributeValue : $"{attributeValue}_{suffix}";
-                uint adler32Id = Adler32Helper.GenerateAdler32_UNICODE(trackIdentifier, 0);
-                if (!RandomTrack.track.ContainsKey(adler32Id))
+            }
+
+            processVariant("track_crz", "crz");
+            processVariant("track_rvs", "rvs");
+        }
+
+        private static string ResolveVariantGameType(string trackIdentifier)
+        {
+            uint adler32Id = Adler32Helper.GenerateAdler32_UNICODE(trackIdentifier, 0);
+            if (string.IsNullOrWhiteSpace(trackIdentifier)) return string.Empty;
+            int suffixIndex = trackIdentifier.LastIndexOf('_');
+            if (suffixIndex <= 0) return string.Empty;
+            string baseId = trackIdentifier.Substring(0, suffixIndex);
+            if (RandomTrack.TrackList.TryGetValue(adler32Id, out var baseTrack))
+            {
+                return baseTrack.gameType ?? string.Empty;
+            }
+            return string.Empty;
+        }
+
+        private static void AddOrUpdateTrackListEntry(string trackIdentifier, string name, bool basicAi = false)
+        {
+            uint adler32Id = Adler32Helper.GenerateAdler32_UNICODE(trackIdentifier, 0);
+            string realName = string.IsNullOrWhiteSpace(name) ? string.Empty : name;
+            if (RandomTrack.TrackList.ContainsKey(adler32Id))
+            {
+                Track existingTrack = RandomTrack.TrackList[adler32Id];
+                if (!string.IsNullOrWhiteSpace(realName))
                 {
-                    RandomTrack.track.Add(adler32Id, trackIdentifier);
+                    existingTrack.Name = realName;
+                }
+                existingTrack.basicAi = basicAi;
+                if (string.IsNullOrWhiteSpace(existingTrack.gameType))
+                {
+                    existingTrack.gameType = ResolveVariantGameType(trackIdentifier);
+                }
+            }
+            else
+            {
+                RandomTrack.TrackList.Add(adler32Id, new Track
+                {
+                    hash = adler32Id,
+                    ID = trackIdentifier,
+                    Name = realName,
+                    gameType = ResolveVariantGameType(trackIdentifier),
+                    basicAi = basicAi
+                });
+            }
+        }
+
+        private static void ProcessTrackList(XmlDocument trackLocale)
+        {
+            if (trackLocale == null) return;
+
+            var baseGameTypes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (XmlNode xn in trackLocale.GetElementsByTagName("track"))
+            {
+                XmlElement xe = xn as XmlElement;
+                if (xe == null) continue;
+                string id = xe.GetAttribute("id");
+                if (string.IsNullOrWhiteSpace(id) || id.Contains("_S", StringComparison.OrdinalIgnoreCase)) continue;
+                string gameType = xe.GetAttribute("gameType");
+                string name = xe.GetAttribute("name");
+                AddRandomTrackEntry(id, gameType, name);
+                if (!baseGameTypes.ContainsKey(id))
+                {
+                    baseGameTypes.Add(id, gameType);
+                }
+            }
+
+            void processVariant(string elementName, string suffix)
+            {
+                foreach (XmlNode xn in trackLocale.GetElementsByTagName(elementName))
+                {
+                    XmlElement xe = xn as XmlElement;
+                    if (xe == null) continue;
+                    string refId = xe.GetAttribute("refId");
+                    if (string.IsNullOrWhiteSpace(refId) || refId.Contains("_S", StringComparison.OrdinalIgnoreCase)) continue;
+                    string variantId = $"{refId}_{suffix}";
+                    string gameType = baseGameTypes.TryGetValue(refId, out var gt) ? gt : string.Empty;
+                    string name = xe.GetAttribute("name");
+                    AddRandomTrackEntry(variantId, gameType, name);
+                }
+            }
+
+            processVariant("track_crz", "crz");
+            processVariant("track_rvs", "rvs");
+        }
+
+        private static void AddRandomTrackEntry(string trackIdentifier, string gameType, string name)
+        {
+            uint adler32Id = Adler32Helper.GenerateAdler32_UNICODE(trackIdentifier, 0);
+            string realName = string.IsNullOrWhiteSpace(name) ? string.Empty : name;
+            if (!RandomTrack.TrackList.ContainsKey(adler32Id))
+            {
+                if (string.IsNullOrWhiteSpace(gameType))
+                {
+                    gameType = ResolveVariantGameType(trackIdentifier);
+                }
+                RandomTrack.TrackList.Add(adler32Id, new Track
+                {
+                    hash = adler32Id,
+                    ID = trackIdentifier,
+                    Name = realName,
+                    gameType = gameType
+                });
+            }
+            else
+            {
+                Track existingTrack = RandomTrack.TrackList[adler32Id];
+                if (!string.IsNullOrWhiteSpace(gameType))
+                {
+                    existingTrack.gameType = gameType;
+                }
+                else if (string.IsNullOrWhiteSpace(existingTrack.gameType))
+                {
+                    existingTrack.gameType = ResolveVariantGameType(trackIdentifier);
+                }
+                if (!string.IsNullOrWhiteSpace(realName))
+                {
+                    existingTrack.Name = realName;
                 }
             }
         }
