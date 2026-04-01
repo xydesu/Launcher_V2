@@ -379,5 +379,15 @@ namespace Profile
         /// 隐藏等级赛段位
         /// </summary>
         public byte HideCompetitiveRank { get; set; } = 0;
+
+        /// <summary>
+        /// 全体快速回复
+        /// </summary>
+        public Dictionary<int, string> QuickMsg { get; set; } = new Dictionary<int, string>();
+
+        /// <summary>
+        /// 队伍快速回复
+        /// </summary>
+        public Dictionary<int, string> TeamQuickMsg { get; set; } = new Dictionary<int, string>();
     }
 }

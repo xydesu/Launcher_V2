@@ -1288,6 +1288,36 @@ public static class MultyPlayer
             }
             return;
         }
+        else if (hash == Adler32Helper.GenerateAdler32_ASCII("PqSendMacroChat"))
+        {
+            var roomId = RoomManager.TryGetRoomId(Parent.Nickname);
+            if (roomId == -1)
+            {
+                return;
+            }
+
+            int type = iPacket.ReadInt();
+            byte id = iPacket.ReadByte();
+            Player player = RoomManager.GetPlayer(roomId, Parent.Nickname);
+
+            using (OutPacket outPacket = new OutPacket("PcSendMacroChat"))
+            {
+                outPacket.WriteUInt(ClientManager.GetUserNO(Parent.Nickname));
+                outPacket.WriteInt(type);
+                outPacket.WriteByte(id);
+                if (type == 0)
+                {
+                    outPacket.WriteString(ProfileService.ProfileConfigs[Parent.Nickname].GameOption.QuickMsg[id]);
+                    BroadCast(roomId, outPacket, Parent.Nickname);
+                }
+                else
+                {
+                    outPacket.WriteString(ProfileService.ProfileConfigs[Parent.Nickname].GameOption.TeamQuickMsg[id]);
+                    BroadCast(roomId, outPacket, Parent.Nickname, player.Team);
+                }
+            }
+            return;
+        }
         else
         {
             return;
@@ -1456,16 +1486,16 @@ public static class MultyPlayer
         {
             if (member is Player p)
             {
-                if (team == 0)
+                if (Self != p.Nickname)
                 {
-                    if (Self != p.Nickname)
+                    if (team == 0)
                     {
                         p.Session.Client.Send(outPacket);
                     }
-                }
-                else if (p.Team == team)
-                {
-                    p.Session.Client.Send(outPacket);
+                    else if (p.Team == team)
+                    {
+                        p.Session.Client.Send(outPacket);
+                    }
                 }
             }
         }

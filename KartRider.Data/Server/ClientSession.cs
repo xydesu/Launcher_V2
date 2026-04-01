@@ -366,12 +366,32 @@ namespace KartRider
                         ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.GameType = iPacket.ReadByte();//팀전 개인전 여부
                         ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.SetGhost = iPacket.ReadByte();//고스트 사용여부
                         ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.SpeedType = iPacket.ReadByte();//채널 속도
-                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.RoomChat = iPacket.ReadByte();
-                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.DrivingChat = iPacket.ReadByte();
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.RoomChat = iPacket.ReadByte();//查看房间内聊天内容
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.DrivingChat = iPacket.ReadByte();//查看行驶中聊天内容
                         ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.ShowAllPlayerHitInfo = iPacket.ReadByte();
                         ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.ShowTeamColor = iPacket.ReadByte();
                         ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.Set_screen = iPacket.ReadByte();
-                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.HideCompetitiveRank = iPacket.ReadByte();
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.HideCompetitiveRank = iPacket.ReadByte();//隐藏自己的等级段位
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.QuickMsg[0] = iPacket.ReadString(false);
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.QuickMsg[1] = iPacket.ReadString(false);
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.QuickMsg[2] = iPacket.ReadString(false);
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.QuickMsg[3] = iPacket.ReadString(false);
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.QuickMsg[4] = iPacket.ReadString(false);
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.QuickMsg[5] = iPacket.ReadString(false);
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.QuickMsg[6] = iPacket.ReadString(false);
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.QuickMsg[7] = iPacket.ReadString(false);
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.QuickMsg[8] = iPacket.ReadString(false);
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.QuickMsg[9] = iPacket.ReadString(false);
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.TeamQuickMsg[0] = iPacket.ReadString(false);
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.TeamQuickMsg[1] = iPacket.ReadString(false);
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.TeamQuickMsg[2] = iPacket.ReadString(false);
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.TeamQuickMsg[3] = iPacket.ReadString(false);
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.TeamQuickMsg[4] = iPacket.ReadString(false);
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.TeamQuickMsg[5] = iPacket.ReadString(false);
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.TeamQuickMsg[6] = iPacket.ReadString(false);
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.TeamQuickMsg[7] = iPacket.ReadString(false);
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.TeamQuickMsg[8] = iPacket.ReadString(false);
+                        ProfileService.ProfileConfigs[this.Parent.Nickname].GameOption.TeamQuickMsg[9] = iPacket.ReadString(false);
                         ProfileService.Save(this.Parent.Nickname);
                         return;
                     }

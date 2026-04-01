@@ -331,6 +331,20 @@ namespace KartRider
                                 }
                             }
                         }
+                        else if (packetValue == PacketName.PqGuildChat)
+                        {
+                            string nickname = inPacket.ReadString();
+                            string message = inPacket.ReadString();
+                            using (OutPacket outPacket = new OutPacket("PrGuildChat"))
+                            {
+                                outPacket.WriteString(nickname);
+                                outPacket.WriteString(message);
+                                foreach (var client in Clients.Values)
+                                {
+                                    BeginSend(client, outPacket);
+                                }
+                            }
+                        }
                         string currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                         Console.WriteLine($"[MsgrServer][{currentTime}] " + (PacketName)hash + ": " + BitConverter.ToString(receiveBuffer).Replace("-", " "));
                     }

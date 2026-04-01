@@ -120,8 +120,27 @@ namespace KartRider
                 outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.ShowAllPlayerHitInfo);
                 outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.ShowTeamColor);
                 outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.Set_screen);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.HideCompetitiveRank);
-                outPacket.WriteBytes(new byte[79]);
+                // outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.HideCompetitiveRank);
+                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.QuickMsg.GetValueOrDefault(0) ?? "", false);
+                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.QuickMsg.GetValueOrDefault(1) ?? "", false);
+                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.QuickMsg.GetValueOrDefault(2) ?? "", false);
+                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.QuickMsg.GetValueOrDefault(3) ?? "", false);
+                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.QuickMsg.GetValueOrDefault(4) ?? "", false);
+                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.QuickMsg.GetValueOrDefault(5) ?? "", false);
+                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.QuickMsg.GetValueOrDefault(6) ?? "", false);
+                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.QuickMsg.GetValueOrDefault(7) ?? "", false);
+                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.QuickMsg.GetValueOrDefault(8) ?? "", false);
+                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.QuickMsg.GetValueOrDefault(9) ?? "", false);
+                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.TeamQuickMsg.GetValueOrDefault(0) ?? "", false);
+                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.TeamQuickMsg.GetValueOrDefault(1) ?? "", false);
+                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.TeamQuickMsg.GetValueOrDefault(2) ?? "", false);
+                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.TeamQuickMsg.GetValueOrDefault(3) ?? "", false);
+                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.TeamQuickMsg.GetValueOrDefault(4) ?? "", false);
+                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.TeamQuickMsg.GetValueOrDefault(5) ?? "", false);
+                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.TeamQuickMsg.GetValueOrDefault(6) ?? "", false);
+                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.TeamQuickMsg.GetValueOrDefault(7) ?? "", false);
+                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.TeamQuickMsg.GetValueOrDefault(8) ?? "", false);
+                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.TeamQuickMsg.GetValueOrDefault(9) ?? "", false);
                 Parent.Client.Send(outPacket);
             }
         }

@@ -1629,5 +1629,7 @@ namespace KartRider_PacketName
 		PqInviteGamePacket = 1105004290,
 		PrInviteGamePacket = 1106118403,
 		PqUpdateTrainingCenterDataPacket = 3472428179,
+		PqSendMacroChat = 758515133,
+		PcSendMacroChat = 745670063,
 	}
 }
