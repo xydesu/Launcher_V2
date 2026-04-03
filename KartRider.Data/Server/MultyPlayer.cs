@@ -86,7 +86,7 @@ public static class MultyPlayer
         Ready = new Dictionary<string, bool>();
         foreach (var player in room._slots)
         {
-            if (player is Player p)
+            if (player is Player p && !string.IsNullOrEmpty(p.Nickname))
             {
                 Ready[p.Nickname] = false;
             }
@@ -130,7 +130,7 @@ public static class MultyPlayer
             System.Threading.Thread.Sleep(1000);
 
             waitCount++;
-            if (waitCount >= 30)
+            if (waitCount >= 30 && room.StartTicks == 0)
             {
                 Set_startTrigger(Parent, room);
                 return;
@@ -138,9 +138,10 @@ public static class MultyPlayer
         }
 
         // 循环结束后输出结果
-        if (allReady)
+        if (allReady && room.StartTicks == 0)
         {
             Set_startTrigger(Parent, room);
+            return;
         }
     }
 
