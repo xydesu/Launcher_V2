@@ -12,10 +12,10 @@ public static class ModManager
     private static string ModPath { get; set; } = string.Empty;
 
     // 初始化ModManager
-    public static void Initialize(string appPath)
+    public static void Initialize(string RootDirectory)
     {
         // 定义mod路径
-        ModPath = Path.Combine(appPath, "Mods");
+        ModPath = Path.Combine(RootDirectory, "Mods");
         Console.WriteLine($"Mod加载路径: {ModPath}");
 
         // 检查mod路径是否存在

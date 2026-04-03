@@ -134,9 +134,11 @@ namespace KartRider
                         ShowWindow(consoleHandle, SW_HIDE);
                         isVisible = false;
                     }
-
-                    // 初始化ModManager
-                    ModManager.Initialize(RootDirectory);
+                    if (ProfileService.SettingConfig.EnableMod)
+                    {
+                        // 初始化ModManager
+                        ModManager.Initialize(RootDirectory);
+                    }
 
                     Application.EnableVisualStyles();
                     Application.SetCompatibleTextRenderingDefault(false);
