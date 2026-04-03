@@ -10,6 +10,7 @@ public static class ModManager
 {
     private static List<IMod> ModList { get; } = new();
     private static string ModPath { get; set; } = string.Empty;
+    public static event Action OnAllModLoaded; // 所有Mod加载完成后事件
 
     // 初始化ModManager
     public static void Initialize(string RootDirectory)
@@ -27,6 +28,8 @@ public static class ModManager
         // 加载所有Mod
         LoadMods(ModPath);
         Console.WriteLine($"Mod加载完成，共加载 {ModList.Count} 个 Mod。");
+        
+        OnAllModLoaded?.Invoke();
     }
 
     // 加载所有Mod
@@ -68,4 +71,38 @@ public static class ModManager
             }
         }
     }
+
+    // public static MethodInfo GetModMethod(string modName, string methodName)
+    // {
+    //     foreach (var mod in ModList)
+    //     {
+    //         if (mod.Name == modName)
+    //         {
+    //             return mod.GetType().GetMethod(methodName);
+    //         }
+    //     }
+    //     Console.WriteLine($"[错误] 未找到 Mod: {modName}");
+    //     return null;
+    // }
+
+    // 获取某个Mod的方法
+    public static Func<object[], object> GetModAction(string modName, string methodName)
+    {
+        var mod = ModList.Find(m => m.Name == modName);
+        if (mod == null)
+            return null;
+
+        var method = mod.GetType().GetMethod(methodName);
+        if (method == null)
+            return null;
+
+        // 返回一个包装好的委托，内部已经闭包引用了 mod 实例
+        return (parameters) =>
+        {
+            return method.Invoke(mod, parameters);
+        };
+    }
+
+    // 获取某个Mod的实例
+    public static IMod GetMod(string modName) => ModList.FirstOrDefault(mod => mod.Name == modName);
 }

@@ -10,7 +10,7 @@ public static class RoomManager
     public static Dictionary<int, GameRoom> _rooms = new Dictionary<int, GameRoom>();
     private static Dictionary<string, int> _playerRoomMap = new Dictionary<string, int>();
     private static int _nextRoomId = 1; // 下一个可用的房间ID（自增确保唯一）
-    private const int PageSize = 10;  // 每页10个
+    private const int PageSize = 10; // 每页10个
 
     // 创建新房间（返回房间ID）
     public static int CreateRoom()
@@ -37,8 +37,8 @@ public static class RoomManager
 
         // 按Key排序后分页（保持结果一致性）
         var pagedItems = _rooms
-            .OrderBy(kvp => kvp.Key)  // 按房间ID排序，可替换为其他排序字段
-            .Skip(pageIndex * PageSize)  // 直接用页码索引计算跳过的数量（无需减1）
+            .OrderBy(kvp => kvp.Key) // 按房间ID排序，可替换为其他排序字段
+            .Skip(pageIndex * PageSize) // 直接用页码索引计算跳过的数量（无需减1）
             .Take(PageSize)
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
@@ -46,7 +46,13 @@ public static class RoomManager
     }
 
     // 尝试向房间添加玩家
-    public static byte AddPlayer(int roomId, string nickname, byte team, int playerType, SessionGroup client)
+    public static byte AddPlayer(
+        int roomId,
+        string nickname,
+        byte team,
+        int playerType,
+        SessionGroup client
+    )
     {
         var room = GetRoom(roomId);
 
@@ -291,5 +297,8 @@ public static class RoomManager
         return false;
     }
 
-    public static GameRoom GetRoom(int roomId) => _rooms.TryGetValue(roomId, out var room) ? room : null;
+    public static GameRoom GetRoom(int roomId) =>
+        _rooms.TryGetValue(roomId, out var room) ? room : null;
+
+    public static Dictionary<int, GameRoom> GetRoomsDict() => _rooms;
 }
