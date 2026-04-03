@@ -137,7 +137,7 @@ namespace KartRider
                     if (ProfileService.SettingConfig.EnableMod)
                     {
                         // 初始化ModManager
-                        ModManager.Initialize(RootDirectory);
+                        ModManager.Initialize(FileName.appDir);
                     }
 
 
