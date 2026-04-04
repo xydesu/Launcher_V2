@@ -1105,6 +1105,7 @@ public static class MultyPlayer
             }
             else
             {
+                int playerCount = room.GetPlayerCount();
                 byte slot = RoomManager.AddPlayer(roomId, Parent.Nickname, 0, 2, Parent);
                 Player player = RoomManager.GetPlayer(roomId, Parent.Nickname);
                 if (slot == 255 || player == null)
@@ -1123,8 +1124,8 @@ public static class MultyPlayer
                 else if (room.GameType == 3 || room.GameType == 4)
                 {
                     uint pmap = ProfileService.ProfileConfigs[Parent.Nickname].Rider.pmap;
-                    int playerCount = room.GetPlayerCount();
-                    if (pmap == 718 || playerCount < 2)
+                    
+                    if (pmap == 718 || playerCount < 1)
                     {
                         room.RoomMaster = player.ID;
                     }
@@ -1173,8 +1174,7 @@ public static class MultyPlayer
                 else
                 {
                     uint pmap = ProfileService.ProfileConfigs[Parent.Nickname].Rider.pmap;
-                    int playerCount = room.GetPlayerCount();
-                    if (pmap == 718 || playerCount < 2)
+                    if (pmap == 718 || playerCount < 1)
                     {
                         room.RoomMaster = player.ID;
                     }
