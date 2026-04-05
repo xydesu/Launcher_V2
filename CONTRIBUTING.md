@@ -81,7 +81,7 @@ Sincere thanks to the authors of the above repositories for their excellent work
 
   - 文档修改：docs/具体内容（如 docs/update-vehicle-data-docs）
 
-4. 本地开发：基于 Launcher.cn_3075 原始代码修改时，保留核心逻辑；车辆数据相关开发可参考 kart_data_Transform 实现，确保代码可运行
+4. 本地开发：基于 [Launcher.cn_3075](https://github.com/MyPuppy/Launcher.cn_3075) 原始代码修改时，保留核心逻辑；车辆数据相关开发可参考 [kart_data_Transform](https://github.com/lkk9898969/kart_data_Transform) 实现，确保代码可运行
 
 5. 本地测试：完成开发后，验证功能正常，无新增 Bug，通过基础编译/运行检查
 
@@ -109,23 +109,13 @@ chore: 依赖更新、构建调整等（不涉及核心功能）
 
 代码规范
 
-C# 代码（基于 Launcher.cn_3075）
+C# 代码（基于 [Launcher.cn_3075](https://github.com/MyPuppy/Launcher.cn_3075)）
 
 - 遵循 .NET 命名规范，类名、方法名、变量名清晰易懂，避免乱命名
 
 - 编译无警告、无报错，确保代码可正常运行
 
 - 新增代码需添加必要注释，说明功能用途、参数含义
-
-Python 代码（车辆数据相关，参考 kart_data_Transform）
-
-- 遵循 PEP 8 规范，代码缩进、命名符合标准
-
-- 变量名、函数名采用小写+下划线，清晰体现功能（如 vehicle_data_parse）
-
-- 确保脚本可直接运行或拖拽使用，避免依赖缺失
-
-- 车辆数据解析、转换逻辑需准确，可参考 kart_data_Transform 的实现并优化
 
 PR 提交要求
 
