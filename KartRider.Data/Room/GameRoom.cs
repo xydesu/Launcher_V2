@@ -38,7 +38,9 @@ public class GameRoom
     public RoomMember[] _IDs = new RoomMember[8];
 
     public RoomMember[] ObIDs = new RoomMember[8];
-    public int ObID = 8;
+
+    // 固定的 ObID 映射：槽位 0-7 对应 ID 8-15
+    private static readonly int[] FixedObIds = { 8, 9, 10, 11, 12, 13, 14, 15 };
 
     // 构造函数：初始化房间ID（由外部传入唯一ID）
     public GameRoom(int roomId)
@@ -135,7 +137,7 @@ public class GameRoom
                 {
                     ObIDs[i] = new Player
                     {
-                        ID = ObID++,
+                        ID = FixedObIds[i],
                         SlotId = i,
                         Nickname = nickname,
                         PlayerType = 4,
