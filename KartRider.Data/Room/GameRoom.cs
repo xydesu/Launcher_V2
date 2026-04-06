@@ -223,7 +223,7 @@ public class GameRoom
     {
         shouldDeleteRoom = false;
         if (!IsValidSlotId(slotId))
-            throw new ArgumentOutOfRangeException(nameof(slotId), "格子ID必须在0-7之间");
+            return false;
 
         if (!string.IsNullOrEmpty(nickname))
         {
@@ -291,7 +291,7 @@ public class GameRoom
     public byte TrySetAi(Ai aiData, byte team)
     {
         if (aiData == null)
-            throw new ArgumentNullException(nameof(aiData), "AI数据不能为null");
+            return 255;
 
         if (team == 2)
         {
@@ -353,7 +353,7 @@ public class GameRoom
     public bool ChangeSlotId(byte slotId, byte newSlotId)
     {
         if (!IsValidSlotId(slotId) || !IsValidSlotId(newSlotId))
-            throw new ArgumentOutOfRangeException(nameof(slotId), "格子ID必须在0-7之间");
+            return false;
 
         if (_slots[newSlotId] != null)
             return false;
@@ -366,7 +366,7 @@ public class GameRoom
     public bool AddClose(byte slotId, int ID)
     {
         if (!IsValidSlotId(slotId) || !IsValidSlotId((byte)ID))
-            throw new ArgumentOutOfRangeException(nameof(slotId), "格子ID必须在0-7之间");
+            return false;
 
         if (_slots[slotId] != null)
             return false;
@@ -378,7 +378,7 @@ public class GameRoom
         close.ID = ID;
         close.PlayerType = 1;
         _slots[slotId] = close;
-        _IDs[ID] = _slots[slotId];
+        _IDs[ID] = close;
         CloseSlotIds.Add(slotId);
         return true;
     }
@@ -386,7 +386,7 @@ public class GameRoom
     public bool RemoveClose(byte slotId, int ID)
     {
         if (!IsValidSlotId(slotId) || !IsValidSlotId((byte)ID))
-            throw new ArgumentOutOfRangeException(nameof(slotId), "格子ID必须在0-7之间");
+            return false;
 
         if (_slots[slotId] == null)
             return false;
@@ -394,13 +394,10 @@ public class GameRoom
         if (_IDs[ID] == null)
             return false;
 
-        if (_slots[slotId] is Close close)
+        if (_slots[slotId] is Close && _IDs[ID] is Close)
         {
-            if (close.ID != ID)
-                return false;
-
             _slots[slotId] = null;
-            _IDs[close.ID] = null;
+            _IDs[ID] = null;
             CloseSlotIds.Remove(slotId);
             return true;
         }
