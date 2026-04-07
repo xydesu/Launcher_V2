@@ -1094,6 +1094,9 @@ public static class MultyPlayer
             var pwd = iPacket.ReadString();
             Console.WriteLine("ChJoinRoomRequestPacket, roomId = {0}, unk = {1}, pwd = {2}", roomId, unk, pwd);
 
+            var room = RoomManager.GetRoom(roomId);
+            Console.WriteLine("ChJoinRoomRequestPacket, roomId = {0}, Started = {1}", roomId, room.Started);
+
             ChJoinRoomReplyPacket(Parent, roomId, pwd);
             return;
         }
@@ -1757,20 +1760,20 @@ public static class MultyPlayer
             }
             return;
         }
-        else if (room.Started)
+        if (room.Started)
         {
             using (OutPacket outPacket = new OutPacket("ChJoinRoomReplyPacket"))
             {
                 outPacket.WriteByte(1);
                 outPacket.WriteByte(0);
                 outPacket.WriteByte(0);
-                outPacket.WriteEncByte(room.GameType);
+                outPacket.WriteEncByte(0);
                 outPacket.WriteBytes(new byte[5]);
                 Parent.Client.Send(outPacket);
             }
             return;
         }
-        else if (!string.IsNullOrEmpty(room.LockPwd) && pwd != room.LockPwd)
+        if (!string.IsNullOrEmpty(room.LockPwd) && pwd != room.LockPwd)
         {
             using (OutPacket outPacket = new OutPacket("ChJoinRoomReplyPacket"))
             {
@@ -1781,6 +1784,7 @@ public static class MultyPlayer
                 outPacket.WriteBytes(new byte[5]);
                 Parent.Client.Send(outPacket);
             }
+            return;
         }
 
         int playerCount = room.GetPlayerCount();
