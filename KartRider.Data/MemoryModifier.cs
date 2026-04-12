@@ -88,6 +88,12 @@ class MemoryModifier
             ModifyMemory(process.Id, new byte[] { 0x83, 0xFA, 0x32 }, new byte[] { 0x83, 0xFA, 0x78 });
             // 赛道模型边界大小2000改为10000单浮点
             ModifyMemory(process.Id, new byte[] { 0x00, 0x00, 0xFA, 0x44 }, new byte[] { 0x00, 0x40, 0x1C, 0x46 });
+
+            if (File.Exists(Launcher.pinFileBak))
+            {
+                File.Delete(Launcher.pinFile);
+                File.Move(Launcher.pinFileBak, Launcher.pinFile);
+            }
         }
         catch (System.ComponentModel.Win32Exception ex)
         {

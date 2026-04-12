@@ -180,8 +180,12 @@ namespace KartLibrary.File
 
         public void Dispose()
         {
-            baseStream.Close();
-            baseStream.Dispose();
+            if (baseStream != null)
+            {
+                baseStream.Close();
+                baseStream.Dispose();
+                baseStream = null;
+            }
             Blocks = null;
         }
 

@@ -81,7 +81,9 @@ namespace KartRider
                 {
                     RootDirectory = FileName.appDir;
                 }
-                else if (File.Exists(Path.Combine(RootDirectory, @"KartRider.pin")) && File.Exists(Path.Combine(RootDirectory, @"KartRider.exe")))
+                else if (!string.IsNullOrEmpty(RootDirectory) && 
+                    File.Exists(Path.Combine(RootDirectory, @"KartRider.pin")) && 
+                    File.Exists(Path.Combine(RootDirectory, @"KartRider.exe")))
                 {
                     RootDirectory = Path.GetFullPath(RootDirectory);
                 }
@@ -115,9 +117,12 @@ namespace KartRider
                         // 根据用户选择执行对应逻辑
                         if (result == DialogResult.Yes)
                         {
-                            LauncherSystem.CheckGameAsync(RootDirectory);
+                            LauncherSystem.CheckGame(RootDirectory);
                         }
-                        return;
+                        else
+                        {
+                            return;
+                        }
                     }
                     packFolderManager.Reset();
 

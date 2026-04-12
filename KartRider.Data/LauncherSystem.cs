@@ -1,9 +1,12 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using KartRider.IO.Packet;
+using Profile;
+using RHOParser;
 
 namespace KartRider
 {
@@ -22,40 +25,105 @@ namespace KartRider
 
 		public static void MessageBoxType3()
 		{
-			MessageBox.Show("找不到KartRider.exe或KartRider.pin文件！\n点击确认退出程序", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-			Environment.Exit(1);
+			DialogResult result = MessageBox.Show(
+				"找不到KartRider.exe或KartRider.pin文件！\n点击确认下载游戏文件到本程序目录，取消结束程序",
+				"确认操作",
+				MessageBoxButtons.OKCancel,
+				MessageBoxIcon.Question);
+			
+			if (result == DialogResult.OK)
+			{
+				// 使用本程序目录作为游戏目录进行下载
+				string currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
+				CheckGame(currentDirectory);
+			}
+			else
+			{
+				Environment.Exit(1);
+			}
 		}
 
 		public static async Task CheckGameAsync(string kartRiderDirectory)
 		{
-			string filePath = JsonHelper.GetFilePath();
-			var data = await Update.GetUpdateAsync();
-			if (data != null)
+			// 强制显示终端窗口
+			bool wasVisible = Program.isVisible;
+			if (!Program.isVisible)
 			{
-				System.Diagnostics.Process[] process = System.Diagnostics.Process.GetProcessesByName("KartRider");
-				foreach (System.Diagnostics.Process p in process)
+				Program.isVisible = true;
+				Program.ShowWindow(Program.consoleHandle, Program.SW_SHOW);
+			}
+			
+			try
+			{
+				string filePath = JsonHelper.GetFilePath();
+				var data = await Update.GetUpdateAsync().ConfigureAwait(false);
+				if (data != null)
 				{
-					p.Kill();
+					await new PatchManager().StartPatchAsync(data.update_prefix, kartRiderDirectory).ConfigureAwait(false);
+					Console.WriteLine("游戏更新完成！");
 				}
+				else
+				{
+					MessageBox.Show("获取游戏版本失败！", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($"更新过程发生错误：{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+			finally
+			{
+				Console.Clear();
+				var packFolderManager = KartRhoFile.Dump(Path.GetFullPath(Path.Combine(kartRiderDirectory, @"Data\aaa.pk")));
+				if (packFolderManager == null)
+				{
+					MessageBox.Show("游戏文件校验失败，请检查更新服务器或手动修复游戏文件。", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					Environment.Exit(1);
+				}
+				packFolderManager.Reset();
+				// 更新完成后，根据设置恢复终端显示状态
+				if (!wasVisible && !ProfileService.SettingConfig.Console)
+				{
+					Program.isVisible = false;
+					Program.ShowWindow(Program.consoleHandle, Program.SW_HIDE);
+				}
+			}
+		}
+
+		public static void CheckGame(string kartRiderDirectory)
+		{
+			Exception capturedException = null;
+
+			// 在新线程中运行异步操作，避免阻塞 UI 线程
+			var thread = new Thread(() =>
+			{
 				try
 				{
-					ProcessStartInfo startInfo = new ProcessStartInfo("Patcher.exe", $"'1' '123' '{data.download_prefix}' '{kartRiderDirectory}' '{filePath}'")
-					{
-						WorkingDirectory = Path.GetFullPath(kartRiderDirectory),
-						UseShellExecute = true,
-						Verb = "runas" // 请求管理员权限（内存修改可能需要）
-					};
-					Process.Start(startInfo);
-					Environment.Exit(0);
+					Console.WriteLine("[CheckGame] 启动更新线程");
+					CheckGameAsync(kartRiderDirectory).GetAwaiter().GetResult();
+					Console.WriteLine("[CheckGame] 更新线程完成");
 				}
 				catch (Exception ex)
 				{
-					Console.WriteLine($"操作失败：{ex.Message}");
+					Console.WriteLine($"[CheckGame] 更新线程异常: {ex.GetType().Name}: {ex.Message}");
+					Console.WriteLine($"[CheckGame] 堆栈: {ex.StackTrace}");
+					capturedException = ex;
 				}
-			}
-			else
+			})
 			{
-				MessageBox.Show("获取游戏版本失败！", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				IsBackground = false, // 改为前台线程，确保异常能被捕获
+				Name = "GameUpdateThread"
+			};
+
+			Console.WriteLine("[CheckGame] 启动线程");
+			thread.Start();
+			Console.WriteLine("[CheckGame] 等待线程完成...");
+			thread.Join(); // 等待线程完成
+			Console.WriteLine("[CheckGame] 线程已结束");
+
+			if (capturedException != null)
+			{
+				MessageBox.Show($"更新过程发生错误：{capturedException.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 	}
