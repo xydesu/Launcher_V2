@@ -66,13 +66,8 @@ namespace KartRider
 
             try
             {
-                PINFile val = new PINFile(pinFile);
-                ProfileService.SettingConfig.ClientVersion = val.Header.MinorVersion;
-                ProfileService.SettingConfig.LocaleID = val.Header.LocaleID;
-                ProfileService.SettingConfig.nClientLoc = val.Header.Unk2;
-                ProfileService.SaveSettings();
-                ClientVersion.Text = val.Header.MinorVersion.ToString();
-                Console.WriteLine($"ClientVersion: {val.Header.MinorVersion}");
+                ClientVersion.Text = ProfileService.SettingConfig.ClientVersion.ToString();
+                Console.WriteLine($"ClientVersion: {ClientVersion.Text}");
                 Console.WriteLine($"程序编译时间: {CompileTime.Time}");
                 VersionLabel.Text = CompileTime.Time;
                 Console.WriteLine("Process: {0}", KartRider);

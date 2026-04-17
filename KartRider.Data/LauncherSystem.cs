@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using KartRider.Common.Data;
 using KartRider.IO.Packet;
 using Profile;
 
@@ -80,6 +81,11 @@ namespace KartRider
 					Environment.Exit(1);
 				}
 				packFolderManager.Reset();
+				PINFile val = new PINFile(Path.GetFullPath(Path.Combine(kartRiderDirectory, @"KartRider.pin")));
+				ProfileService.SettingConfig.ClientVersion = val.Header.MinorVersion;
+				ProfileService.SettingConfig.LocaleID = val.Header.LocaleID;
+				ProfileService.SettingConfig.nClientLoc = val.Header.Unk2;
+				ProfileService.SaveSettings();
 				// 更新完成后，根据设置恢复终端显示状态
 				if (!wasVisible && !ProfileService.SettingConfig.Console)
 				{

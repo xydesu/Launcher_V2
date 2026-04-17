@@ -12,7 +12,8 @@ namespace KartRider;
 public class DataPacket
 {
     public string Nickname { get; set; }
-    public long TimeTicks { get; set; }
+    public ushort ClientVersion { get; set; }
+    public string CompileTime { get; set; }
 }
 
 public static class Base64Helper

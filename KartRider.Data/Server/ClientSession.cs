@@ -58,7 +58,7 @@ namespace KartRider
                     string dataPacket = Base64Helper.Decode(iPacket.ReadString(true));
                     DataPacket packet = JsonHelper.Deserialize<DataPacket>(dataPacket);
                     if (packet == null) return;
-                    if (string.IsNullOrEmpty(packet.Nickname))
+                    if (string.IsNullOrEmpty(packet.Nickname) && packet.ClientVersion != ProfileService.SettingConfig.ClientVersion && packet.CompileTime != CompileTime.Time)
                         return;
                     if (ClientManager.HasClientWithNickname(packet.Nickname))
                     {

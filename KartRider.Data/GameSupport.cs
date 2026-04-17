@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using ExcData;
 using KartRider.Common.Utilities;
 using KartRider.IO.Packet;
@@ -45,17 +46,28 @@ namespace KartRider
             new Keys { first_val = 912740103, second_val = 3754337362, key1 = "A7H8oUUAoWg65+rFF8h9xcr/aiYwecEfNQyGNF5WHhs=", key2 = "ycsTsKSzTxbOraG5PrjtBWP81YCor02tCxJquIl+5NM=" }
         };
 
-        public static uint PcFirstMessage(SessionGroup Parent)
+        public static async Task<uint> PcFirstMessageAsync(SessionGroup Parent)
         {
             Random random = new Random();
             int index = random.Next(keys.Length);
             Keys key = keys[index];
+            string updateUrl = "http://kart.myany.uk/";
+            ushort ClientVersion = ProfileService.SettingConfig.ClientVersion;
+            var data = await Update.GetUpdateAsync().ConfigureAwait(false);
+            if (data != null)
+            {
+                updateUrl = data.download_prefix;
+                if (data.version.StartsWith('P') && ushort.TryParse(data.version.TrimStart('P'), out ushort version))
+                {
+                    ClientVersion = version;
+                }
+            }
             using (OutPacket outPacket = new OutPacket("PcFirstMessage"))
             {
                 outPacket.WriteUShort(ProfileService.SettingConfig.LocaleID);
                 outPacket.WriteUShort(1);
-                outPacket.WriteUShort(ProfileService.SettingConfig.ClientVersion);
-                outPacket.WriteString("https://yanygm.github.io/Launcher_V2/");
+                outPacket.WriteUShort(ClientVersion);
+                outPacket.WriteString(updateUrl);
                 outPacket.WriteUInt(key.first_val);
                 outPacket.WriteUInt(key.second_val);
                 outPacket.WriteByte((byte)ProfileService.SettingConfig.nClientLoc);
@@ -212,7 +224,7 @@ namespace KartRider
             outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_HeadPhone);
             outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_HandGearL);
             outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Unknown2);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Uniform);   
+            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Uniform);
             outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Decal);
             outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Pet);
             outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_FlyingPet);

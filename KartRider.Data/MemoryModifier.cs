@@ -1,8 +1,10 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Profile;
 
 namespace KartRider;
@@ -58,11 +60,13 @@ class MemoryModifier
     // 进程内存操作权限（读取+写入+查询内存信息）
     private const uint PROCESS_ACCESS_FLAGS = 0x0010 | 0x0020 | 0x0008; // PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_QUERY_INFORMATION
 
-    public void LaunchAndModifyMemory(string kartRiderDirectory)
+    public async void LaunchAndModifyMemory(string kartRiderDirectory)
     {
         DataPacket packet = new DataPacket
         {
             Nickname = ProfileService.SettingConfig.Name,
+            ClientVersion = ProfileService.SettingConfig.ClientVersion,
+            CompileTime = CompileTime.Time,
         };
 
         Process process = null;
@@ -70,24 +74,40 @@ class MemoryModifier
         {
             // 1. 启动目标进程
             string passport = Base64Helper.Encode(JsonHelper.Serialize(packet));
-            ProcessStartInfo startInfo = new ProcessStartInfo("KartRider.exe", $"TGC -region:3 -passport:{passport}")
+            ProcessStartInfo startInfo1 = new ProcessStartInfo("KartRider.exe", $"TGC -region:3 -passport:{passport}")
             {
                 WorkingDirectory = Path.GetFullPath(kartRiderDirectory),
                 UseShellExecute = true,
                 Verb = "runas" // 请求管理员权限（内存修改可能需要）
             };
 
-            process = Process.Start(startInfo);
-            Console.WriteLine($"进程已启动, ID: {process.Id}");
+            string url = $"http://kart.myany.uk/";
+            string arguments = $"'1' '123' '{url}' '{Path.GetFullPath(kartRiderDirectory)}' '{Path.GetFullPath(kartRiderDirectory)}KartRider.exe TGC -region:3 -passport:{passport}'";
+            ProcessStartInfo startInfo2 = new ProcessStartInfo("Patcher.exe", arguments)
+            {
+                WorkingDirectory = Path.GetFullPath(kartRiderDirectory),
+                UseShellExecute = true,
+                Verb = "runas" // 请求管理员权限（内存修改可能需要）
+            };
 
-            // 2. 等待进程初始化（根据实际情况调整等待时间，确保进程加载完成）
-            Thread.Sleep(1000); // 等待1秒（可根据需要延长）
+            if (ProfileService.SettingConfig.ServerIP == "127.0.0.1" || !await GetUrl(url + "files.nfo2"))
+            {
+                process = Process.Start(startInfo1);
+                Console.WriteLine($"进程已启动, ID: {process.Id}");
 
-            // 3. 查找并修改内存
-            // 星标赛道数量50改为120
-            ModifyMemory(process.Id, new byte[] { 0x83, 0xFA, 0x32 }, new byte[] { 0x83, 0xFA, 0x78 });
-            // 赛道模型边界大小2000改为10000单浮点
-            ModifyMemory(process.Id, new byte[] { 0x00, 0x00, 0xFA, 0x44 }, new byte[] { 0x00, 0x40, 0x1C, 0x46 });
+                // 2. 等待进程初始化（根据实际情况调整等待时间，确保进程加载完成）
+                Thread.Sleep(1000); // 等待1秒（可根据需要延长）
+
+                // 3. 查找并修改内存
+                // 星标赛道数量50改为120
+                ModifyMemory(process.Id, new byte[] { 0x83, 0xFA, 0x32 }, new byte[] { 0x83, 0xFA, 0x78 });
+                // 赛道模型边界大小2000改为10000单浮点
+                ModifyMemory(process.Id, new byte[] { 0x00, 0x00, 0xFA, 0x44 }, new byte[] { 0x00, 0x40, 0x1C, 0x46 });
+            }
+            else
+            {
+                Process.Start(startInfo2);
+            }
         }
         catch (System.ComponentModel.Win32Exception ex)
         {
@@ -100,12 +120,8 @@ class MemoryModifier
         finally
         {
             process?.Dispose(); // 释放进程资源（不影响目标进程运行）
-            Thread.Sleep(5000);
-            if (File.Exists(Launcher.pinFileBak))
-            {
-                File.Delete(Launcher.pinFile);
-                File.Move(Launcher.pinFileBak, Launcher.pinFile);
-            }
+            string targetProcessName = "KartRider";
+            await WaitForProcessStartAsync(targetProcessName);
         }
     }
 
@@ -269,6 +285,48 @@ class MemoryModifier
         finally
         {
             CloseHandle(hProcess); // 释放进程句柄
+        }
+    }
+
+    static async Task WaitForProcessStartAsync(string processName)
+    {
+        while (true)
+        {
+            if (Process.GetProcessesByName(processName).Length > 0)
+            {
+                Thread.Sleep(10000);
+                if (File.Exists(Launcher.pinFileBak))
+                {
+                    File.Delete(Launcher.pinFile);
+                    File.Move(Launcher.pinFileBak, Launcher.pinFile);
+                }
+                return;
+            }
+            await Task.Delay(1000);
+        }
+    }
+
+    static async Task<bool> GetUrl(string url)
+    {
+        try
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                HttpResponseMessage response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, url));
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            return false;
         }
     }
 }

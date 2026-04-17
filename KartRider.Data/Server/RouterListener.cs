@@ -13,7 +13,7 @@ namespace KartRider
 {
     public class RouterListener
     {
-        public static IPAddress sIP {  get; set; }
+        public static IPAddress sIP { get; set; }
 
         public static TcpListener Listener { get; private set; }
 
@@ -47,7 +47,7 @@ namespace KartRider
                 RouterListener.MySession = new SessionGroup(clientSocket, null);
 
                 // 将会话添加到管理类
-                ClientManager.AddClient(RouterListener.MySession);
+                ClientManager.AddClientAsync(RouterListener.MySession);
             }
             catch (Exception ex)
             {

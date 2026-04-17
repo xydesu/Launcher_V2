@@ -18,6 +18,7 @@ using System.Linq;
 using System.Xml.Linq;
 using System.Globalization;
 using System.Threading.Tasks;
+using KartRider.Common.Data;
 
 namespace KartRider
 {
@@ -101,6 +102,12 @@ namespace KartRider
                         File.Delete(pinFile);
                         File.Move(pinFileBak, pinFile);
                     }
+
+                    PINFile val = new PINFile(pinFile);
+                    ProfileService.SettingConfig.ClientVersion = val.Header.MinorVersion;
+                    ProfileService.SettingConfig.LocaleID = val.Header.LocaleID;
+                    ProfileService.SettingConfig.nClientLoc = val.Header.Unk2;
+                    ProfileService.SaveSettings();
 
                     var packFolderManager = KartRhoFile.Dump(Path.GetFullPath(Path.Combine(RootDirectory, @"Data\aaa.pk")));
                     if (packFolderManager == null)
