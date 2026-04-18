@@ -1123,7 +1123,7 @@ public static class MultyPlayer
             {
                 outPacket.WriteInt(player.ID);
                 outPacket.WriteString(value);
-                BroadCast(roomId, oPacket, Parent.Nickname);
+                BroadCast(roomId, outPacket, Parent.Nickname);
             }
 
             uint pmap = ProfileService.ProfileConfigs[Parent.Nickname].Rider.pmap;
