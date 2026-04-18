@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using ExcData;
-using KartRider.Common.Utilities;
+using KartRider.Common.Security;
 using KartRider.IO.Packet;
 using Profile;
 using RiderData;
@@ -152,7 +152,7 @@ namespace KartRider
 
         public static void ChRequestChStaticReplyPacket(SessionGroup Parent)
         {
-            byte[] abcd = Array.Empty<byte>();
+            byte[] ChannelData = Array.Empty<byte>();
             using (OutPacket outPacket = new OutPacket("ChRequestChStaticReplyPacket"))
             {
                 using (OutPacket oPacket = new OutPacket())
@@ -173,12 +173,12 @@ namespace KartRider
                         oPacket.WriteByte((byte)(channel.Key + 1));
                         oPacket.WriteInt();
                     }
-                    abcd = oPacket.ToArray();
+                    ChannelData = oPacket.ToArray();
                 }
                 outPacket.WriteBool(true);
-                byte[] hacc = ChannelUtils.Encode(abcd, ChannelUtils.EncodeFlag.ZLib);
-                outPacket.WriteInt(hacc.Length);
-                outPacket.WriteBytes(hacc);
+                byte[] ChannelDataEncode = KREncodedBlock.Encode(ChannelData, KREncodedBlock.EncodeFlag.ZLib, null);
+                outPacket.WriteInt(ChannelDataEncode.Length);
+                outPacket.WriteBytes(ChannelDataEncode);
                 Parent.Client.Send(outPacket);
             }
         }

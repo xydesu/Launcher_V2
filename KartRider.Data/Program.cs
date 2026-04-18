@@ -19,6 +19,7 @@ using System.Xml.Linq;
 using System.Globalization;
 using System.Threading.Tasks;
 using KartRider.Common.Data;
+using KartRider.Common.Security;
 
 namespace KartRider
 {

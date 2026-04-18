@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using KartRider.Common.Utilities;
+using KartRider.Common.Security;
 using KartRider.IO.Packet;
 using KartRider_PacketName;
 using Profile;
@@ -164,7 +164,7 @@ namespace KartRider
                         uint otherChecksum = BitConverter.ToUInt32(receiveBuffer, receiveBuffer.Length - 4);
                         byte[] packetData = new byte[receiveBuffer.Length - (4 + 4)];
                         Buffer.BlockCopy(receiveBuffer, 4, packetData, 0, packetData.Length);
-                        Crypto.HashDecrypt(packetData, packetData.Length, iv);
+                        KRPacketCrypto.HashDecrypt(packetData, (uint)packetData.Length, iv);
                         InPacket p = new InPacket(packetData);
                         uint accountID = p.ReadUInt();
                         uint hash = p.ReadUInt();
@@ -315,7 +315,7 @@ namespace KartRider
                     byte[] data = new byte[buffer.Length + 8];
 
                     uint siv = (uint)(new Random((int)DateTime.Now.Ticks).Next());
-                    uint newHash = Crypto.HashEncrypt(buffer, buffer.Length, siv);
+                    uint newHash = KRPacketCrypto.HashEncrypt(buffer, (uint)buffer.Length, siv);
                     Buffer.BlockCopy(BitConverter.GetBytes(siv), 0, data, 0, 4);
                     Buffer.BlockCopy(BitConverter.GetBytes((uint)(siv ^ newHash ^ 1329075907U)), 0, data, data.Length - 4, 4);
                     Buffer.BlockCopy(buffer, 0, data, 4, buffer.Length);
