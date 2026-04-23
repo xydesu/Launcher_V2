@@ -596,6 +596,28 @@ public class PatchManager
         ushort ClientVersion = inPacket.ReadUShort();
         string updateUrl = inPacket.ReadString();
 
+        if (ClientVersion != ProfileService.SettingConfig.ClientVersion)
+        {
+            // 弹出“是否”确认框
+            DialogResult result = MessageBox.Show(
+                $"与服务器版本不一致，是否需要更新游戏？",
+                "确认操作",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            // 根据用户选择执行对应逻辑
+            if (result == DialogResult.Yes)
+            {
+                LauncherSystem.CheckGame(RootDirectory);
+                return;
+            }
+            else
+            {
+                return;
+            }
+        }
+
         if (string.IsNullOrWhiteSpace(updateUrl))
         {
             return;

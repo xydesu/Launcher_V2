@@ -194,7 +194,7 @@ public static class MultyPlayer
     static void Set_settleTrigger(SessionGroup Parent)
     {
         var onceTimer = new System.Timers.Timer();
-        onceTimer.Interval = 10000;
+        onceTimer.Interval = 11000;
         onceTimer.Elapsed += new System.Timers.ElapsedEventHandler((s, _event) => settleTrigger(Parent, s, _event));
         onceTimer.AutoReset = false;
         onceTimer.Start();

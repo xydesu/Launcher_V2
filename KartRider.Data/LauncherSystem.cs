@@ -1,12 +1,13 @@
+using KartLibrary.File;
+using KartRider.Common.Data;
+using KartRider.IO.Packet;
+using Profile;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using KartRider.Common.Data;
-using KartRider.IO.Packet;
-using Profile;
 
 namespace KartRider
 {
@@ -23,10 +24,10 @@ namespace KartRider
 			Environment.Exit(1);
 		}
 
-		public static void MessageBoxType3()
+		public static void MessageBoxType3(string RootDirectory)
 		{
 			DialogResult result = MessageBox.Show(
-				"找不到KartRider.exe或KartRider.pin文件！\n点击确认下载游戏文件到本程序目录，取消结束程序",
+				"找不到游戏文件！\n点击确认下载游戏文件到本程序目录，取消结束程序",
 				"确认操作",
 				MessageBoxButtons.OKCancel,
 				MessageBoxIcon.Question);
@@ -35,8 +36,15 @@ namespace KartRider
 			{
 				// 使用本程序目录作为游戏目录进行下载
 				string currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
-				CheckGame(currentDirectory);
-			}
+                if (string.IsNullOrEmpty(RootDirectory))
+				{
+                    CheckGame(currentDirectory);
+                }
+				else
+				{
+                    CheckGame(RootDirectory);
+                }
+            }
 			else
 			{
 				Environment.Exit(1);
@@ -74,7 +82,13 @@ namespace KartRider
 			finally
 			{
 				Console.Clear();
-				var packFolderManager = KartRhoFile.Dump(Path.GetFullPath(Path.Combine(kartRiderDirectory, @"Data\aaa.pk")));
+
+                if (ProfileService.SettingConfig.ServerIP != "127.0.0.1")
+                {
+                    PatchManager.StartUpdateAsync(kartRiderDirectory).Wait();
+                }
+
+                var packFolderManager = KartRhoFile.Dump(Path.GetFullPath(Path.Combine(kartRiderDirectory, @"Data\aaa.pk")));
 				if (packFolderManager == null)
 				{
 					MessageBox.Show("游戏文件校验失败，请检查更新服务器或手动修复游戏文件。", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);

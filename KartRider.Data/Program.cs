@@ -84,13 +84,14 @@ namespace KartRider
                 }
                 else if (!string.IsNullOrEmpty(RootDirectory) && 
                     File.Exists(Path.Combine(RootDirectory, @"KartRider.pin")) && 
-                    File.Exists(Path.Combine(RootDirectory, @"KartRider.exe")))
+                    File.Exists(Path.Combine(RootDirectory, @"KartRider.exe")) && 
+                    File.Exists(Path.Combine(RootDirectory, @"Patcher.exe")))
                 {
                     RootDirectory = Path.GetFullPath(RootDirectory);
                 }
                 else
                 {
-                    LauncherSystem.MessageBoxType3();
+                    LauncherSystem.MessageBoxType3(RootDirectory);
                     return;
                 }
                 string KartRider = Path.GetFullPath(Path.Combine(RootDirectory, @"KartRider.exe"));
