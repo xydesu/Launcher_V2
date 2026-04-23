@@ -1,14 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Forms;
+using KartRider.IO.Packet;
+using Profile;
 
 namespace KartRider;
 
@@ -508,6 +513,126 @@ public class PatchManager
         {
             Console.WriteLine($"  [DownloadFile] 错误: {ex.GetType().Name}: {ex.Message}");
             throw;
+        }
+    }
+
+    /// <summary>
+    /// 连接TCP服务并获取返回数据
+    /// </summary>
+    /// <param name="ip">TCP地址</param>
+    /// <param name="port">端口</param>
+    /// <param name="sendStr">要发送的内容</param>
+    /// <returns>服务端返回字符串</returns>
+    public static async Task<byte[]> GetPatchUrl(string ip, int port, int recvBufferSize = 4096, int connectTimeoutMs = 3000, int readTimeoutMs = 3000)
+    {
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(connectTimeoutMs + readTimeoutMs));
+            
+            using TcpClient client = new TcpClient(AddressFamily.InterNetwork)
+            {
+                NoDelay = true
+            };
+
+            // 使用 Task.WhenAny 实现连接超时
+            var connectTask = client.ConnectAsync(ip, port);
+            var timeoutTask = Task.Delay(connectTimeoutMs, cts.Token);
+            
+            var completedTask = await Task.WhenAny(connectTask, timeoutTask);
+            if (completedTask == timeoutTask)
+            {
+                return Array.Empty<byte>();
+            }
+            
+            // 确保连接完成
+            await connectTask;
+            
+            using NetworkStream stream = client.GetStream();
+            
+            // 读取数据，带超时
+            byte[] buffer = new byte[recvBufferSize];
+            var readTask = stream.ReadAsync(buffer, 0, buffer.Length, cts.Token);
+            var readTimeout = Task.Delay(readTimeoutMs, cts.Token);
+            
+            completedTask = await Task.WhenAny(readTask, readTimeout);
+            if (completedTask == readTimeout)
+            {
+                return Array.Empty<byte>();
+            }
+            
+            int readLen = await readTask;
+            if (readLen <= 0)
+            {
+                return Array.Empty<byte>();
+            }
+
+            byte[] res = new byte[readLen];
+            Buffer.BlockCopy(buffer, 0, res, 0, readLen);
+            return res;
+        }
+        catch
+        {
+            return Array.Empty<byte>();
+        }
+    }
+
+    public static async Task StartUpdateAsync(string RootDirectory)
+    {
+        byte[] recvData = await GetPatchUrl(ProfileService.SettingConfig.ServerIP, ProfileService.SettingConfig.ServerPort);
+
+        if (recvData.Length <= 0)
+        {
+            return;
+        }
+
+        InPacket inPacket = new InPacket(recvData);
+        inPacket.ReadUInt();
+        inPacket.ReadUInt();
+        inPacket.ReadUShort();
+        inPacket.ReadUShort();
+        ushort ClientVersion = inPacket.ReadUShort();
+        string updateUrl = inPacket.ReadString();
+
+        if (string.IsNullOrWhiteSpace(updateUrl))
+        {
+            return;
+        }
+
+        // 拼接补丁程序路径
+        string Patcher = Path.GetFullPath(Path.Combine(RootDirectory, "Patcher.exe"));
+        Console.WriteLine("启动路径：" + Patcher);
+
+        // 安全判断：文件必须存在
+        if (!File.Exists(Patcher))
+        {
+            Console.WriteLine($"错误：找不到文件 {Patcher}");
+            return;
+        }
+
+        string arguments = $"'1' '123' '{updateUrl}' '{RootDirectory}' '{Path.Combine(RootDirectory, "aaa.exe")}'";
+
+        try
+        {
+            ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                FileName = Patcher,
+                Arguments = arguments,
+                UseShellExecute = true,
+            };
+
+            using (Process process = Process.Start(startInfo))
+            {
+                Console.WriteLine("Patcher 已启动，等待更新完成...");
+
+                // ✅ 异步等待，不卡死，真正等它结束
+                await process.WaitForExitAsync();
+
+                int exitCode = process.ExitCode;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"更新启动失败：{ex.Message}");
         }
     }
 

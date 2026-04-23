@@ -25,6 +25,10 @@ namespace KartRider
             ProfileService.SettingConfig.NgsOn = NgsOn.Checked;
             ProfileService.SettingConfig.AutoUpdate = AutoUpdate.Checked;
             ProfileService.SaveSettings();
+            if (ProfileService.SettingConfig.ServerIP != "127.0.0.1")
+            {
+                PatchManager.StartUpdateAsync(Program.LauncherDlg.kartRiderDirectory);
+            }
         }
 
         private void OnLoad(object sender, EventArgs e)
@@ -147,6 +151,10 @@ namespace KartRider
             ProfileService.SettingConfig.NgsOn = NgsOn.Checked;
             ProfileService.SettingConfig.AutoUpdate = AutoUpdate.Checked;
             ProfileService.SaveSettings();
+            if (ProfileService.SettingConfig.ServerIP != "127.0.0.1")
+            {
+                PatchManager.StartUpdateAsync(Program.LauncherDlg.kartRiderDirectory);
+            }
         }
     }
 }

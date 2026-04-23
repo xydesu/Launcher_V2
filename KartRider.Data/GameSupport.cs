@@ -47,28 +47,13 @@ namespace KartRider
             new Keys { first_val = 912740103, second_val = 3754337362, key1 = "A7H8oUUAoWg65+rFF8h9xcr/aiYwecEfNQyGNF5WHhs=", key2 = "ycsTsKSzTxbOraG5PrjtBWP81YCor02tCxJquIl+5NM=" }
         };
 
-        public static async Task<uint> PcFirstMessageAsync(SessionGroup Parent)
+        public static uint PcFirstMessageAsync(SessionGroup Parent)
         {
             Random random = new Random();
             int index = random.Next(keys.Length);
             Keys key = keys[index];
             string updateUrl = ProfileService.SettingConfig.PatchUrl;
             ushort ClientVersion = ProfileService.SettingConfig.ClientVersion;
-            IPEndPoint clientEndPoint = Parent.Client.Socket.RemoteEndPoint as IPEndPoint;
-            // var data = await Update.GetUpdateAsync().ConfigureAwait(false);
-            if (updateUrl != "" && clientEndPoint != null)
-            {
-                // updateUrl = data.download_prefix;
-                // if (data.version.StartsWith('P') && ushort.TryParse(data.version.TrimStart('P'), out ushort version))
-                // {
-                //     ClientVersion = version;
-                // }
-                if (!PatchUpdate.Contains(clientEndPoint.Address.ToString()))
-                {
-                    ClientVersion = (ushort)(ProfileService.SettingConfig.ClientVersion + 1);
-                    PatchUpdate.Add(clientEndPoint.Address.ToString());
-                }
-            }
             using (OutPacket outPacket = new OutPacket("PcFirstMessage"))
             {
                 outPacket.WriteUShort(ProfileService.SettingConfig.LocaleID);

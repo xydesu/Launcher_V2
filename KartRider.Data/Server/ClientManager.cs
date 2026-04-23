@@ -31,7 +31,7 @@ public static class ClientManager
     private static uint UserNO = 1;
 
     // 添加客户端会话
-    public static async Task AddClientAsync(SessionGroup session)
+    public static void AddClientAsync(SessionGroup session)
     {
         IPEndPoint clientEndPoint = session.Client.Socket.RemoteEndPoint as IPEndPoint;
         if (clientEndPoint == null) return;
@@ -42,7 +42,7 @@ public static class ClientManager
         ClientGroup clientGroup1 = new ClientGroup { Nickname = "", RIV = 0, SIV = 0 };
         ClientGroups.TryAdd(clientId, clientGroup1);
 
-        uint IV = await GameSupport.PcFirstMessageAsync(session);
+        uint IV = GameSupport.PcFirstMessageAsync(session);
         var clientGroup2 = ClientGroups[clientId];
         clientGroup2.RIV = IV;
         clientGroup2.SIV = IV;

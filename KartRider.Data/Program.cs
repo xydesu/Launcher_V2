@@ -104,6 +104,11 @@ namespace KartRider
                         File.Move(pinFileBak, pinFile);
                     }
 
+                    if (ProfileService.SettingConfig.ServerIP != "127.0.0.1")
+                    {
+                        PatchManager.StartUpdateAsync(RootDirectory).Wait();
+                    }
+
                     PINFile val = new PINFile(pinFile);
                     ProfileService.SettingConfig.ClientVersion = val.Header.MinorVersion;
                     ProfileService.SettingConfig.LocaleID = val.Header.LocaleID;
