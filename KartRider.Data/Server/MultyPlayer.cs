@@ -480,7 +480,7 @@ public static class MultyPlayer
                 }
                 if (room.EndTicks == 0)
                 {
-                    room.EndTicks = ConvertTick() + 10000;
+                    room.EndTicks = ConvertTick() + 11000;
                     using (OutPacket oPacket = new OutPacket("GameControlPacket"))
                     {
                         oPacket.WriteInt(3);
@@ -995,7 +995,7 @@ public static class MultyPlayer
             Console.WriteLine("GameAiGoalinPacket, Id = {0}, Time = {1}", Id, Time);
             if (room.EndTicks == 0)
             {
-                room.EndTicks = ConvertTick() + 10000;
+                room.EndTicks = ConvertTick() + 11000;
                 using (OutPacket oPacket = new OutPacket("GameControlPacket"))
                 {
                     oPacket.WriteInt(3);
