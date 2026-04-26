@@ -87,57 +87,58 @@ namespace KartRider
 
         public static void PrGetGameOption(SessionGroup Parent, string Nickname)
         {
+            var config = ProfileService.GetProfileConfig(Nickname);
             using (OutPacket outPacket = new OutPacket("PrGetGameOption"))
             {
-                outPacket.WriteFloat(ProfileService.ProfileConfigs[Nickname].GameOption.Set_BGM);
-                outPacket.WriteFloat(ProfileService.ProfileConfigs[Nickname].GameOption.Set_Sound);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.Main_BGM);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.Sound_effect);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.Full_screen);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.ShowMirror);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.ShowOtherPlayerNames);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.ShowOutlines);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.ShowShadows);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.HighLevelEffect);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.MotionBlurEffect);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.MotionDistortionEffect);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.HighEndOptimization);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.AutoReady);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.PropDescription);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.VideoQuality);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.BGM_Check);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.Sound_Check);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.ShowHitInfo);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.AutoBoost);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.GameType);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.SetGhost);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.SpeedType);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.RoomChat);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.DrivingChat);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.ShowAllPlayerHitInfo);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.ShowTeamColor);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.Set_screen);
-                // outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].GameOption.HideCompetitiveRank);
-                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.QuickMsg.GetValueOrDefault(0) ?? "", false);
-                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.QuickMsg.GetValueOrDefault(1) ?? "", false);
-                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.QuickMsg.GetValueOrDefault(2) ?? "", false);
-                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.QuickMsg.GetValueOrDefault(3) ?? "", false);
-                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.QuickMsg.GetValueOrDefault(4) ?? "", false);
-                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.QuickMsg.GetValueOrDefault(5) ?? "", false);
-                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.QuickMsg.GetValueOrDefault(6) ?? "", false);
-                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.QuickMsg.GetValueOrDefault(7) ?? "", false);
-                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.QuickMsg.GetValueOrDefault(8) ?? "", false);
-                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.QuickMsg.GetValueOrDefault(9) ?? "", false);
-                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.TeamQuickMsg.GetValueOrDefault(0) ?? "", false);
-                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.TeamQuickMsg.GetValueOrDefault(1) ?? "", false);
-                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.TeamQuickMsg.GetValueOrDefault(2) ?? "", false);
-                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.TeamQuickMsg.GetValueOrDefault(3) ?? "", false);
-                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.TeamQuickMsg.GetValueOrDefault(4) ?? "", false);
-                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.TeamQuickMsg.GetValueOrDefault(5) ?? "", false);
-                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.TeamQuickMsg.GetValueOrDefault(6) ?? "", false);
-                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.TeamQuickMsg.GetValueOrDefault(7) ?? "", false);
-                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.TeamQuickMsg.GetValueOrDefault(8) ?? "", false);
-                outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].GameOption.TeamQuickMsg.GetValueOrDefault(9) ?? "", false);
+                outPacket.WriteFloat(config.GameOption.Set_BGM);
+                outPacket.WriteFloat(config.GameOption.Set_Sound);
+                outPacket.WriteByte(config.GameOption.Main_BGM);
+                outPacket.WriteByte(config.GameOption.Sound_effect);
+                outPacket.WriteByte(config.GameOption.Full_screen);
+                outPacket.WriteByte(config.GameOption.ShowMirror);
+                outPacket.WriteByte(config.GameOption.ShowOtherPlayerNames);
+                outPacket.WriteByte(config.GameOption.ShowOutlines);
+                outPacket.WriteByte(config.GameOption.ShowShadows);
+                outPacket.WriteByte(config.GameOption.HighLevelEffect);
+                outPacket.WriteByte(config.GameOption.MotionBlurEffect);
+                outPacket.WriteByte(config.GameOption.MotionDistortionEffect);
+                outPacket.WriteByte(config.GameOption.HighEndOptimization);
+                outPacket.WriteByte(config.GameOption.AutoReady);
+                outPacket.WriteByte(config.GameOption.PropDescription);
+                outPacket.WriteByte(config.GameOption.VideoQuality);
+                outPacket.WriteByte(config.GameOption.BGM_Check);
+                outPacket.WriteByte(config.GameOption.Sound_Check);
+                outPacket.WriteByte(config.GameOption.ShowHitInfo);
+                outPacket.WriteByte(config.GameOption.AutoBoost);
+                outPacket.WriteByte(config.GameOption.GameType);
+                outPacket.WriteByte(config.GameOption.SetGhost);
+                outPacket.WriteByte(config.GameOption.SpeedType);
+                outPacket.WriteByte(config.GameOption.RoomChat);
+                outPacket.WriteByte(config.GameOption.DrivingChat);
+                outPacket.WriteByte(config.GameOption.ShowAllPlayerHitInfo);
+                outPacket.WriteByte(config.GameOption.ShowTeamColor);
+                outPacket.WriteByte(config.GameOption.Set_screen);
+                // outPacket.WriteByte(config.GameOption.HideCompetitiveRank);
+                outPacket.WriteString(config.GameOption.QuickMsg.GetValueOrDefault(0) ?? "", false);
+                outPacket.WriteString(config.GameOption.QuickMsg.GetValueOrDefault(1) ?? "", false);
+                outPacket.WriteString(config.GameOption.QuickMsg.GetValueOrDefault(2) ?? "", false);
+                outPacket.WriteString(config.GameOption.QuickMsg.GetValueOrDefault(3) ?? "", false);
+                outPacket.WriteString(config.GameOption.QuickMsg.GetValueOrDefault(4) ?? "", false);
+                outPacket.WriteString(config.GameOption.QuickMsg.GetValueOrDefault(5) ?? "", false);
+                outPacket.WriteString(config.GameOption.QuickMsg.GetValueOrDefault(6) ?? "", false);
+                outPacket.WriteString(config.GameOption.QuickMsg.GetValueOrDefault(7) ?? "", false);
+                outPacket.WriteString(config.GameOption.QuickMsg.GetValueOrDefault(8) ?? "", false);
+                outPacket.WriteString(config.GameOption.QuickMsg.GetValueOrDefault(9) ?? "", false);
+                outPacket.WriteString(config.GameOption.TeamQuickMsg.GetValueOrDefault(0) ?? "", false);
+                outPacket.WriteString(config.GameOption.TeamQuickMsg.GetValueOrDefault(1) ?? "", false);
+                outPacket.WriteString(config.GameOption.TeamQuickMsg.GetValueOrDefault(2) ?? "", false);
+                outPacket.WriteString(config.GameOption.TeamQuickMsg.GetValueOrDefault(3) ?? "", false);
+                outPacket.WriteString(config.GameOption.TeamQuickMsg.GetValueOrDefault(4) ?? "", false);
+                outPacket.WriteString(config.GameOption.TeamQuickMsg.GetValueOrDefault(5) ?? "", false);
+                outPacket.WriteString(config.GameOption.TeamQuickMsg.GetValueOrDefault(6) ?? "", false);
+                outPacket.WriteString(config.GameOption.TeamQuickMsg.GetValueOrDefault(7) ?? "", false);
+                outPacket.WriteString(config.GameOption.TeamQuickMsg.GetValueOrDefault(8) ?? "", false);
+                outPacket.WriteString(config.GameOption.TeamQuickMsg.GetValueOrDefault(9) ?? "", false);
                 Parent.Client.Send(outPacket);
             }
         }
@@ -205,48 +206,50 @@ namespace KartRider
 
         public static void GetRider(string Nickname, OutPacket outPacket)
         {
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Character);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Paint);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Kart);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Plate);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Goggle);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Balloon);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Unknown1);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_HeadBand);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_HeadPhone);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_HandGearL);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Unknown2);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Uniform);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Decal);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Pet);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_FlyingPet);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Aura);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_SkidMark);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_SpecialKit);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_RidColor);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_BonusCard);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_BossModeCard);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartPlant1);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartPlant2);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartPlant3);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartPlant4);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Unknown3);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_FishingPole);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Tachometer);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Dye);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartSN);
-            outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Unknown4);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartCoating);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartTailLamp);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_slotBg);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartCoating12);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartTailLamp12);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartBoosterEffect12);
-            outPacket.WriteUShort(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Unknown5);
+            var config = ProfileService.GetProfileConfig(Nickname);
+            outPacket.WriteUShort(config.RiderItem.Set_Character);
+            outPacket.WriteUShort(config.RiderItem.Set_Paint);
+            outPacket.WriteUShort(config.RiderItem.Set_Kart);
+            outPacket.WriteUShort(config.RiderItem.Set_Plate);
+            outPacket.WriteUShort(config.RiderItem.Set_Goggle);
+            outPacket.WriteUShort(config.RiderItem.Set_Balloon);
+            outPacket.WriteUShort(config.RiderItem.Set_Unknown1);
+            outPacket.WriteUShort(config.RiderItem.Set_HeadBand);
+            outPacket.WriteUShort(config.RiderItem.Set_HeadPhone);
+            outPacket.WriteUShort(config.RiderItem.Set_HandGearL);
+            outPacket.WriteUShort(config.RiderItem.Set_Unknown2);
+            outPacket.WriteUShort(config.RiderItem.Set_Uniform);
+            outPacket.WriteUShort(config.RiderItem.Set_Decal);
+            outPacket.WriteUShort(config.RiderItem.Set_Pet);
+            outPacket.WriteUShort(config.RiderItem.Set_FlyingPet);
+            outPacket.WriteUShort(config.RiderItem.Set_Aura);
+            outPacket.WriteUShort(config.RiderItem.Set_SkidMark);
+            outPacket.WriteUShort(config.RiderItem.Set_SpecialKit);
+            outPacket.WriteUShort(config.RiderItem.Set_RidColor);
+            outPacket.WriteUShort(config.RiderItem.Set_BonusCard);
+            outPacket.WriteUShort(config.RiderItem.Set_BossModeCard);
+            outPacket.WriteUShort(config.RiderItem.Set_KartPlant1);
+            outPacket.WriteUShort(config.RiderItem.Set_KartPlant2);
+            outPacket.WriteUShort(config.RiderItem.Set_KartPlant3);
+            outPacket.WriteUShort(config.RiderItem.Set_KartPlant4);
+            outPacket.WriteUShort(config.RiderItem.Set_Unknown3);
+            outPacket.WriteUShort(config.RiderItem.Set_FishingPole);
+            outPacket.WriteUShort(config.RiderItem.Set_Tachometer);
+            outPacket.WriteUShort(config.RiderItem.Set_Dye);
+            outPacket.WriteUShort(config.RiderItem.Set_KartSN);
+            outPacket.WriteByte(config.RiderItem.Set_Unknown4);
+            outPacket.WriteUShort(config.RiderItem.Set_KartCoating);
+            outPacket.WriteUShort(config.RiderItem.Set_KartTailLamp);
+            outPacket.WriteUShort(config.RiderItem.Set_slotBg);
+            outPacket.WriteUShort(config.RiderItem.Set_KartCoating12);
+            outPacket.WriteUShort(config.RiderItem.Set_KartTailLamp12);
+            outPacket.WriteUShort(config.RiderItem.Set_KartBoosterEffect12);
+            outPacket.WriteUShort(config.RiderItem.Set_Unknown5);
         }
 
         public static void PrGetRiderInfo(string nickname, SessionGroup Parent)
         {
+            var config = ProfileService.GetProfileConfig(nickname);
             using (OutPacket outPacket = new OutPacket("PrGetRiderInfo"))
             {
                 outPacket.WriteByte(1);
@@ -255,33 +258,33 @@ namespace KartRider
                 outPacket.WriteString(nickname);
                 outPacket.WriteDateTime(DateTime.Now);
                 GameSupport.GetRider(nickname, outPacket);
-                outPacket.WriteString(ProfileService.ProfileConfigs[nickname].Rider.Card);
-                outPacket.WriteUInt(ProfileService.ProfileConfigs[nickname].Rider.RP);
+                outPacket.WriteString(config.Rider.Card);
+                outPacket.WriteUInt(config.Rider.RP);
                 outPacket.WriteInt(0);
                 outPacket.WriteByte(RiderSchool.catLevel);//Licenses
                 outPacket.WriteDateTime(DateTime.Now);
                 outPacket.WriteBytes(new byte[17]);
-                outPacket.WriteShort(ProfileService.ProfileConfigs[nickname].Rider.Emblem1);
-                outPacket.WriteShort(ProfileService.ProfileConfigs[nickname].Rider.Emblem2);
+                outPacket.WriteShort(config.Rider.Emblem1);
+                outPacket.WriteShort(config.Rider.Emblem2);
                 outPacket.WriteShort(0);
-                outPacket.WriteString(ProfileService.ProfileConfigs[nickname].Rider.RiderIntro);
-                outPacket.WriteInt(ProfileService.ProfileConfigs[nickname].Rider.Premium);
+                outPacket.WriteString(config.Rider.RiderIntro);
+                outPacket.WriteInt(config.Rider.Premium);
                 outPacket.WriteByte(1);
-                if (ProfileService.ProfileConfigs[nickname].Rider.Premium == 0)
+                if (config.Rider.Premium == 0)
                     outPacket.WriteInt(0);
-                else if (ProfileService.ProfileConfigs[nickname].Rider.Premium == 1)
+                else if (config.Rider.Premium == 1)
                     outPacket.WriteInt(10000);
-                else if (ProfileService.ProfileConfigs[nickname].Rider.Premium == 2)
+                else if (config.Rider.Premium == 2)
                     outPacket.WriteInt(30000);
-                else if (ProfileService.ProfileConfigs[nickname].Rider.Premium == 3)
+                else if (config.Rider.Premium == 3)
                     outPacket.WriteInt(60000);
-                else if (ProfileService.ProfileConfigs[nickname].Rider.Premium == 4)
+                else if (config.Rider.Premium == 4)
                     outPacket.WriteInt(120000);
-                else if (ProfileService.ProfileConfigs[nickname].Rider.Premium == 5)
+                else if (config.Rider.Premium == 5)
                     outPacket.WriteInt(200000);
                 else
                     outPacket.WriteInt(0);
-                if (ProfileService.ProfileConfigs[nickname].Rider.ClubMark_LOGO == 0)
+                if (config.Rider.ClubMark_LOGO == 0)
                 {
                     outPacket.WriteInt(0);
                     outPacket.WriteInt(0);
@@ -290,13 +293,13 @@ namespace KartRider
                 }
                 else
                 {
-                    outPacket.WriteInt(ProfileService.ProfileConfigs[nickname].Rider.ClubCode);
-                    outPacket.WriteInt(ProfileService.ProfileConfigs[nickname].Rider.ClubMark_LOGO);
-                    outPacket.WriteInt(ProfileService.ProfileConfigs[nickname].Rider.ClubMark_LINE);
-                    outPacket.WriteString(ProfileService.ProfileConfigs[nickname].Rider.ClubName);
+                    outPacket.WriteInt(config.Rider.ClubCode);
+                    outPacket.WriteInt(config.Rider.ClubMark_LOGO);
+                    outPacket.WriteInt(config.Rider.ClubMark_LINE);
+                    outPacket.WriteString(config.Rider.ClubName);
                 }
                 outPacket.WriteInt(0);
-                outPacket.WriteByte(ProfileService.ProfileConfigs[nickname].Rider.Ranker);
+                outPacket.WriteByte(config.Rider.Ranker);
                 outPacket.WriteBytes(new byte[33]);
                 Parent.Client.Send(outPacket);
             }
@@ -304,9 +307,10 @@ namespace KartRider
 
         public static void PrCheckMyClubStatePacket(SessionGroup Parent, string Nickname)
         {
+            var config = ProfileService.GetProfileConfig(Nickname);
             using (OutPacket outPacket = new OutPacket("PrCheckMyClubStatePacket"))
             {
-                if (ProfileService.ProfileConfigs[Nickname].Rider.ClubMark_LOGO == 0)
+                if (config.Rider.ClubMark_LOGO == 0)
                 {
                     outPacket.WriteInt(0);
                     outPacket.WriteString("");
@@ -315,10 +319,10 @@ namespace KartRider
                 }
                 else
                 {
-                    outPacket.WriteInt(ProfileService.ProfileConfigs[Nickname].Rider.ClubCode);
-                    outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].Rider.ClubName);
-                    outPacket.WriteInt(ProfileService.ProfileConfigs[Nickname].Rider.ClubMark_LOGO);
-                    outPacket.WriteInt(ProfileService.ProfileConfigs[Nickname].Rider.ClubMark_LINE);
+                    outPacket.WriteInt(config.Rider.ClubCode);
+                    outPacket.WriteString(config.Rider.ClubName);
+                    outPacket.WriteInt(config.Rider.ClubMark_LOGO);
+                    outPacket.WriteInt(config.Rider.ClubMark_LINE);
                 }
                 outPacket.WriteShort(5);//Grade
                 outPacket.WriteString(Nickname);
@@ -328,6 +332,40 @@ namespace KartRider
                 if (serverEndPoint == null) return;
                 outPacket.WriteEndPoint(serverEndPoint.Address, 39322);
                 Parent.Client.Send(outPacket);
+            }
+        }
+
+        public static void GetMsgrFriendList(SessionGroup Parent, OutPacket outPacket)
+        {
+            outPacket.WriteInt(ClientManager.UserNOToNickname.Count - 1);
+            foreach (var User in ClientManager.UserNOToNickname.Where(u => u.Value != Parent.Nickname))
+            {
+                outPacket.WriteUInt(User.Key);
+                outPacket.WriteString(User.Value);
+                outPacket.WriteUInt(ProfileService.GetProfileConfig(User.Value).Rider.RP);
+                outPacket.WriteHexString("00 00 00 00 00 00");
+                if (ClientManager.ClientGroups.Any(cg => cg.Value.Nickname == User.Value))
+                {
+                    outPacket.WriteByte(1);
+                }
+                else
+                {
+                    outPacket.WriteByte(0);
+                }
+                outPacket.WriteHexString("00 00 00 00 00");
+            }
+        }
+
+        public static void RefreshRecommendFriendList(SessionGroup Parent, OutPacket outPacket)
+        {
+            outPacket.WriteInt(ClientManager.ClientGroups.Count - 1);
+            foreach (var User in ClientManager.ClientGroups.Where(u => u.Value.Nickname != Parent.Nickname))
+            {
+                outPacket.WriteUInt(ClientManager.GetUserNO(User.Value.Nickname));
+                outPacket.WriteString(User.Value.Nickname);
+                outPacket.WriteUInt(ProfileService.GetProfileConfig(User.Value.Nickname).Rider.RP);
+                outPacket.WriteHexString("00 00 00 00 00 00");
+                outPacket.WriteHexString("F2 06 00 00 00 00");
             }
         }
 

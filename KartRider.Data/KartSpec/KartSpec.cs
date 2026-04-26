@@ -158,7 +158,7 @@ namespace KartRider
             try
             {
                 // 1. 处理卡丁车ID为0的默认情况
-                ushort KartID = ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Kart;
+                ushort KartID = ProfileService.GetProfileConfig(Nickname).RiderItem.Set_Kart;
                 if (School || KartID == 0)
                 {
                     Console.WriteLine("[KartSpec] 卡丁车ID=0, 加载练习车数据");

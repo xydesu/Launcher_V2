@@ -127,7 +127,7 @@ public class GameRoom
     // 尝试添加玩家（成功后自动检查是否需要删除房间）
     public byte TryAddPlayer(string nickname, byte team, int playerType, SessionGroup client)
     {
-        uint pmap = ProfileService.ProfileConfigs[nickname].Rider.pmap;
+        uint pmap = ProfileService.GetProfileConfig(nickname).Rider.pmap;
         if (pmap == 718 || pmap == 590)
         {
             for (byte i = 0; i < 8; i++)
@@ -228,7 +228,7 @@ public class GameRoom
 
         if (!string.IsNullOrEmpty(nickname))
         {
-            uint pmap = ProfileService.ProfileConfigs[nickname].Rider.pmap;
+            uint pmap = ProfileService.GetProfileConfig(nickname).Rider.pmap;
             if (pmap == 718 || pmap == 590)
             {
                 if (ObIDs[slotId] is Player p1)

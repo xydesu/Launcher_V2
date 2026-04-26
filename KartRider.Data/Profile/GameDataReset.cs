@@ -8,11 +8,12 @@ namespace KartRider
     {
         public static void DataReset(string Nickname)
         {
-            if (ProfileService.ProfileConfigs[Nickname].Rider.Lucci > uint.MaxValue)
+            var resetConfig = ProfileService.GetProfileConfig(Nickname);
+            if (resetConfig.Rider.Lucci > uint.MaxValue)
             {
-                ProfileService.ProfileConfigs[Nickname].Rider.Lucci = SessionGroup.LucciMax;
+                resetConfig.Rider.Lucci = SessionGroup.LucciMax;
             }
-            ProfileService.Save(Nickname);
+            ProfileService.Save(Nickname, resetConfig);
             SpeedPatch.SpeedPatcData();
             //GameSupport.PrLogin();
             Console.WriteLine("Login...OK");

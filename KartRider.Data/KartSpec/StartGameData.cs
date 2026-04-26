@@ -47,8 +47,8 @@ namespace KartRider
                 oPacket.WriteByte(0);
                 oPacket.WriteInt(0);
                 oPacket.WriteInt(0);
-                oPacket.WriteUInt(ProfileService.ProfileConfigs[Nickname].Rider.Lucci);
-                oPacket.WriteUInt(ProfileService.ProfileConfigs[Nickname].Rider.Koin);
+                oPacket.WriteUInt(ProfileService.GetProfileConfig(Nickname).Rider.Lucci);
+                oPacket.WriteUInt(ProfileService.GetProfileConfig(Nickname).Rider.Koin);
                 oPacket.WriteUInt(Track);
                 Parent.Client.Send(oPacket);
             }
@@ -87,8 +87,8 @@ namespace KartRider
                 oPacket.WriteByte(0);
                 oPacket.WriteInt(0);
                 oPacket.WriteInt(0);
-                oPacket.WriteUInt(ProfileService.ProfileConfigs[Nickname].Rider.Lucci);
-                oPacket.WriteUInt(ProfileService.ProfileConfigs[Nickname].Rider.Koin);
+                oPacket.WriteUInt(ProfileService.GetProfileConfig(Nickname).Rider.Lucci);
+                oPacket.WriteUInt(ProfileService.GetProfileConfig(Nickname).Rider.Koin);
                 oPacket.WriteUInt(Track);
                 Parent.Client.Send(oPacket);
             }

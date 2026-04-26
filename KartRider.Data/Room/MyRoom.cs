@@ -38,6 +38,9 @@ public class MyRoomData
         if (string.IsNullOrEmpty(owner) || string.IsNullOrEmpty(member))
             return false;
 
+        if (owner != member && !ClientManager.NicknameToUserNO.ContainsKey(owner))
+            return false;
+
         string previousOwner = null;
         bool added = false;
 
@@ -238,14 +241,9 @@ public class MyRoomData
         {
             ChRpEnterMyRoomPacket(Parent, 3);
             return;
-        } 
+        }
 
         EnsureProfileLoaded(owner);
-        if (!ProfileService.ProfileConfigs.ContainsKey(owner))
-        {
-            ChRpEnterMyRoomPacket(Parent, 3);
-            return;
-        }
 
         if (!TryEnterMyRoom(owner, Nickname))
         {
@@ -253,21 +251,22 @@ public class MyRoomData
             return;
         }
 
+        var ownerConfig = ProfileService.GetProfileConfig(owner);
         using (OutPacket outPacket = new OutPacket("ChRpEnterMyRoomPacket"))
         {
             outPacket.WriteString(owner);
             outPacket.WriteByte(0);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[owner].MyRoom.MyRoom);
-            outPacket.WriteByte(ProfileService.ProfileConfigs[owner].MyRoom.MyRoomBGM);
-            outPacket.WriteByte(ProfileService.ProfileConfigs[owner].MyRoom.UseRoomPwd);
+            outPacket.WriteShort(ownerConfig.MyRoom.MyRoom);
+            outPacket.WriteByte(ownerConfig.MyRoom.MyRoomBGM);
+            outPacket.WriteByte(ownerConfig.MyRoom.UseRoomPwd);
             outPacket.WriteByte(0);
-            outPacket.WriteByte(ProfileService.ProfileConfigs[owner].MyRoom.UseItemPwd);
-            outPacket.WriteByte(ProfileService.ProfileConfigs[owner].MyRoom.TalkLock);
-            outPacket.WriteString(ProfileService.ProfileConfigs[owner].MyRoom.RoomPwd);
+            outPacket.WriteByte(ownerConfig.MyRoom.UseItemPwd);
+            outPacket.WriteByte(ownerConfig.MyRoom.TalkLock);
+            outPacket.WriteString(ownerConfig.MyRoom.RoomPwd);
             outPacket.WriteString("");
-            outPacket.WriteString(ProfileService.ProfileConfigs[owner].MyRoom.ItemPwd);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[owner].MyRoom.MyRoomKart1);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[owner].MyRoom.MyRoomKart2);
+            outPacket.WriteString(ownerConfig.MyRoom.ItemPwd);
+            outPacket.WriteShort(ownerConfig.MyRoom.MyRoomKart1);
+            outPacket.WriteShort(ownerConfig.MyRoom.MyRoomKart2);
             Parent.Client.Send(outPacket);
         }
     }
@@ -296,19 +295,20 @@ public class MyRoomData
 
     public static void RmNotiMyRoomInfoPacket(SessionGroup Parent, string Nickname)
     {
+        var myRoomConfig = ProfileService.GetProfileConfig(Nickname);
         using (OutPacket outPacket = new OutPacket("RmNotiMyRoomInfoPacket"))
         {
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].MyRoom.MyRoom);
-            outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].MyRoom.MyRoomBGM);
-            outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].MyRoom.UseRoomPwd);
+            outPacket.WriteShort(myRoomConfig.MyRoom.MyRoom);
+            outPacket.WriteByte(myRoomConfig.MyRoom.MyRoomBGM);
+            outPacket.WriteByte(myRoomConfig.MyRoom.UseRoomPwd);
             outPacket.WriteByte(0);
-            outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].MyRoom.UseItemPwd);
-            outPacket.WriteByte(ProfileService.ProfileConfigs[Nickname].MyRoom.TalkLock);
-            outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].MyRoom.RoomPwd);
+            outPacket.WriteByte(myRoomConfig.MyRoom.UseItemPwd);
+            outPacket.WriteByte(myRoomConfig.MyRoom.TalkLock);
+            outPacket.WriteString(myRoomConfig.MyRoom.RoomPwd);
             outPacket.WriteString("");
-            outPacket.WriteString(ProfileService.ProfileConfigs[Nickname].MyRoom.ItemPwd);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].MyRoom.MyRoomKart1);
-            outPacket.WriteShort(ProfileService.ProfileConfigs[Nickname].MyRoom.MyRoomKart2);
+            outPacket.WriteString(myRoomConfig.MyRoom.ItemPwd);
+            outPacket.WriteShort(myRoomConfig.MyRoom.MyRoomKart1);
+            outPacket.WriteShort(myRoomConfig.MyRoom.MyRoomKart2);
             Parent.Client.Send(outPacket);
         }
     }
@@ -389,28 +389,21 @@ public class MyRoomData
         {
             Profile.FileName.Load(nickname);
         }
-        if (!Profile.ProfileService.ProfileConfigs.ContainsKey(nickname))
-        {
-            Profile.ProfileService.Load(nickname);
-        }
     }
 
-    private static IPEndPoint GetPlayerEndPoint(string nickname, bool p2p)
+    private static IPEndPoint GetPlayerEndPoint(string nickname)
     {
         if (string.IsNullOrEmpty(nickname))
             return new IPEndPoint(System.Net.IPAddress.Any, 0);
 
         EnsureProfileLoaded(nickname);
-        if (!Profile.ProfileService.ProfileConfigs.TryGetValue(nickname, out var profile))
-            return new IPEndPoint(System.Net.IPAddress.Any, 0);
-
+        var profile = ProfileService.GetProfileConfig(nickname);
         try
         {
             IPEndPoint client = ClientManager.ClientToIPEndPoint(profile.Rider.ClientId);
             if (client != null)
             {
-                int port = p2p ? profile.Rider.P2pPort : profile.Rider.UdpPort;
-                return new IPEndPoint(client.Address, port);
+                return new IPEndPoint(client.Address, profile.Rider.P2pPort);
             }
         }
         catch
@@ -435,15 +428,16 @@ public class MyRoomData
         }
 
         EnsureProfileLoaded(nickname);
-        if (!Profile.ProfileService.ProfileConfigs.TryGetValue(nickname, out var profile))
+        if (!ClientManager.NicknameToUserNO.ContainsKey(nickname))
         {
             WriteEmptySlot(outPacket);
             return;
         }
+        var profile = ProfileService.GetProfileConfig(nickname);
 
         outPacket.WriteUInt(ClientManager.GetUserNO(nickname));
-        outPacket.WriteEndPoint(GetPlayerEndPoint(nickname, true));
-        outPacket.WriteEndPoint(GetPlayerEndPoint(nickname, false));
+        outPacket.WriteEndPoint(GetPlayerEndPoint(nickname));
+        outPacket.WriteEndPoint(new IPEndPoint(IPAddress.Any, 0));
         outPacket.WriteString(nickname);
         GameSupport.GetRider(nickname, outPacket);
         outPacket.WriteUInt(profile.Rider.RP);

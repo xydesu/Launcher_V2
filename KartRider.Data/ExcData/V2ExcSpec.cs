@@ -42,7 +42,8 @@ namespace ExcData
                 Level12List = JsonHelper.DeserializeNoBom<List<Level12>>(filename.Level12Data_LoadFile) ?? new List<Level12>();
             }
             List<short> skills = new List<short>();
-            var existingLevel = Level12List.FirstOrDefault(Level12 => Level12.ID == ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Kart && Level12.SN == ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartSN);
+            var config = ProfileService.GetProfileConfig(Nickname);
+            var existingLevel = Level12List.FirstOrDefault(Level12 => Level12.ID == config.RiderItem.Set_Kart && Level12.SN == config.RiderItem.Set_KartSN);
             if (existingLevel != null)
             {
                 if (existingLevel.SkillGrade1 != 0)
@@ -110,7 +111,8 @@ namespace ExcData
 
             if (Kart.defaultExceedType > 0)
             {
-                var KartAndSN = new { Kart = ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Kart, SN = ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartSN };
+                var v2config = ProfileService.GetProfileConfig(Nickname);
+                var KartAndSN = new { Kart = v2config.RiderItem.Set_Kart, SN = v2config.RiderItem.Set_KartSN };
                 var existingParts = Parts12List.FirstOrDefault(parts => parts.ID == KartAndSN.Kart && parts.SN == KartAndSN.SN);
 
                 // Handle exceed type

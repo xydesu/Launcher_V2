@@ -95,8 +95,9 @@ namespace ExcData
             {
                 TuneList = JsonHelper.DeserializeNoBom<List<Tune>>(filename.TuneData_LoadFile) ?? new List<Tune>();
             }
-            ushort Set_Kart = ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Kart;
-            ushort Set_KartSN = ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartSN;
+            var config = ProfileService.GetProfileConfig(Nickname);
+            ushort Set_Kart = config.RiderItem.Set_Kart;
+            ushort Set_KartSN = config.RiderItem.Set_KartSN;
             var existingTune = TuneList.FirstOrDefault(tune => tune.ID == Set_Kart && tune.SN == Set_KartSN);
             if (existingTune != null)
             {
@@ -162,8 +163,9 @@ namespace ExcData
             {
                 PlantList = JsonHelper.DeserializeNoBom<List<Plant>>(filename.PlantData_LoadFile) ?? new List<Plant>();
             }
-            ushort Set_Kart = ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Kart;
-            ushort Set_KartSN = ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartSN;
+            var config = ProfileService.GetProfileConfig(Nickname);
+            ushort Set_Kart = config.RiderItem.Set_Kart;
+            ushort Set_KartSN = config.RiderItem.Set_KartSN;
             var existingPlant = PlantList.FirstOrDefault(plant => plant.ID == Set_Kart && plant.SN == Set_KartSN);
             if (existingPlant != null)
             {
@@ -1090,8 +1092,9 @@ namespace ExcData
             {
                 LevelList = JsonHelper.DeserializeNoBom<List<Level>>(filename.LevelData_LoadFile) ?? new List<Level>();
             }
-            ushort Set_Kart = ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Kart;
-            ushort Set_KartSN = ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartSN;
+            var levelConfig = ProfileService.GetProfileConfig(Nickname);
+            ushort Set_Kart = levelConfig.RiderItem.Set_Kart;
+            ushort Set_KartSN = levelConfig.RiderItem.Set_KartSN;
             var existingLevel = LevelList.FirstOrDefault(level => level.ID == Set_Kart && level.SN == Set_KartSN);
             if (existingLevel != null)
             {
@@ -1130,8 +1133,9 @@ namespace ExcData
             {
                 PartsList = JsonHelper.DeserializeNoBom<List<Parts>>(filename.PartsData_LoadFile) ?? new List<Parts>();
             }
-            ushort Set_Kart = ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Kart;
-            ushort Set_KartSN = ProfileService.ProfileConfigs[Nickname].RiderItem.Set_KartSN;
+            var partsConfig = ProfileService.GetProfileConfig(Nickname);
+            ushort Set_Kart = partsConfig.RiderItem.Set_Kart;
+            ushort Set_KartSN = partsConfig.RiderItem.Set_KartSN;
             var existingParts = PartsList.FirstOrDefault(parts => parts.ID == Set_Kart && parts.SN == Set_KartSN);
             if (existingParts != null)
             {

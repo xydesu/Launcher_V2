@@ -8,11 +8,11 @@ namespace KartRider;
 
 public class SlotData
 {
-    public static SpecialKartConfig kartConfig = new SpecialKartConfig();
     private static readonly Random _random = new Random();
 
     public static void GameSlotPacket(SessionGroup Parent, InPacket iPacket)
     {
+        var kartConfig = SpecialKartConfig.LoadConfigFromFile(FileName.SpecialKartConfig);
         int roomId = RoomManager.TryGetRoomId(Parent.Nickname);
         var room = RoomManager.GetRoom(roomId);
         if (room == null)
@@ -27,7 +27,7 @@ public class SlotData
 
         if (id == player.ID)
         {
-            if (item == uint.MaxValue && iPacket.Length == 77)
+            if (type <= 2)
             {
                 byte[] data1 = iPacket.ReadBytes(25);
                 short skill1 = iPacket.ReadShort();
@@ -55,16 +55,27 @@ public class SlotData
                     oPacket.WriteUInt(ticks);
                     MultyPlayer.BroadCast(roomId, oPacket);
                 }
+                return;
             }
-            else if (type == 9 || type == 10 || type == 12)
+            else if (type is 5 or 7 or 8 or 17)
+            {
+                using (OutPacket oPacket = new OutPacket())
+                {
+                    oPacket.WriteBytes(iPacket.ToArray());
+                    MultyPlayer.BroadCast(roomId, oPacket);
+                }
+                return;
+            }
+            else if (type is 9 or 10 or 12)
             {
                 using (OutPacket oPacket = new OutPacket())
                 {
                     oPacket.WriteBytes(iPacket.ToArray());
                     MultyPlayer.BroadCast(roomId, oPacket, Parent.Nickname);
                 }
+                return;
             }
-            if (type == 11)
+            else if(type == 11)
             {
                 var uni = iPacket.ReadByte();
                 var skill = iPacket.ReadShort();
@@ -75,18 +86,17 @@ public class SlotData
                 }
 
                 // Ensure profile is loaded before accessing
-                if (ProfileService.ProfileConfigs.ContainsKey(Parent.Nickname))
+                var parentConfig = ProfileService.GetProfileConfig(Parent.Nickname);
+                if (kartConfig.SkillAttacked.TryGetValue(parentConfig.RiderItem.Set_Kart, out var kartSkills))
                 {
-                    if (kartConfig.SkillAttacked.TryGetValue(ProfileService.ProfileConfigs[Parent.Nickname].RiderItem.Set_Kart, out var kartSkills))
+                    if (kartSkills.TryGetValue(skill, out var skillConfig))
                     {
-                        if (kartSkills.TryGetValue(skill, out var skillConfig))
-                        {
-                            // 传入概率参数，由 AttackedSkill 内部判断是否触发
-                            AttackedSkill(roomId, id, Parent, type, uni, skillConfig.TargetItemId, skillConfig.Probability);
-                        }
+                        // 传入概率参数，由 AttackedSkill 内部判断是否触发
+                        AttackedSkill(roomId, id, Parent, type, uni, skillConfig.TargetItemId, skillConfig.Probability);
                     }
                 }
                 Console.WriteLine("GameSlotPacket, Attacked. Skill = {0}", skill);
+                return;
             }
             else if (type == 18)
             {
@@ -101,18 +111,17 @@ public class SlotData
                 }
 
                 // Ensure profile is loaded before accessing
-                if (ProfileService.ProfileConfigs.ContainsKey(Parent.Nickname))
+                var parentConfig2 = ProfileService.GetProfileConfig(Parent.Nickname);
+                if (kartConfig.SkillMappings.TryGetValue(parentConfig2.RiderItem.Set_Kart, out var kartSkills2))
                 {
-                    if (kartConfig.SkillMappings.TryGetValue(ProfileService.ProfileConfigs[Parent.Nickname].RiderItem.Set_Kart, out var kartSkills))
+                    if (kartSkills2.TryGetValue(skill, out var skillConfig2))
                     {
-                        if (kartSkills.TryGetValue(skill, out var skillConfig))
-                        {
-                            // 传入概率参数，由 AddItemSkill 内部判断是否触发
-                            AddItemSkill(roomId, id, Parent, skillConfig.TargetItemId, skillConfig.Probability);
-                        }
+                        // 传入概率参数，由 AddItemSkill 内部判断是否触发
+                        AddItemSkill(roomId, id, Parent, skillConfig2.TargetItemId, skillConfig2.Probability);
                     }
                 }
                 Console.WriteLine("GameSlotPacket, Mapping. Skill = {0}", skill);
+                return;
             }
         }
     }
@@ -140,6 +149,7 @@ public class SlotData
 
     public static short GetItemSkill(string Nickname, short skill)
     {
+        var kartConfig = SpecialKartConfig.LoadConfigFromFile(FileName.SpecialKartConfig);
         List<short> skills = V2Specs.GetSkills(Nickname);
         for (int i = 0; i < skills.Count; i++)
         {
@@ -149,7 +159,8 @@ public class SlotData
                 return LevelSkill;
             }
         }
-        if (kartConfig.SkillChange.TryGetValue(ProfileService.ProfileConfigs[Nickname].RiderItem.Set_Kart, out var changes) &&
+        var slotConfig = ProfileService.GetProfileConfig(Nickname);
+        if (kartConfig.SkillChange.TryGetValue(slotConfig.RiderItem.Set_Kart, out var changes) &&
             changes.TryGetValue(skill, out var skillConfig))
         {
             // 触发几率判断

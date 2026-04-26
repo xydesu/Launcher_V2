@@ -63,10 +63,6 @@ public static class RoomManager
         {
             Profile.FileName.Load(nickname);
         }
-        if (!Profile.ProfileService.ProfileConfigs.ContainsKey(nickname))
-        {
-            Profile.ProfileService.Load(nickname);
-        }
 
         // 存储原始昵称
         byte added = room.TryAddPlayer(nickname, team, playerType, client);
@@ -89,7 +85,7 @@ public static class RoomManager
             if (!_rooms.TryGetValue(roomId, out var room))
                 return -1;
 
-            uint pmap = Profile.ProfileService.ProfileConfigs[nickname].Rider.pmap;
+            uint pmap = Profile.ProfileService.GetProfileConfig(nickname).Rider.pmap;
             if (pmap == 718 || pmap == 590)
             {
                 foreach (var member in room.ObIDs)
@@ -218,7 +214,7 @@ public static class RoomManager
             // 1. 先检查房间是否存在
             if (!_rooms.TryGetValue(roomId, out var room))
                 return null;
-            uint pmap = ProfileService.ProfileConfigs[nickname].Rider.pmap;
+            uint pmap = ProfileService.GetProfileConfig(nickname).Rider.pmap;
             if (pmap == 718 || pmap == 590)
             {
                 foreach (var member in room.ObIDs)

@@ -297,7 +297,6 @@ namespace KartRider
                 }
 
                 SpecialKartConfig.SaveConfigToFile(FileName.SpecialKartConfig);
-                SlotData.kartConfig = SpecialKartConfig.LoadConfigFromFile(FileName.SpecialKartConfig);
             }
             catch (Exception ex)
             {

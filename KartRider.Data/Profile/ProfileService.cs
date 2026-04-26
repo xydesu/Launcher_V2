@@ -10,8 +10,21 @@ namespace Profile
 {
     public class ProfileService
     {
-        public static Dictionary<string, ProfileConfig> ProfileConfigs { get; set; } = new Dictionary<string, ProfileConfig>();
         public static Setting SettingConfig { get; set; } = new Setting();
+
+        public static ProfileConfig GetProfileConfig(string Nickname)
+        {
+            if (!FileName.FileNames.ContainsKey(Nickname))
+            {
+                FileName.Load(Nickname);
+            }
+            var filename = FileName.FileNames[Nickname];
+            if (File.Exists(filename.config_path))
+            {
+                return JsonHelper.DeserializeNoBom<ProfileConfig>(filename.config_path) ?? new ProfileConfig();
+            }
+            return new ProfileConfig();
+        }
 
         public static void SaveSettings()
         {
@@ -36,17 +49,14 @@ namespace Profile
             }
         }
 
-        public static void Save(string Nickname)
+        public static void Save(string Nickname, ProfileConfig config)
         {
             if (!FileName.FileNames.ContainsKey(Nickname))
             {
                 FileName.Load(Nickname);
             }
             var filename = FileName.FileNames[Nickname];
-            if (ProfileConfigs.ContainsKey(Nickname))
-            {
-                File.WriteAllText(filename.config_path, JsonHelper.Serialize(ProfileConfigs[Nickname]));
-            }
+            File.WriteAllText(filename.config_path, JsonHelper.Serialize(config));
         }
 
         public static void Load(string Nickname)
@@ -57,21 +67,18 @@ namespace Profile
             }
             var filename = FileName.FileNames[Nickname];
 
-            if (File.Exists(filename.config_path))
+            if (!File.Exists(filename.config_path))
             {
-                ProfileConfigs.TryAdd(Nickname, JsonHelper.DeserializeNoBom<ProfileConfig>(filename.config_path));
-                Loaded(Nickname);
+                ProfileConfig newConfig = new ProfileConfig();
+                Save(Nickname, newConfig);
             }
-            else
-            {
-                ProfileConfigs.TryAdd(Nickname, new ProfileConfig());
-                Save(Nickname);
-            }
+            Loaded(Nickname);
         }
 
         private static void Loaded(string Nickname)
         {
-            if (ProfileConfigs[Nickname].ServerSetting.PreventItem_Use == 0)
+            var config = GetProfileConfig(Nickname);
+            if (config.ServerSetting.PreventItem_Use == 0)
             {
                 Program.PreventItem = false;
             }
@@ -80,7 +87,7 @@ namespace Profile
                 Program.PreventItem = true;
             }
 
-            if (ProfileConfigs[Nickname].ServerSetting.SpeedPatch_Use == 0)
+            if (config.ServerSetting.SpeedPatch_Use == 0)
             {
                 Program.SpeedPatch = false;
                 Program.LauncherDlg.Text = "Launcher";

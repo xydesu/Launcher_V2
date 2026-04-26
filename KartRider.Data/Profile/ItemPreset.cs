@@ -114,12 +114,53 @@ namespace Profile
 
     public class ItemPresetsService
     {
-        public static Dictionary<string, ItemPresetConfig> ItemPresetConfigs { get; set; } = new Dictionary<string, ItemPresetConfig>();
+        /// <summary>
+        /// 从文件获取配置
+        /// </summary>
+        public static ItemPresetConfig GetItemPresetConfig(string Nickname)
+        {
+            try
+            {
+                if (!FileName.FileNames.ContainsKey(Nickname))
+                {
+                    FileName.Load(Nickname);
+                }
+                var filename = FileName.FileNames[Nickname];
+
+                if (File.Exists(filename.ItemPresetsConfig))
+                {
+                    var loadedConfig = JsonHelper.DeserializeNoBom<ItemPresetConfig>(filename.ItemPresetsConfig) ?? new ItemPresetConfig();
+
+                    if (loadedConfig?.ItemPresets != null)
+                    {
+                        int count = loadedConfig.ItemPresets.Count;
+                        int defaultCount = new ItemPresetConfig().ItemPresets.Count;
+
+                        if (count < defaultCount)
+                        {
+                            return new ItemPresetConfig();
+                        }
+
+                        if (count > defaultCount)
+                        {
+                            loadedConfig.ItemPresets = loadedConfig.ItemPresets.Skip(count - defaultCount).ToList();
+                        }
+                        return loadedConfig;
+                    }
+                }
+                return new ItemPresetConfig();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"加载配置失败：{ex.Message}");
+                return new ItemPresetConfig();
+            }
+        }
 
         /// <summary>
         /// 保存配置到文件
         /// </summary>
-        public static void Save(string Nickname)
+        public static void Save(string Nickname, ItemPresetConfig config)
         {
             try
             {
@@ -137,68 +178,11 @@ namespace Profile
                 }
 
                 // 序列化并写入文件
-                if (ItemPresetConfigs.ContainsKey(Nickname))
-                {
-                    File.WriteAllText(filename.ItemPresetsConfig, JsonHelper.Serialize(ItemPresetConfigs[Nickname]));
-                }
+                File.WriteAllText(filename.ItemPresetsConfig, JsonHelper.Serialize(config));
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"保存配置失败：{ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 从文件加载配置
-        /// </summary>
-        public static void Load(string Nickname)
-        {
-            try
-            {
-                if (!FileName.FileNames.ContainsKey(Nickname))
-                {
-                    FileName.Load(Nickname);
-                }
-                var filename = FileName.FileNames[Nickname];
-
-                if (File.Exists(filename.ItemPresetsConfig))
-                {
-                    var loadedConfig = JsonHelper.DeserializeNoBom<ItemPresetConfig>(filename.ItemPresetsConfig) ?? new ItemPresetConfig();
-
-                    if (loadedConfig?.ItemPresets != null)
-                    {
-                        int count = loadedConfig.ItemPresets.Count;
-
-                        int defaultCount = new ItemPresetConfig().ItemPresets.Count;
-
-                        if (count < defaultCount)
-                        {
-                            loadedConfig = new ItemPresetConfig();
-                        }
-
-                        if (count > defaultCount)
-                        {
-                            loadedConfig.ItemPresets = loadedConfig.ItemPresets.Skip(count - defaultCount).ToList();
-                        }
-                        ItemPresetConfigs.TryAdd(Nickname, loadedConfig);
-                    }
-                    else
-                    {
-                        ItemPresetConfigs.TryAdd(Nickname, new Profile.ItemPresetConfig());
-                        Save(Nickname);
-                    }
-                }
-                else
-                {
-                    ItemPresetConfigs.TryAdd(Nickname, new Profile.ItemPresetConfig());
-                    Save(Nickname);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"加载配置失败：{ex.Message}");
-                ItemPresetConfigs.TryAdd(Nickname, new Profile.ItemPresetConfig());
-                Save(Nickname);
             }
         }
     }

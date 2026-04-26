@@ -28,6 +28,14 @@ public static class MultyPlayer
     public static Dictionary<string, bool> Ready = new Dictionary<string, bool>();
     public static int[] teamPoints = { 10, 8, 6, 5, 4, 3, 2, 1 };
 
+    public static IPEndPoint GetServerEndPoint()
+    {
+        string serverIP = ProfileService.SettingConfig.ServerIP;
+        int serverPort = ProfileService.SettingConfig.ServerPort;
+
+        return new IPEndPoint(IPAddress.Parse(serverIP), serverPort);
+    }
+
     public static void milTime(uint time)
     {
         TimeSpan timeSpan = TimeSpan.FromMilliseconds((long)time);
@@ -309,20 +317,12 @@ public static class MultyPlayer
                 if (member is Player p3)
                 {
                     p3.PlayerType = 2; // 初始玩家状态
-                    // Ensure profile is loaded for the player
-                    if (!ProfileService.ProfileConfigs.ContainsKey(p3.Nickname))
-                    {
-                        if (!FileName.FileNames.ContainsKey(p3.Nickname))
-                        {
-                            FileName.Load(p3.Nickname);
-                        }
-                        ProfileService.Load(p3.Nickname);
-                    }
+                    var p3Config = ProfileService.GetProfileConfig(p3.Nickname);
 
                     outPacket.WriteInt(p3.ID); // player id
                     outPacket.WriteUInt(room.TimeData[p3.ID]);
                     outPacket.WriteByte();
-                    outPacket.WriteUShort(ProfileService.ProfileConfigs[p3.Nickname].RiderItem.Set_Kart);
+                    outPacket.WriteUShort(p3Config.RiderItem.Set_Kart);
                     int playerRanking = room.Ranking[p3.ID];
                     int playerPoint = room.TimeData[p3.ID] == uint.MaxValue ? 0 : teamPoints[playerRanking];
                     Console.WriteLine("Player {0} 排名 {1} 得分 {2}", p3.ID, playerRanking, playerPoint);
@@ -336,10 +336,17 @@ public static class MultyPlayer
                         outPacket.WriteShort(0);
                     }
                     outPacket.WriteByte();
-                    outPacket.WriteUInt(ProfileService.ProfileConfigs[p3.Nickname].Rider.RP += 10000);
-                    outPacket.WriteInt(10000); // Earned RP
-                    outPacket.WriteInt(10000); // Earned Lucci
-                    outPacket.WriteUInt(ProfileService.ProfileConfigs[p3.Nickname].Rider.Lucci += 10000);
+
+                    Random rankRandom = new Random(playerRanking);
+                    uint earnedRP = (uint)rankRandom.Next(0, 51); // RP范围: 0-50
+                    uint earnedLucci = (uint)rankRandom.Next(0, 501); // Lucci范围: 0-500
+                    p3Config.Rider.RP += earnedRP;
+                    outPacket.WriteUInt(p3Config.Rider.RP);
+                    outPacket.WriteUInt(earnedRP); // Earned RP
+                    outPacket.WriteUInt(earnedLucci); // Earned Lucci
+                    p3Config.Rider.Lucci += earnedLucci;
+                    outPacket.WriteUInt(p3Config.Rider.Lucci);
+                    ProfileService.Save(p3.Nickname, p3Config);
                     outPacket.WriteBytes(new byte[29]);
 
                     if (room.GameType == 3 || room.GameType == 4)
@@ -355,11 +362,11 @@ public static class MultyPlayer
                     outPacket.WriteBytes(new byte[12]);
                     outPacket.WriteInt(1);
                     outPacket.WriteByte(0);
-                    outPacket.WriteUShort(ProfileService.ProfileConfigs[p3.Nickname].RiderItem.Set_Character);
+                    outPacket.WriteUShort(p3Config.RiderItem.Set_Character);
                     outPacket.WriteBytes(new byte[49]);
                     outPacket.WriteHexString("FF");
                     outPacket.WriteBytes(new byte[37]);
-                    outPacket.WriteInt(ProfileService.ProfileConfigs[p3.Nickname].Rider.ClubMark_LOGO);
+                    outPacket.WriteInt(p3Config.Rider.ClubMark_LOGO);
                     outPacket.WriteBytes(new byte[39]);
                 }
             }
@@ -402,7 +409,7 @@ public static class MultyPlayer
         {
             outPacket.WriteInt(4);
             outPacket.WriteByte(0);
-            outPacket.WriteUInt(room.EndTicks + 5000);
+            outPacket.WriteUInt(room.EndTicks + 6000);
             BroadCast(roomId, outPacket);
         }
 
@@ -438,7 +445,7 @@ public static class MultyPlayer
         }
 
         // Ensure profile is loaded for the current Parent.Nickname
-        if (Parent.Nickname != "" && !ProfileService.ProfileConfigs.ContainsKey(Parent.Nickname))
+        if (Parent.Nickname != "")
         {
             ProfileService.Load(Parent.Nickname);
         }
@@ -480,7 +487,7 @@ public static class MultyPlayer
                 }
                 if (room.EndTicks == 0)
                 {
-                    room.EndTicks = ConvertTick() + 11000;
+                    room.EndTicks = ConvertTick() + 10000;
                     using (OutPacket oPacket = new OutPacket("GameControlPacket"))
                     {
                         oPacket.WriteInt(3);
@@ -531,12 +538,16 @@ public static class MultyPlayer
             Console.WriteLine("Channel Switch, channel = {0}", channelData.Name);
             IPEndPoint serverEndPoint = Parent.Client.Socket.LocalEndPoint as IPEndPoint;
             if (serverEndPoint == null) return;
+
+            // 获取服务器IP地址，处理IPv6地址转换
+            IPEndPoint serverIPEndPoint = GetServerEndPoint();
+
             using (OutPacket oPacket = new OutPacket("PrChannelSwitch"))
             {
                 oPacket.WriteInt(0);
                 oPacket.WriteShort(channel);
                 oPacket.WriteShort(iPacket.ReadShort());
-                oPacket.WriteEndPoint(ProfileService.SettingConfig.ServerIP == "127.0.0.1" ? serverEndPoint : new IPEndPoint(IPAddress.Parse(ProfileService.SettingConfig.ServerIP), ProfileService.SettingConfig.ServerPort));
+                oPacket.WriteEndPoint(serverIPEndPoint);
                 Parent.Client.Send(oPacket);
             }
             return;
@@ -560,8 +571,9 @@ public static class MultyPlayer
                 {
                     Parent.Nickname = nickname;
                 }
-                ProfileService.ProfileConfigs[nickname].Rider.ClientId = clientId;
-                ProfileService.Save(nickname);
+                var nicknameConfig = ProfileService.GetProfileConfig(nickname);
+                nicknameConfig.Rider.ClientId = clientId;
+                ProfileService.Save(nickname, nicknameConfig);
                 using (OutPacket oPacket = new OutPacket("PrChannelMoveIn"))
                 {
                     oPacket.WriteByte(1);
@@ -630,7 +642,7 @@ public static class MultyPlayer
                     return;
                 }
                 Room.RoomMaster = player.ID;
-                uint pmap = ProfileService.ProfileConfigs[Parent.Nickname].Rider.pmap;
+                uint pmap = ProfileService.GetProfileConfig(Parent.Nickname).Rider.pmap;
                 if (pmap == 590)
                 {
                     Room.RoomMaster = 0;
@@ -659,7 +671,7 @@ public static class MultyPlayer
                     return;
                 }
                 Room.RoomMaster = player.ID;
-                uint pmap = ProfileService.ProfileConfigs[Parent.Nickname].Rider.pmap;
+                uint pmap = ProfileService.GetProfileConfig(Parent.Nickname).Rider.pmap;
                 if (pmap == 590)
                 {
                     Room.RoomMaster = 0;
@@ -995,7 +1007,7 @@ public static class MultyPlayer
             Console.WriteLine("GameAiGoalinPacket, Id = {0}, Time = {1}", Id, Time);
             if (room.EndTicks == 0)
             {
-                room.EndTicks = ConvertTick() + 11000;
+                room.EndTicks = ConvertTick() + 10000;
                 using (OutPacket oPacket = new OutPacket("GameControlPacket"))
                 {
                     oPacket.WriteInt(3);
@@ -1111,7 +1123,7 @@ public static class MultyPlayer
                 BroadCast(roomId, outPacket, Parent.Nickname);
             }
 
-            uint pmap = ProfileService.ProfileConfigs[Parent.Nickname].Rider.pmap;
+            uint pmap = ProfileService.GetProfileConfig(Parent.Nickname).Rider.pmap;
             if (pmap == 718 || pmap == 590)
             {
                 if (value.StartsWith("选图", StringComparison.OrdinalIgnoreCase) || value.StartsWith("换图", StringComparison.OrdinalIgnoreCase) || value.StartsWith("選圖", StringComparison.OrdinalIgnoreCase) || value.StartsWith("換圖", StringComparison.OrdinalIgnoreCase))
@@ -1354,12 +1366,12 @@ public static class MultyPlayer
         {
             uint userid = iPacket.ReadUInt();
             string nickname = ClientManager.GetNickname(userid);
-            if (string.IsNullOrEmpty(nickname) || !ProfileService.ProfileConfigs.ContainsKey(nickname))
+            if (string.IsNullOrEmpty(nickname))
             {
-                return; // 无效用户或未加载配置
+                return; // 无效用户
             }
 
-            string clientId = ProfileService.ProfileConfigs[nickname].Rider.ClientId;
+            string clientId = ProfileService.GetProfileConfig(nickname).Rider.ClientId;
             using (OutPacket outPacket = new OutPacket("PrInviteGamePacket"))
             {
                 outPacket.WriteBytes(iPacket.ReadBytes(iPacket.Available));
@@ -1389,12 +1401,12 @@ public static class MultyPlayer
                 outPacket.WriteByte(id);
                 if (type == 0)
                 {
-                    outPacket.WriteString(ProfileService.ProfileConfigs[Parent.Nickname].GameOption.QuickMsg.GetValueOrDefault(id) ?? "");
+                    outPacket.WriteString(ProfileService.GetProfileConfig(Parent.Nickname).GameOption.QuickMsg.GetValueOrDefault(id) ?? "");
                     BroadCast(roomId, outPacket, Parent.Nickname);
                 }
                 else
                 {
-                    outPacket.WriteString(ProfileService.ProfileConfigs[Parent.Nickname].GameOption.TeamQuickMsg.GetValueOrDefault(id) ?? "");
+                    outPacket.WriteString(ProfileService.GetProfileConfig(Parent.Nickname).GameOption.TeamQuickMsg.GetValueOrDefault(id) ?? "");
                     BroadCast(roomId, outPacket, Parent.Nickname, player.Team);
                 }
             }
@@ -1436,15 +1448,7 @@ public static class MultyPlayer
         {
             if (member is Player p)
             {
-                // Ensure profile is loaded for the player
-                if (!ProfileService.ProfileConfigs.ContainsKey(p.Nickname))
-                {
-                    if (!FileName.FileNames.ContainsKey(p.Nickname))
-                    {
-                        FileName.Load(p.Nickname);
-                    }
-                    ProfileService.Load(p.Nickname);
-                }
+                var pConfig = ProfileService.GetProfileConfig(p.Nickname);
 
                 Console.WriteLine("Player Nickname = {0}, ID = {1}, SlotId = {2}", p.Nickname, p.ID, p.SlotId);
                 if (enter)
@@ -1456,16 +1460,16 @@ public static class MultyPlayer
                     outPacket.WriteInt(p.PlayerType); // Player Type, 2 = RoomMaster, 3 = AutoReady, 4 = Observer, 5 = Preparing, 7 = AI
                 }
                 outPacket.WriteUInt(ClientManager.GetUserNO(p.Nickname));
-                IPEndPoint client = ClientManager.ClientToIPEndPoint(ProfileService.ProfileConfigs[p.Nickname].Rider.ClientId);
-                outPacket.WriteEndPoint(new IPEndPoint(client.Address, ProfileService.ProfileConfigs[p.Nickname].Rider.P2pPort));
-                outPacket.WriteEndPoint(new IPEndPoint(client.Address, ProfileService.ProfileConfigs[p.Nickname].Rider.UdpPort));
+                IPEndPoint client = ClientManager.ClientToIPEndPoint(pConfig.Rider.ClientId);
+                outPacket.WriteEndPoint(new IPEndPoint(client.Address, pConfig.Rider.P2pPort));
+                outPacket.WriteEndPoint(new IPEndPoint(IPAddress.Any, 0));
                 outPacket.WriteString(p.Nickname);
-                outPacket.WriteShort(ProfileService.ProfileConfigs[p.Nickname].Rider.Emblem1);
-                outPacket.WriteShort(ProfileService.ProfileConfigs[p.Nickname].Rider.Emblem2);
+                outPacket.WriteShort(pConfig.Rider.Emblem1);
+                outPacket.WriteShort(pConfig.Rider.Emblem2);
                 outPacket.WriteShort(0);
                 GameSupport.GetRider(p.Nickname, outPacket);
-                outPacket.WriteString(ProfileService.ProfileConfigs[p.Nickname].Rider.Card);
-                outPacket.WriteUInt(ProfileService.ProfileConfigs[p.Nickname].Rider.RP);
+                outPacket.WriteString(pConfig.Rider.Card);
+                outPacket.WriteUInt(pConfig.Rider.RP);
                 if (room.GameType == 3 || room.GameType == 4)
                 {
                     outPacket.WriteByte(p.Team);
@@ -1496,15 +1500,15 @@ public static class MultyPlayer
                 outPacket.WriteHexString("FF 00 00 00");
 
                 outPacket.WriteByte(RiderData.RiderSchool.catLevel); //3
-                if (ProfileService.ProfileConfigs[p.Nickname].Rider.ClubMark_LOGO == 0)
+                if (pConfig.Rider.ClubMark_LOGO == 0)
                 {
                     outPacket.WriteString("");
                     outPacket.WriteInt(0);
                 }
                 else
                 {
-                    outPacket.WriteString(ProfileService.ProfileConfigs[p.Nickname].Rider.ClubName);
-                    outPacket.WriteInt(ProfileService.ProfileConfigs[p.Nickname].Rider.ClubMark_LOGO);
+                    outPacket.WriteString(pConfig.Rider.ClubName);
+                    outPacket.WriteInt(pConfig.Rider.ClubMark_LOGO);
                 }
                 outPacket.WriteBytes(new byte[19]);
             }
@@ -1542,11 +1546,12 @@ public static class MultyPlayer
         {
             if (member is Player p)
             {
+                var pConfig = ProfileService.GetProfileConfig(p.Nickname);
                 outPacket.WriteInt(p.PlayerType);
                 outPacket.WriteUInt(ClientManager.GetUserNO(p.Nickname));
-                IPEndPoint client = ClientManager.ClientToIPEndPoint(ProfileService.ProfileConfigs[p.Nickname].Rider.ClientId);
-                outPacket.WriteEndPoint(new IPEndPoint(client.Address, ProfileService.ProfileConfigs[p.Nickname].Rider.P2pPort));
-                outPacket.WriteEndPoint(new IPEndPoint(client.Address, ProfileService.ProfileConfigs[p.Nickname].Rider.UdpPort));
+                IPEndPoint client = ClientManager.ClientToIPEndPoint(pConfig.Rider.ClientId);
+                outPacket.WriteEndPoint(new IPEndPoint(client.Address, pConfig.Rider.P2pPort));
+                outPacket.WriteEndPoint(new IPEndPoint(IPAddress.Any, 0));
                 outPacket.WriteString(p.Nickname);
             }
             else
@@ -1766,7 +1771,7 @@ public static class MultyPlayer
         }
         else if (room.GameType == 3 || room.GameType == 4)
         {
-            uint pmap = ProfileService.ProfileConfigs[Parent.Nickname].Rider.pmap;
+            uint pmap = ProfileService.GetProfileConfig(Parent.Nickname).Rider.pmap;
             if (pmap == 718 || (playerCount < 1 && room.RoomMaster < 8))
             {
                 room.RoomMaster = player.ID;
@@ -1815,7 +1820,7 @@ public static class MultyPlayer
         }
         else
         {
-            uint pmap = ProfileService.ProfileConfigs[Parent.Nickname].Rider.pmap;
+            uint pmap = ProfileService.GetProfileConfig(Parent.Nickname).Rider.pmap;
             if (pmap == 718 || (playerCount < 1 && room.RoomMaster < 8))
             {
                 room.RoomMaster = player.ID;
