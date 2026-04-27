@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -69,7 +70,28 @@ public static class TrackRankData
         }
         trackRanks.Add(newRank);
         trackRanks = trackRanks.OrderBy(t => t.Time).Take(10).ToList();
+        if (trackRanks.Contains(newRank))
+        {
+            var timeSpan = GetTimeSpan(newRank.Time);
+            using (OutPacket outPacket = new OutPacket("PcSlaveNotice"))
+            {
+                outPacket.WriteString($"{newRank.Nickname} / {RandomTrack.GetTrackName(track)} / {timeSpan.min}:{timeSpan.sec}:{timeSpan.mil}");
+                foreach (SessionGroup Session in ClientManager._clientSessions.Values)
+                {
+                    Session.Client.Send(outPacket);
+                }
+            }
+        }
         File.WriteAllText(filePath, JsonHelper.Serialize(trackRanks));
         return;
+    }
+
+    public static (uint min, uint sec, uint mil) GetTimeSpan(uint time)
+    {
+        TimeSpan timeSpan = TimeSpan.FromMilliseconds((long)time);
+        uint min = (uint)timeSpan.Minutes;
+        uint sec = (uint)timeSpan.Seconds;
+        uint mil = (uint)timeSpan.Milliseconds;
+        return (min, sec, mil);
     }
 }

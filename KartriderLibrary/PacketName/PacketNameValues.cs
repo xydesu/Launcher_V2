@@ -686,6 +686,7 @@ namespace KartRider_PacketName
 		PqStartChallenger = 1002571460,
 		PrStartChallenger = 1003620037,
 		PqStartTimeAttack = 1005061814,
+		PqReStartTimeAttack = 1227622253,
 		GrowSeedsEventBtn = 1005127353,
 		GopLockdownRocket = 1005192911,
 		PrStartTimeAttack = 1006110391,

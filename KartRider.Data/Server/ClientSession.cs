@@ -31,8 +31,6 @@ namespace KartRider
             this.Parent = parent;
         }
 
-        Dictionary<string, uint> Time = new Dictionary<string, uint>();
-
         public override void OnDisconnect()
         {
             if (this.Parent?.Client != null)
@@ -126,10 +124,11 @@ namespace KartRider
                         iPacket.ReadShort();
                         short Crash = iPacket.ReadShort();
                         iPacket.ReadShort();
+                        var racingTime = ProfileService.GetProfileConfig(this.Parent.Nickname);
                         using (OutPacket outPacket = new OutPacket("LoRpAddRacingTimePacket"))
                         {
                             //outPacket.WriteHexString("FF FF FF FF 00 00 00 00 00 00 00 00 00 00");
-                            outPacket.WriteUInt(Time[this.Parent.Nickname]);
+                            outPacket.WriteUInt(racingTime.Rider.Time);
                             outPacket.WriteInt(0);
                             outPacket.WriteShort(0);
                             outPacket.WriteInt(0);
@@ -140,14 +139,14 @@ namespace KartRider
                             UserNO = ClientManager.GetUserNO(this.Parent.Nickname),
                             Nickname = this.Parent.Nickname,
                             Kart = Kart,
-                            Time = Time[this.Parent.Nickname]
+                            Time = racingTime.Rider.Time
                         });
                         var manager = new CompetitiveDataManager();
                         CompleteTrackScoreCalculator calculator = new CompleteTrackScoreCalculator();
-                        var scores = calculator.CalculateTrackScoreDetails(Track, Time[this.Parent.Nickname], Booster, Crash, TimeAttack.TrackDictionary);
+                        var scores = calculator.CalculateTrackScoreDetails(Track, racingTime.Rider.Time, Booster, Crash, TimeAttack.TrackDictionary);
                         if (scores != null)
                         {
-                            var data = new CompetitiveData { Track = Track, Kart = Kart, Time = Time[this.Parent.Nickname], Booster = Booster, BoosterPoint = scores.BoostScore, Crash = Crash, CrashPoint = scores.CrashScore, Point = scores.TotalScore };
+                            var data = new CompetitiveData { Track = Track, Kart = Kart, Time = racingTime.Rider.Time, Booster = Booster, BoosterPoint = scores.BoostScore, Crash = Crash, CrashPoint = scores.CrashScore, Point = scores.TotalScore };
                             manager.SaveData(this.Parent.Nickname, data);
                         }
                         using (OutPacket outPacket = new OutPacket("PrGetCompetitiveSlotInfo"))
@@ -1345,18 +1344,18 @@ namespace KartRider
                     }
                     else if (hash == Adler32Helper.GenerateAdler32_ASCII("PqStartTimeAttack", 0))
                     {
+                        var attackConfig = ProfileService.GetProfileConfig(this.Parent.Nickname);
                         var StartTimeAttack_Unk1 = iPacket.ReadInt();
                         var StartTimeAttack_Unk2 = iPacket.ReadInt();
                         var StartTimeAttack_Track = iPacket.ReadUInt();
-                        var StartTimeAttack_SpeedType = iPacket.ReadByte();
-                        var StartTimeAttack_GameType = iPacket.ReadByte();
+                        attackConfig.Rider.SpeedType = iPacket.ReadByte();
+                        attackConfig.Rider.GameType = iPacket.ReadByte();
                         var Kart_id = iPacket.ReadShort();
                         var FlyingPet_id = iPacket.ReadShort();
                         var StartTimeAttack_StartType = iPacket.ReadByte();
                         var StartTimeAttack_Unk3 = iPacket.ReadInt();
                         var StartTimeAttack_Unk4 = iPacket.ReadInt();
                         var StartTimeAttack_Unk5 = iPacket.ReadByte();
-                        var attackConfig = ProfileService.GetProfileConfig(this.Parent.Nickname);
                         attackConfig.Rider.AttackType = iPacket.ReadByte();
                         var StartTimeAttack_TimaAttackMpdeType = iPacket.ReadByte();
                         var StartTimeAttack_TimaAttackMpde = iPacket.ReadInt();
@@ -1365,11 +1364,11 @@ namespace KartRider
                         {
                             attackConfig.Rider.Lucci -= 1000;
                         }
-                        Console.WriteLine("StartTimeAttack: {0} / {1} / {2} / {3} / {4} / {5} / {6} / {7}", StartTimeAttack_SpeedType, StartTimeAttack_GameType, Kart_id, FlyingPet_id, RandomTrack.GetTrackName(StartTimeAttack_Track), StartTimeAttack_StartType, attackConfig.Rider.AttackType, StartTimeAttack_TimaAttackMpdeType);
-                        byte StartType = 3;
+                        Console.WriteLine("StartTimeAttack: {0} / {1} / {2} / {3} / {4} / {5} / {6} / {7}", attackConfig.Rider.SpeedType, attackConfig.Rider.GameType, Kart_id, FlyingPet_id, RandomTrack.GetTrackName(StartTimeAttack_Track), StartTimeAttack_StartType, attackConfig.Rider.AttackType, StartTimeAttack_TimaAttackMpdeType);
                         attackConfig.Rider.Track = RandomTrack.GetRandomTrack(this.Parent.Nickname, StartTimeAttack_RandomTrackGameType, StartTimeAttack_Track);
                         ProfileService.Save(this.Parent.Nickname, attackConfig);
-                        StartGameData.Start_KartSpac(this.Parent, this.Parent.Nickname, StartType, StartTimeAttack_StartType, StartTimeAttack_Unk1, attackConfig.Rider.Track, StartTimeAttack_SpeedType);
+                        byte StartType = 3;
+                        StartGameData.Start_KartSpac(this.Parent, this.Parent.Nickname, StartType, StartTimeAttack_StartType, StartTimeAttack_Unk1, attackConfig.Rider.Track, attackConfig.Rider.SpeedType);
                         return;
                     }
                     else if (hash == Adler32Helper.GenerateAdler32_ASCII("PqFinishTimeAttack", 0))
@@ -1381,20 +1380,8 @@ namespace KartRider
                         iPacket.ReadInt();
                         iPacket.ReadInt(); //使用加速器次数
                         iPacket.ReadInt(); //碰撞次数
-                        uint time = iPacket.ReadUInt();
-                        if (!Time.ContainsKey(this.Parent.Nickname))
-                        {
-                            Time.TryAdd(this.Parent.Nickname, time);
-                        }
-                        else
-                        {
-                            Time[this.Parent.Nickname] = time;
-                        }
-                        TimeSpan timeSpan = TimeSpan.FromMilliseconds((long)time);
-                        uint min = (uint)timeSpan.Minutes;
-                        uint sec = (uint)timeSpan.Seconds;
-                        uint mil = (uint)timeSpan.Milliseconds;
                         var finishConfig = ProfileService.GetProfileConfig(this.Parent.Nickname);
+                        finishConfig.Rider.Time = iPacket.ReadUInt();
                         if (RewardType == 0)
                         {
                             finishConfig.Rider.RP += 10;
@@ -1405,7 +1392,9 @@ namespace KartRider
                             finishConfig.Rider.RP += 20;
                             finishConfig.Rider.Lucci += 50;
                         }
-                        Console.WriteLine("FinishTimeAttack: {0} / {1} / {2}:{3}:{4}", RewardType, RandomTrack.GetTrackName(finishConfig.Rider.Track), min, sec, mil);
+                        ProfileService.Save(this.Parent.Nickname, finishConfig);
+                        var timeSpan = TrackRankData.GetTimeSpan(finishConfig.Rider.Time);
+                        Console.WriteLine("FinishTimeAttack: {0} / {1} / {2}:{3}:{4}", RewardType, RandomTrack.GetTrackName(finishConfig.Rider.Track), timeSpan.min, timeSpan.sec, timeSpan.mil);
                         using (OutPacket outPacket = new OutPacket("PrFinishTimeAttack"))
                         {
                             outPacket.WriteInt(type);
@@ -1438,15 +1427,13 @@ namespace KartRider
                             }
                             this.Parent.Client.Send(outPacket);
                         }
-                        using (OutPacket outPacket = new OutPacket("PcSlaveNotice"))
+                        TrackRankData.AddTrackRank(finishConfig.Rider.Track, finishConfig.Rider.SpeedType, finishConfig.Rider.GameType, new TrackRank
                         {
-                            outPacket.WriteString($"{this.Parent.Nickname} / {RandomTrack.GetTrackName(finishConfig.Rider.Track)} / {min}:{sec}:{mil}");
-                            foreach (SessionGroup Session in ClientManager._clientSessions.Values)
-                            {
-                                Session.Client.Send(outPacket);
-                            }
-                        }
-                        ProfileService.Save(this.Parent.Nickname, finishConfig);
+                            UserNO = ClientManager.GetUserNO(this.Parent.Nickname),
+                            Nickname = this.Parent.Nickname,
+                            Kart = ProfileService.GetProfileConfig(this.Parent.Nickname).RiderItem.Set_Kart,
+                            Time = finishConfig.Rider.Time
+                        });
                         return;
                     }
                     else if (hash == Adler32Helper.GenerateAdler32_ASCII("PqRewardTimeAttack", 0))

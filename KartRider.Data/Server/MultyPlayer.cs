@@ -43,15 +43,6 @@ public static class MultyPlayer
         }
     }
 
-    public static void milTime(uint time)
-    {
-        TimeSpan timeSpan = TimeSpan.FromMilliseconds((long)time);
-        uint min = (uint)timeSpan.Minutes;
-        uint sec = (uint)timeSpan.Seconds;
-        uint mil = (uint)timeSpan.Milliseconds;
-        Console.WriteLine($"成绩: {min}:{sec}:{mil}");
-    }
-
     public static uint ConvertTick()
     {
         // 1. 先处理负数（TickCount64理论上不会为负，但做防御性判断）

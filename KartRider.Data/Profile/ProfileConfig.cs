@@ -135,7 +135,13 @@ namespace Profile
 
         public int ScenarioType { get; set; } = 0;
 
+        public byte SpeedType { get; set; } = 0;
+
+        public byte GameType { get; set; } = 0;
+
         public byte AttackType { get; set; } = 0;
+
+        public uint Time { get; set; } = 0;
 
         public uint Track { get; set; } = 0;
 

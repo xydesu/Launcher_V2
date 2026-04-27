@@ -76,10 +76,6 @@ namespace KartRider
                 }
                 string TCGame = "HKEY_CURRENT_USER\\Software\\TCGame\\kart";
                 string RootDirectory = (string)Registry.GetValue(TCGame, "gamepath", null);
-                if (!File.Exists(Path.Combine(RootDirectory, @"Patcher.exe")) && File.Exists(Path.Combine(RootDirectory, @"Patcher.ex0")))
-                {
-                    File.Copy(Path.Combine(RootDirectory, @"Patcher.ex0"), Path.Combine(RootDirectory, @"Patcher.exe"));
-                }
                 if (File.Exists(FileName.pinFile) && File.Exists(FileName.KartRider))
                 {
                     RootDirectory = FileName.appDir;
@@ -87,7 +83,7 @@ namespace KartRider
                 else if (!string.IsNullOrEmpty(RootDirectory) && 
                     File.Exists(Path.Combine(RootDirectory, @"KartRider.pin")) && 
                     File.Exists(Path.Combine(RootDirectory, @"KartRider.exe")) && 
-                    File.Exists(Path.Combine(RootDirectory, @"Patcher.exe")))
+                    File.Exists(Path.Combine(RootDirectory, @"Patcher.ex0")))
                 {
                     RootDirectory = Path.GetFullPath(RootDirectory);
                 }
@@ -95,6 +91,10 @@ namespace KartRider
                 {
                     LauncherSystem.MessageBoxType3(RootDirectory);
                     return;
+                }
+                if (!File.Exists(Path.Combine(RootDirectory, @"Patcher.exe")) && File.Exists(Path.Combine(RootDirectory, @"Patcher.ex0")))
+                {
+                    File.Copy(Path.Combine(RootDirectory, @"Patcher.ex0"), Path.Combine(RootDirectory, @"Patcher.exe"));
                 }
                 string KartRider = Path.GetFullPath(Path.Combine(RootDirectory, @"KartRider.exe"));
                 string pinFile = Path.GetFullPath(Path.Combine(RootDirectory, @"KartRider.pin"));
