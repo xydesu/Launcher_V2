@@ -57,7 +57,7 @@ public class PatchManager
             var filesToDownload = new List<PatchItem>();
             int checkedCount = 0;
             var checkLock = new object();
-            
+
             await Parallel.ForEachAsync(items, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, async (item, ct) =>
             {
                 bool needsDownload = await CheckFileNeedsDownloadAsync(item, gamePath);
@@ -75,9 +75,9 @@ public class PatchManager
                     }
                 }
             });
-            
+
             Console.WriteLine($"\n校验完成：{items.Count - filesToDownload.Count} 个文件已最新，{filesToDownload.Count} 个文件需要下载\n");
-            
+
             // 第二阶段：限制并发数并行下载
             if (filesToDownload.Count > 0)
             {
@@ -101,12 +101,12 @@ public class PatchManager
                         semaphore.Release();
                     }
                 }).ToArray();
-                
+
                 await Task.WhenAll(downloadTasks);
             }
 
             Console.WriteLine("\n=== 全部更新完成 ===");
-            
+
             // 重命名 NT.txf 为 LK.txf
             try
             {
@@ -161,13 +161,13 @@ public class PatchManager
     {
         string localFilePath = item.LocalPath.Replace('/', Path.DirectorySeparatorChar);
         string filePath = Path.Combine(gamePath, localFilePath);
-        
+
         // 文件不存在，需要下载
         if (!File.Exists(filePath))
         {
             return true;
         }
-        
+
         // 计算MD5校验
         try
         {
@@ -180,7 +180,7 @@ public class PatchManager
             return true;
         }
     }
-    
+
     // 仅执行下载和安装（不校验）
     private async Task ProcessFileDownloadAsync(PatchItem item, string update_prefix, string TempPath, string gamePath)
     {
@@ -188,17 +188,17 @@ public class PatchManager
         string filePath = Path.Combine(gamePath, localFilePath);
         var tempFile = Path.Combine(TempPath, item.FileName);
         var url = update_prefix + "/" + item.LocalPath;
-        
+
         try
         {
             // 确保临时目录存在
             var tempDir = Path.GetDirectoryName(tempFile);
             if (!Directory.Exists(tempDir))
                 Directory.CreateDirectory(tempDir);
-            
+
             // 下载文件
             await DownloadWithRetryAsync(url, tempFile, item.TotalSize);
-            
+
             // 校验下载文件MD5
             var downMd5 = await Task.Run(() => GetFileMd5(tempFile));
             if (!string.Equals(downMd5, item.ServerMd5, StringComparison.OrdinalIgnoreCase))
@@ -207,7 +207,7 @@ public class PatchManager
                 File.Delete(tempFile);
                 throw new Exception("MD5校验失败");
             }
-            
+
             // 移动到目标位置
             var dir = Path.GetDirectoryName(filePath);
             if (!Directory.Exists(dir))
@@ -413,14 +413,14 @@ public class PatchManager
         {
             var fileInfo = new FileInfo(path);
             long fileSize = fileInfo.Length;
-            
+
             // 小文件用普通流，大文件用内存映射
             const long MemoryMapThreshold = 50 * 1024 * 1024; // 50MB
             if (fileSize < MemoryMapThreshold)
             {
                 return ComputeMd5WithBuffer(path);
             }
-            
+
             return ComputeMd5WithMemoryMap(path, fileSize);
         }
         catch (Exception ex)
@@ -429,47 +429,47 @@ public class PatchManager
             throw;
         }
     }
-    
+
     // 大缓冲顺序读取计算MD5
     private string ComputeMd5WithBuffer(string path)
     {
         using var md5 = MD5.Create();
         // 1MB缓冲，顺序读取最大化磁盘吞吐量
         using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1024 * 1024, FileOptions.SequentialScan);
-        
+
         var buffer = new byte[1024 * 1024]; // 1MB缓冲
         int bytesRead;
-        
+
         while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
         {
             md5.TransformBlock(buffer, 0, bytesRead, null, 0);
         }
         md5.TransformFinalBlock(buffer, 0, 0);
-        
+
         return BitConverter.ToString(md5.Hash).Replace("-", "").ToLower();
     }
-    
+
     // 内存映射文件计算MD5 - 利用操作系统缓存机制
     private string ComputeMd5WithMemoryMap(string path, long fileSize)
     {
         using var md5 = MD5.Create();
-        
+
         // 创建内存映射文件
         using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
         using var memoryMappedFile = System.IO.MemoryMappedFiles.MemoryMappedFile.CreateFromFile(
             fs, null, 0, System.IO.MemoryMappedFiles.MemoryMappedFileAccess.Read, HandleInheritability.None, true);
-        
+
         const long ViewSize = 16 * 1024 * 1024; // 16MB视图窗口
         long offset = 0;
         var buffer = new byte[ViewSize];
-        
+
         while (offset < fileSize)
         {
             long remaining = fileSize - offset;
             long currentViewSize = Math.Min(ViewSize, remaining);
-            
+
             using var accessor = memoryMappedFile.CreateViewAccessor(offset, currentViewSize, System.IO.MemoryMappedFiles.MemoryMappedFileAccess.Read);
-            
+
             // 分块读取视图内容
             long bytesRead = 0;
             while (bytesRead < currentViewSize)
@@ -479,10 +479,10 @@ public class PatchManager
                 md5.TransformBlock(buffer, 0, toRead, null, 0);
                 bytesRead += toRead;
             }
-            
+
             offset += currentViewSize;
         }
-        
+
         md5.TransformFinalBlock(buffer, 0, 0);
         return BitConverter.ToString(md5.Hash).Replace("-", "").ToLower();
     }
@@ -634,7 +634,7 @@ public class PatchManager
             return;
         }
 
-        string arguments = $"'1' '123' '{updateUrl}' '{RootDirectory}' '{Path.Combine(RootDirectory, "aaa.exe")}'";
+        string arguments = $"'1' '123' '{updateUrl}' '{RootDirectory}' '{RootDirectory}'";
 
         try
         {

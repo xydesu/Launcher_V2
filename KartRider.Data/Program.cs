@@ -62,8 +62,6 @@ namespace KartRider
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             SetAdaptiveConsoleEncoding();
 
-            // Console.WriteLine(Common.Utilities.Adler32Helper.GenerateAdler32_ASCII("PrRotationModeDataPacket"));
-
             if (args != null && args.Length > 0)
             {
                 RhoPacker.PackTool(args);
@@ -78,6 +76,10 @@ namespace KartRider
                 }
                 string TCGame = "HKEY_CURRENT_USER\\Software\\TCGame\\kart";
                 string RootDirectory = (string)Registry.GetValue(TCGame, "gamepath", null);
+                if (!File.Exists(Path.Combine(RootDirectory, @"Patcher.exe")) && File.Exists(Path.Combine(RootDirectory, @"Patcher.ex0")))
+                {
+                    File.Copy(Path.Combine(RootDirectory, @"Patcher.ex0"), Path.Combine(RootDirectory, @"Patcher.exe"));
+                }
                 if (File.Exists(FileName.pinFile) && File.Exists(FileName.KartRider))
                 {
                     RootDirectory = FileName.appDir;
