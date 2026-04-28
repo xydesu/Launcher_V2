@@ -552,21 +552,19 @@ public static class MultyPlayer
         {
             uint UserNO = iPacket.ReadUInt();
             string nickname = ClientManager.GetNickname(UserNO);
+            if (string.IsNullOrEmpty(nickname)) return;
             Console.WriteLine("PqChannelMovein nickname = {0}", nickname);
             IPEndPoint clientEndPoint = Parent.Client.Socket.RemoteEndPoint as IPEndPoint;
             if (clientEndPoint == null) return;
             string clientId = ClientManager.GetClientId(clientEndPoint);
-            var ClientGroup = ClientManager.ClientGroups[clientId];
-            if (nickname != null)
+            if (!string.IsNullOrEmpty(nickname))
             {
-                if (ClientGroup.Nickname == "")
-                {
-                    ClientGroup.Nickname = nickname;
-                }
-                if (Parent.Nickname == "")
+                ClientManager.ClientGroups.TryAdd(clientId, nickname);
+                if (string.IsNullOrEmpty(Parent.Nickname))
                 {
                     Parent.Nickname = nickname;
                 }
+                FileName.Load(nickname);
                 var nicknameConfig = ProfileService.GetProfileConfig(nickname);
                 nicknameConfig.Rider.ClientId = clientId;
                 ProfileService.Save(nickname, nicknameConfig);
@@ -1314,7 +1312,9 @@ public static class MultyPlayer
         else if (hash == Adler32Helper.GenerateAdler32_ASCII("PqWhereIsRider", 0))
         {
             uint ID = iPacket.ReadUInt();
-            int roomId = RoomManager.TryGetRoomId(ClientManager.GetNickname(ID));
+            string nickname = ClientManager.GetNickname(ID);
+            if (string.IsNullOrEmpty(nickname)) return;
+            int roomId = RoomManager.TryGetRoomId(nickname);
             var room = RoomManager.GetRoom(roomId);
             if (roomId == -1)
             {

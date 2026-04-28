@@ -19,7 +19,6 @@ namespace Profile
         public string Favorite_LoadFile;
         public string Locked_LoadFile;
         public string FavoriteTrack_LoadFile;
-        public string AI_LoadFile;
         public string TuneData_LoadFile;
         public string PlantData_LoadFile;
         public string LevelData_LoadFile;
@@ -53,7 +52,6 @@ namespace Profile
             filename.Locked_LoadFile = Path.GetFullPath(Path.Combine(filename.NicknameDir, @"Locked.json"));
             filename.FavoriteTrack_LoadFile = Path.GetFullPath(Path.Combine(filename.NicknameDir, @"FavoriteTrack.json"));
             filename.NewKart_LoadFile = Path.GetFullPath(Path.Combine(filename.NicknameDir, @"NewKart.json"));
-            filename.AI_LoadFile = Path.GetFullPath(Path.Combine(filename.NicknameDir, @"AI.xml"));
             filename.TuneData_LoadFile = Path.GetFullPath(Path.Combine(filename.NicknameDir, @"TuneData.json"));
             filename.PlantData_LoadFile = Path.GetFullPath(Path.Combine(filename.NicknameDir, @"PlantData.json"));
             filename.LevelData_LoadFile = Path.GetFullPath(Path.Combine(filename.NicknameDir, @"LevelData.json"));

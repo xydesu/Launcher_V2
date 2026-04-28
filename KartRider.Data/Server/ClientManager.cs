@@ -1,4 +1,4 @@
-﻿using ExcData;
+using ExcData;
 using KartRider.Common.Network;
 using Profile;
 using RiderData;
@@ -12,26 +12,17 @@ using System.Threading.Tasks;
 
 namespace KartRider;
 
-public class ClientGroup
-{
-    public string Nickname { get; set; }
-
-    public uint RIV { get; set; }
-
-    public uint SIV { get; set; }
-}
-
 public static class ClientManager
 {
     // 线程安全的集合，存储所有客户端会话（键：客户端唯一标识，值：会话对象）
     public static readonly ConcurrentDictionary<string, SessionGroup> _clientSessions = new ConcurrentDictionary<string, SessionGroup>();
-    public static ConcurrentDictionary<string, ClientGroup> ClientGroups = new ConcurrentDictionary<string, ClientGroup>();
+    public static ConcurrentDictionary<string, string> ClientGroups = new ConcurrentDictionary<string, string>();
     public static ConcurrentDictionary<string, uint> NicknameToUserNO = new ConcurrentDictionary<string, uint>();
     public static ConcurrentDictionary<uint, string> UserNOToNickname = new ConcurrentDictionary<uint, string>();
     private static uint UserNO = 1;
 
     // 添加客户端会话
-    public static void AddClientAsync(SessionGroup session)
+    public static void AddClient(SessionGroup session)
     {
         IPEndPoint clientEndPoint = session.Client.Socket.RemoteEndPoint as IPEndPoint;
         if (clientEndPoint == null) return;
@@ -39,13 +30,9 @@ public static class ClientManager
         string clientId = GetClientId(clientEndPoint);
         _clientSessions.TryAdd(clientId, session);
 
-        ClientGroup clientGroup1 = new ClientGroup { Nickname = "", RIV = 0, SIV = 0 };
-        ClientGroups.TryAdd(clientId, clientGroup1);
-
         uint IV = GameSupport.PcFirstMessageAsync(session);
-        var clientGroup2 = ClientGroups[clientId];
-        clientGroup2.RIV = IV;
-        clientGroup2.SIV = IV;
+        session.Client.RIV = IV;
+        session.Client.SIV = IV;
         Console.WriteLine($"客户端 {clientId} 已连接，当前在线数：{_clientSessions.Count}");
     }
 
@@ -58,16 +45,16 @@ public static class ClientManager
         string clientId = GetClientId(clientEndPoint);
         if (_clientSessions.TryRemove(clientId, out _))
         {
-            var ClientGroup = ClientManager.ClientGroups[clientId];
-            int roomId = RoomManager.TryGetRoomId(ClientGroup.Nickname);
-            int slotId = RoomManager.GetPlayerSlotId(roomId, ClientGroup.Nickname);
+            ClientManager.ClientGroups.TryGetValue(clientId, out string Nickname);
+            int roomId = RoomManager.TryGetRoomId(Nickname);
+            int slotId = RoomManager.GetPlayerSlotId(roomId, Nickname);
             if (slotId != -1)
             {
-                RoomManager.RemovePlayer(roomId, (byte)slotId, ClientGroup.Nickname);
+                RoomManager.RemovePlayer(roomId, (byte)slotId, Nickname);
             }
-            if (!string.IsNullOrEmpty(ClientGroup.Nickname))
+            if (!string.IsNullOrEmpty(Nickname))
             {
-                MyRoomData.TryLeaveMyRoom(ClientGroup.Nickname);
+                MyRoomData.TryLeaveMyRoom(Nickname);
             }
             ClientGroups.TryRemove(clientId, out _);
             Console.WriteLine($"客户端 {clientId} 已断开，当前在线数：{_clientSessions.Count}");
@@ -116,31 +103,30 @@ public static class ClientManager
     // 查询ClientGroups中是否存在指定Nickname的ClientGroup
     public static bool HasClientWithNickname(string nickname)
     {
-        var online = ClientGroups.Values.Any(cg => cg.Nickname.Equals(nickname, StringComparison.OrdinalIgnoreCase));
+        var online = ClientGroups.Values.Contains(nickname);
         if (online)
         {
-            var clientId = ClientGroups.FirstOrDefault(cg => cg.Value.Nickname.Equals(nickname, StringComparison.OrdinalIgnoreCase)).Key;
-            if (_clientSessions.ContainsKey(clientId))
+            var clientId = ClientGroups.FirstOrDefault(x => x.Value == nickname).Key;
+            if (_clientSessions.TryGetValue(clientId, out var session))
             {
-                var Client = _clientSessions[clientId].Client;
-                if (Client.Socket.Connected)
+                var Client = session.Client;
+                try
                 {
-                    return true;
+                    // 使用 Poll 检测真实连接状态（1000微秒 = 1毫秒）
+                    // 如果 socket 不可读且不可写，说明连接已断开或有问题
+                    bool isReadable = Client.Socket.Poll(1000, SelectMode.SelectRead);
+                    bool hasData = Client.Socket.Available > 0;
+                    bool isConnected = isReadable && !hasData ? false : Client.Socket.Connected;
+                    return isConnected;
                 }
-                else
+                catch
                 {
                     return false;
                 }
             }
-            else
-            {
-                return false;
-            }
-        }
-        else
-        {
             return false;
         }
+        return false;
     }
 
     public static uint GetUserNO(string Nickname)

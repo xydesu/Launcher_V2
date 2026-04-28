@@ -344,7 +344,7 @@ namespace KartRider
                 outPacket.WriteString(User.Value);
                 outPacket.WriteUInt(ProfileService.GetProfileConfig(User.Value).Rider.RP);
                 outPacket.WriteHexString("00 00 00 00 00 00");
-                if (ClientManager.ClientGroups.Any(cg => cg.Value.Nickname == User.Value))
+                if (ClientManager.ClientGroups.Any(cg => cg.Value == User.Value))
                 {
                     outPacket.WriteByte(1);
                 }
@@ -359,11 +359,11 @@ namespace KartRider
         public static void RefreshRecommendFriendList(SessionGroup Parent, OutPacket outPacket)
         {
             outPacket.WriteInt(ClientManager.ClientGroups.Count - 1);
-            foreach (var User in ClientManager.ClientGroups.Where(u => u.Value.Nickname != Parent.Nickname))
+            foreach (var User in ClientManager.ClientGroups.Where(u => u.Value != Parent.Nickname))
             {
-                outPacket.WriteUInt(ClientManager.GetUserNO(User.Value.Nickname));
-                outPacket.WriteString(User.Value.Nickname);
-                outPacket.WriteUInt(ProfileService.GetProfileConfig(User.Value.Nickname).Rider.RP);
+                outPacket.WriteUInt(ClientManager.GetUserNO(User.Value));
+                outPacket.WriteString(User.Value);
+                outPacket.WriteUInt(ProfileService.GetProfileConfig(User.Value).Rider.RP);
                 outPacket.WriteHexString("00 00 00 00 00 00");
                 outPacket.WriteHexString("F2 06 00 00 00 00");
             }

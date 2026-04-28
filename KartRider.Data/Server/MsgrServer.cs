@@ -317,7 +317,9 @@ namespace KartRider
                         {
                             uint userNO = inPacket.ReadUInt();
                             uint roomID = inPacket.ReadUInt();
-                            rooms[roomID].Remove(ClientManager.GetNickname(userNO));
+                            string nickname = ClientManager.GetNickname(userNO);
+                            if (string.IsNullOrEmpty(nickname)) return;
+                            rooms[roomID].Remove(nickname);
                             using (OutPacket outPacket = new OutPacket("PrLeaveMsgrChat"))
                             {
                                 outPacket.WriteUInt(userNO);

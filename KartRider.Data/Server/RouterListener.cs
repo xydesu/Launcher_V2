@@ -47,7 +47,7 @@ namespace KartRider
                 RouterListener.MySession = new SessionGroup(clientSocket, null);
 
                 // 将会话添加到管理类
-                ClientManager.AddClientAsync(RouterListener.MySession);
+                ClientManager.AddClient(RouterListener.MySession);
             }
             catch (Exception ex)
             {

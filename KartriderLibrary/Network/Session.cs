@@ -40,6 +40,18 @@ namespace KartRider.Common.Network
             }
         }
 
+        public uint RIV
+        {
+            get;
+            set;
+        }
+
+        public uint SIV
+        {
+            get;
+            set;
+        }
+
         private SocketAsyncEventArgs mReadEventArgs
         {
             get;
@@ -127,21 +139,17 @@ namespace KartRider.Common.Network
                 }
                 else if ((int)next.Buffer.Length >= next.Length)
                 {
-                    IPEndPoint clientEndPoint = this._socket.RemoteEndPoint as IPEndPoint;
-                    if (clientEndPoint == null) { this.Disconnect(); return; }
-                    string clientId = ClientManager.GetClientId(clientEndPoint);
-                    if (!ClientManager.ClientGroups.TryGetValue(clientId, out var clientGroup)) { this.Disconnect(); return; }
                     byte[] buffer = next.Buffer;
-                    byte[] numArray = new byte[(int)buffer.Length + (clientGroup.SIV != 0 ? 8 : 4)];
-                    if (clientGroup.SIV != 0)
+                    byte[] numArray = new byte[(int)buffer.Length + (this.SIV != 0 ? 8 : 4)];
+                    if (this.SIV != 0)
                     {
-                        uint num = KRPacketCrypto.HashEncrypt(buffer, (uint)buffer.Length, clientGroup.SIV);
-                        Buffer.BlockCopy(BitConverter.GetBytes((int)((ulong)clientGroup.SIV ^ (ulong)((int)buffer.Length + 4) ^ (ulong)4164199944)), 0, numArray, 0, 4);
-                        Buffer.BlockCopy(BitConverter.GetBytes(clientGroup.SIV ^ num ^ 3388492432), 0, numArray, (int)numArray.Length - 4, 4);
-                        clientGroup.SIV += 21446425;
-                        if (clientGroup.SIV == 0)
+                        uint num = KRPacketCrypto.HashEncrypt(buffer, (uint)buffer.Length, this.SIV);
+                        Buffer.BlockCopy(BitConverter.GetBytes((int)((ulong)this.SIV ^ (ulong)((int)buffer.Length + 4) ^ (ulong)4164199944)), 0, numArray, 0, 4);
+                        Buffer.BlockCopy(BitConverter.GetBytes(this.SIV ^ num ^ 3388492432), 0, numArray, (int)numArray.Length - 4, 4);
+                        this.SIV += 21446425;
+                        if (this.SIV == 0)
                         {
-                            clientGroup.SIV = 1;
+                            this.SIV = 1;
                         }
                     }
                     else
@@ -229,30 +237,30 @@ namespace KartRider.Common.Network
                                 IPEndPoint clientEndPoint = this._socket.RemoteEndPoint as IPEndPoint;
                                 if (clientEndPoint == null) return;
                                 string clientId = ClientManager.GetClientId(clientEndPoint);
-                                if (!ClientManager.ClientGroups.TryGetValue(clientId, out var clientGroup))
+                                if (!ClientManager._clientSessions.ContainsKey(clientId))
                                 {
                                     this.Disconnect();
                                     return;
                                 }
                                 uint num1 = BitConverter.ToUInt32(this.mBuffer, 0);
-                                if (clientGroup.RIV != 0)
+                                if (this.RIV != 0)
                                 {
-                                    num1 = clientGroup.RIV ^ num1 ^ 4164199944;
+                                    num1 = this.RIV ^ num1 ^ 4164199944;
                                 }
                                 if ((ulong)this.mCursor >= (ulong)(num1 + 4))
                                 {
                                     byte[] numArray = new byte[num1 - 4];
                                     Buffer.BlockCopy(this.mBuffer, 4, numArray, 0, (int)(num1 - 4));
-                                    if (clientGroup.RIV != 0)
+                                    if (this.RIV != 0)
                                     {
-                                        if ((clientGroup.RIV ^ BitConverter.ToUInt32(this.mBuffer, (int)num1) ^ 3388492432) != KRPacketCrypto.HashDecrypt(numArray, num1 - 4, clientGroup.RIV))
+                                        if ((this.RIV ^ BitConverter.ToUInt32(this.mBuffer, (int)num1) ^ 3388492432) != KRPacketCrypto.HashDecrypt(numArray, num1 - 4, this.RIV))
                                         {
                                             Console.WriteLine("Different checksum while decrypting");
                                         }
-                                        clientGroup.RIV += 21446425;
-                                        if (clientGroup.RIV == 0)
+                                        this.RIV += 21446425;
+                                        if (this.RIV == 0)
                                         {
-                                            clientGroup.RIV = 1;
+                                            this.RIV = 1;
                                         }
                                     }
                                     this.mCursor = (int)(this.mCursor - (num1 + 4));
@@ -379,8 +387,7 @@ namespace KartRider.Common.Network
                         string clientId = ClientManager.GetClientId(clientEndPoint);
                         if (ClientManager.ClientGroups.ContainsKey(clientId))
                         {
-                            var clientGroup = ClientManager.ClientGroups[clientId];
-                            var nickname = clientGroup.Nickname;
+                            ClientManager.ClientGroups.TryGetValue(clientId, out var nickname);
                             string currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                             Console.WriteLine($"[{currentTime}][{nickname}] " + (PacketName)BitConverter.ToUInt32(pPacket.ToArray(), 0) + ": " + BitConverter.ToString(pPacket.ToArray()).Replace("-", " "));
                         }

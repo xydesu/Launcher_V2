@@ -78,9 +78,8 @@ namespace KartRider
                     IPEndPoint clientEndPoint = Parent.Client.Socket.RemoteEndPoint as IPEndPoint;
                     if (clientEndPoint == null) return;
                     string clientId = ClientManager.GetClientId(clientEndPoint);
-                    var ClientGroup = ClientManager.ClientGroups[clientId];
                     this.Parent.Nickname = packet.Nickname;
-                    ClientGroup.Nickname = packet.Nickname;
+                    ClientManager.ClientGroups.TryAdd(clientId, packet.Nickname);
                     FileName.Load(packet.Nickname);
                     uint UserNO = ClientManager.GetUserNO(packet.Nickname);
                     var loginConfig = ProfileService.GetProfileConfig(packet.Nickname);
@@ -3720,6 +3719,7 @@ namespace KartRider
                     {
                         uint UserID = iPacket.ReadUInt();
                         string UserName = ClientManager.GetNickname(UserID);
+                        if (string.IsNullOrEmpty(UserName)) return;
                         var pConfig = ProfileService.GetProfileConfig(UserName);
                         IPEndPoint client = ClientManager.ClientToIPEndPoint(pConfig.Rider.ClientId);
                         using (OutPacket outPacket = new OutPacket("PrRequestAddFriendPacket"))
