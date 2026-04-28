@@ -18,8 +18,18 @@ public class TrackRank
 
 public static class TrackRankData
 {
-    public static Dictionary<byte, string> SpeedTypes = new Dictionary<byte, string> { {7, "标准"}, { 4, "无限" } };
-    public static Dictionary<byte, string> GameTypes = new Dictionary<byte, string> { { 0, "个人赛" }, { 4, "组队赛" } };
+	public static Dictionary<byte, string> SpeedTypes = new Dictionary<byte, string> { { 7, "标准" }, { 4, "无限" } };
+	public static Dictionary<byte, string> GameTypes = new Dictionary<byte, string> { { 0, "个人赛" }, { 1, "组队赛" } };
+
+	public static string GetSpeedTypeName(byte speedType)
+	{
+		return SpeedTypes.TryGetValue(speedType, out string name) ? name : $"{speedType}";
+	}
+
+	public static string GetGameTypeName(byte gameType)
+	{
+		return GameTypes.TryGetValue(gameType, out string name) ? name : $"{gameType}";
+	}
 
     public static void LoRpGetTrackRankPacket(SessionGroup Parent, uint track, byte SpeedType, byte GameType)
     {
@@ -75,11 +85,11 @@ public static class TrackRankData
         trackRanks = trackRanks.OrderBy(t => t.Time).Take(10).ToList();
         if (trackRanks.Contains(newRank))
         {
-            var timeSpan = GetTimeSpan(newRank.Time);
-            int ranking = trackRanks.IndexOf(newRank) + 1;
-            using (OutPacket outPacket = new OutPacket("PcSlaveNotice"))
-            {
-                outPacket.WriteString($"{newRank.Nickname} / {SpeedTypes[SpeedType]}[{GameTypes[GameType]}] / 第{ranking}名 / {RandomTrack.GetTrackName(track)} / {timeSpan.min}:{timeSpan.sec}:{timeSpan.mil}");
+			var timeSpan = GetTimeSpan(newRank.Time);
+			int ranking = trackRanks.IndexOf(newRank) + 1;
+			using (OutPacket outPacket = new OutPacket("PcSlaveNotice"))
+			{
+				outPacket.WriteString($"{newRank.Nickname} / {GetSpeedTypeName(SpeedType)}[{GetGameTypeName(GameType)}] / 第{ranking}名 / {RandomTrack.GetTrackName(track)} / {timeSpan.min}:{timeSpan.sec}:{timeSpan.mil}");
                 foreach (SessionGroup Session in ClientManager._clientSessions.Values)
                 {
                     Session.Client.Send(outPacket);
