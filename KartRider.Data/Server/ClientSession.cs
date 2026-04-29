@@ -132,13 +132,6 @@ namespace KartRider
                             outPacket.WriteInt(0);
                             this.Parent.Client.Send(outPacket);
                         }
-                        TrackRankData.AddTrackRank(Track, SpeedType, GameType, new TrackRank
-                        {
-                            UserNO = ClientManager.GetUserNO(this.Parent.Client.Nickname),
-                            Nickname = this.Parent.Client.Nickname,
-                            Kart = Kart,
-                            Time = racingTime.Rider.Time
-                        });
                         var manager = new CompetitiveDataManager();
                         CompleteTrackScoreCalculator calculator = new CompleteTrackScoreCalculator();
                         var scores = calculator.CalculateTrackScoreDetails(Track, racingTime.Rider.Time, Booster, Crash, TimeAttack.TrackDictionary);
