@@ -96,6 +96,30 @@ public class GameRoom
         return count;
     }
 
+    // 清理并重整排名：删除已离开的玩家，排名靠后的往前移
+    public void CleanupRankings()
+    {
+        // 获取房间内所有当前玩家的ID
+        var currentPlayerIds = _IDs
+            .Where(m => m is Player)
+            .Select(m => ((Player)m).ID)
+            .ToList();
+
+        // 删除排名中已离开的玩家
+        var keysToRemove = Ranking.Keys.Where(k => !currentPlayerIds.Contains(k)).ToList();
+        foreach (var key in keysToRemove)
+        {
+            Ranking.Remove(key);
+        }
+
+        // 重整排名，使其连续 (0, 1, 2, ...)
+        var sortedRankings = Ranking.OrderBy(kvp => kvp.Value).ToList();
+        for (int i = 0; i < sortedRankings.Count; i++)
+        {
+            Ranking[sortedRankings[i].Key] = i;
+        }
+    }
+
     public SlotStatus GetSlotStatus(byte slotId)
     {
         if (!IsValidSlotId(slotId))

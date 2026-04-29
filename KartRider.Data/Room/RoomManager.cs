@@ -136,6 +136,9 @@ public static class RoomManager
         bool removed = room.RemoveMember(slotId, nickname, out bool shouldDeleteRoom);
         if (removed)
         {
+            // 清理并重整排名
+            room.CleanupRankings();
+
             if (!string.IsNullOrEmpty(nickname))
             {
                 _playerRoomMap.Remove(nickname); // 区分大小写删除

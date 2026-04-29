@@ -189,19 +189,6 @@ public class MyRoomData
         }
     }
 
-    private static SessionGroup GetOnlineSession(string nickname)
-    {
-        if (string.IsNullOrEmpty(nickname))
-            return null;
-
-        foreach (var session in ClientManager._clientSessions.Values)
-        {
-            if (string.Equals(session.Nickname, nickname, StringComparison.OrdinalIgnoreCase))
-                return session;
-        }
-        return null;
-    }
-
     private static void BroadcastRoomSlotData(string owner)
     {
         if (string.IsNullOrEmpty(owner))
@@ -225,7 +212,7 @@ public class MyRoomData
                 continue;
 
             sent.Add(member);
-            SessionGroup session = GetOnlineSession(member);
+            SessionGroup session = ClientManager.GetParent(member);
             if (session != null)
             {
                 RmSlotDataPacket(session, member);
@@ -356,7 +343,7 @@ public class MyRoomData
                 if (!sent.Add(member))
                     continue;
 
-                SessionGroup session = GetOnlineSession(member);
+                SessionGroup session = ClientManager.GetParent(member);
                 if (session != null)
                 {
                     session.Client.Send(outPacket);

@@ -15,8 +15,7 @@ namespace KartRider;
 public static class ClientManager
 {
     // 线程安全的集合，存储所有客户端会话（键：客户端唯一标识，值：会话对象）
-    public static readonly ConcurrentDictionary<string, SessionGroup> _clientSessions = new ConcurrentDictionary<string, SessionGroup>();
-    public static ConcurrentDictionary<string, string> ClientGroups = new ConcurrentDictionary<string, string>();
+    private static readonly ConcurrentDictionary<string, SessionGroup> _clientSessions = new ConcurrentDictionary<string, SessionGroup>();
     public static ConcurrentDictionary<string, uint> NicknameToUserNO = new ConcurrentDictionary<string, uint>();
     public static ConcurrentDictionary<uint, string> UserNOToNickname = new ConcurrentDictionary<uint, string>();
     private static uint UserNO = 1;
@@ -43,28 +42,50 @@ public static class ClientManager
         if (clientEndPoint == null) return;
 
         string clientId = GetClientId(clientEndPoint);
-        if (_clientSessions.TryRemove(clientId, out _))
+        _clientSessions.TryGetValue(clientId, out var client);
+        if (!string.IsNullOrEmpty(client.Client.Nickname))
         {
-            ClientManager.ClientGroups.TryGetValue(clientId, out string Nickname);
-            int roomId = RoomManager.TryGetRoomId(Nickname);
-            int slotId = RoomManager.GetPlayerSlotId(roomId, Nickname);
+            int roomId = RoomManager.TryGetRoomId(client.Client.Nickname);
+            int slotId = RoomManager.GetPlayerSlotId(roomId, client.Client.Nickname);
             if (slotId != -1)
             {
-                RoomManager.RemovePlayer(roomId, (byte)slotId, Nickname);
+                RoomManager.RemovePlayer(roomId, (byte)slotId, client.Client.Nickname);
             }
-            if (!string.IsNullOrEmpty(Nickname))
-            {
-                MyRoomData.TryLeaveMyRoom(Nickname);
-            }
-            ClientGroups.TryRemove(clientId, out _);
+            MyRoomData.TryLeaveMyRoom(client.Client.Nickname);
+        }
+        if (_clientSessions.TryRemove(clientId, out _))
+        {
             Console.WriteLine($"客户端 {clientId} 已断开，当前在线数：{_clientSessions.Count}");
         }
     }
 
-    // 获取所有在线客户端
-    public static ConcurrentDictionary<string, SessionGroup> GetAllClients()
+    // 获取所有在线玩家
+    public static List<string> GetOnlinePlayers()
     {
-        return _clientSessions;
+        List<string> OnlinePlayers = new List<string>();
+        foreach (var session in _clientSessions.Values)
+        {
+            if (!string.IsNullOrEmpty(session.Client.Nickname))
+            {
+                OnlinePlayers.Add(session.Client.Nickname);
+            }
+        }
+        return OnlinePlayers;
+    }
+
+    public static ICollection<SessionGroup> GetClients()
+    {
+        return _clientSessions.Values;
+    }
+
+    public static SessionGroup GetParent(string nickname)
+    {
+        var session = _clientSessions.Values.FirstOrDefault(x => x.Client.Nickname == nickname);
+        if (session != null)
+        {
+            return session;
+        }
+        return null;
     }
 
     // 生成客户端唯一标识（IP:端口）
@@ -103,28 +124,23 @@ public static class ClientManager
     // 查询ClientGroups中是否存在指定Nickname的ClientGroup
     public static bool HasClientWithNickname(string nickname)
     {
-        var online = ClientGroups.Values.Contains(nickname);
-        if (online)
+        var session = _clientSessions.Values.FirstOrDefault(x => x.Client.Nickname == nickname);
+        if (session != null)
         {
-            var clientId = ClientGroups.FirstOrDefault(x => x.Value == nickname).Key;
-            if (_clientSessions.TryGetValue(clientId, out var session))
+            var Client = session.Client;
+            try
             {
-                var Client = session.Client;
-                try
-                {
-                    // 使用 Poll 检测真实连接状态（1000微秒 = 1毫秒）
-                    // 如果 socket 不可读且不可写，说明连接已断开或有问题
-                    bool isReadable = Client.Socket.Poll(1000, SelectMode.SelectRead);
-                    bool hasData = Client.Socket.Available > 0;
-                    bool isConnected = isReadable && !hasData ? false : Client.Socket.Connected;
-                    return isConnected;
-                }
-                catch
-                {
-                    return false;
-                }
+                // 使用 Poll 检测真实连接状态（1000微秒 = 1毫秒）
+                // 如果 socket 不可读且不可写，说明连接已断开或有问题
+                bool isReadable = Client.Socket.Poll(1000, SelectMode.SelectRead);
+                bool hasData = Client.Socket.Available > 0;
+                bool isConnected = isReadable && !hasData ? false : Client.Socket.Connected;
+                return isConnected;
             }
-            return false;
+            catch
+            {
+                return false;
+            }
         }
         return false;
     }

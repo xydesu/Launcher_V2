@@ -338,13 +338,14 @@ namespace KartRider
         public static void GetMsgrFriendList(SessionGroup Parent, OutPacket outPacket)
         {
             outPacket.WriteInt(ClientManager.UserNOToNickname.Count - 1);
-            foreach (var User in ClientManager.UserNOToNickname.Where(u => u.Value != Parent.Nickname))
+            var OnlinePlayers = ClientManager.GetOnlinePlayers();
+            foreach (var User in ClientManager.UserNOToNickname.Where(u => u.Value != Parent.Client.Nickname))
             {
                 outPacket.WriteUInt(User.Key);
                 outPacket.WriteString(User.Value);
                 outPacket.WriteUInt(ProfileService.GetProfileConfig(User.Value).Rider.RP);
                 outPacket.WriteHexString("00 00 00 00 00 00");
-                if (ClientManager.ClientGroups.Any(cg => cg.Value == User.Value))
+                if (OnlinePlayers.Contains(User.Value))
                 {
                     outPacket.WriteByte(1);
                 }
@@ -358,12 +359,13 @@ namespace KartRider
 
         public static void RefreshRecommendFriendList(SessionGroup Parent, OutPacket outPacket)
         {
-            outPacket.WriteInt(ClientManager.ClientGroups.Count - 1);
-            foreach (var User in ClientManager.ClientGroups.Where(u => u.Value != Parent.Nickname))
+            var OnlinePlayers = ClientManager.GetOnlinePlayers();
+            outPacket.WriteInt(OnlinePlayers.Count - 1);
+            foreach (var nickname in OnlinePlayers.Where(x => x != Parent.Client.Nickname))
             {
-                outPacket.WriteUInt(ClientManager.GetUserNO(User.Value));
-                outPacket.WriteString(User.Value);
-                outPacket.WriteUInt(ProfileService.GetProfileConfig(User.Value).Rider.RP);
+                outPacket.WriteUInt(ClientManager.GetUserNO(nickname));
+                outPacket.WriteString(nickname);
+                outPacket.WriteUInt(ProfileService.GetProfileConfig(nickname).Rider.RP);
                 outPacket.WriteHexString("00 00 00 00 00 00");
                 outPacket.WriteHexString("F2 06 00 00 00 00");
             }

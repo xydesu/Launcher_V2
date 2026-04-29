@@ -52,6 +52,12 @@ namespace KartRider.Common.Network
             set;
         }
 
+        public string Nickname
+        {
+            get;
+            set;
+        }
+
         private SocketAsyncEventArgs mReadEventArgs
         {
             get;
@@ -234,10 +240,8 @@ namespace KartRider.Common.Network
                         {
                             if (this.mCursor >= 4)
                             {
-                                IPEndPoint clientEndPoint = this._socket.RemoteEndPoint as IPEndPoint;
-                                if (clientEndPoint == null) return;
-                                string clientId = ClientManager.GetClientId(clientEndPoint);
-                                if (!ClientManager._clientSessions.ContainsKey(clientId))
+                                var client = ClientManager.GetParent(Nickname);
+                                if (client == null)
                                 {
                                     this.Disconnect();
                                     return;
@@ -381,17 +385,8 @@ namespace KartRider.Common.Network
             {
                 if (this.mDisconnected == 0 && this._socket != null && this._socket.Connected)
                 {
-                    IPEndPoint clientEndPoint = this._socket.RemoteEndPoint as IPEndPoint;
-                    if (clientEndPoint != null)
-                    {
-                        string clientId = ClientManager.GetClientId(clientEndPoint);
-                        if (ClientManager.ClientGroups.ContainsKey(clientId))
-                        {
-                            ClientManager.ClientGroups.TryGetValue(clientId, out var nickname);
-                            string currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                            Console.WriteLine($"[{currentTime}][{nickname}] " + (PacketName)BitConverter.ToUInt32(pPacket.ToArray(), 0) + ": " + BitConverter.ToString(pPacket.ToArray()).Replace("-", " "));
-                        }
-                    }
+                    string currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                    Console.WriteLine($"[{currentTime}][{Nickname}] " + (PacketName)BitConverter.ToUInt32(pPacket.ToArray(), 0) + ": " + BitConverter.ToString(pPacket.ToArray()).Replace("-", " "));
                     this.mSendSegments.Enqueue(new ByteArraySegment(pPacket.ToArray(), true));
                     if (Interlocked.CompareExchange(ref this.mSending, 1, 0) == 0)
                     {

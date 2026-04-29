@@ -13,14 +13,14 @@ public class SlotData
     public static void GameSlotPacket(SessionGroup Parent, InPacket iPacket)
     {
         var kartConfig = SpecialKartConfig.LoadConfigFromFile(FileName.SpecialKartConfig);
-        int roomId = RoomManager.TryGetRoomId(Parent.Nickname);
+        int roomId = RoomManager.TryGetRoomId(Parent.Client.Nickname);
         var room = RoomManager.GetRoom(roomId);
         if (room == null)
         {
             return;
         }
 
-        Player player = RoomManager.GetPlayer(roomId, Parent.Nickname);
+        Player player = RoomManager.GetPlayer(roomId, Parent.Client.Nickname);
         int id = iPacket.ReadInt();
         uint item = iPacket.ReadUInt();
         byte type = iPacket.ReadByte();
@@ -38,7 +38,7 @@ public class SlotData
                 byte[] data3 = iPacket.ReadBytes(21);
                 int id2 = iPacket.ReadInt();
                 uint ticks = iPacket.ReadUInt();
-                short skill = RandomItemSkill(Parent.Nickname, room.GameType);
+                short skill = RandomItemSkill(Parent.Client.Nickname, room.GameType);
                 using (OutPacket oPacket = new OutPacket("GameSlotPacket"))
                 {
                     oPacket.WriteInt(id);
@@ -71,7 +71,7 @@ public class SlotData
                 using (OutPacket oPacket = new OutPacket())
                 {
                     oPacket.WriteBytes(iPacket.ToArray());
-                    MultyPlayer.BroadCast(roomId, oPacket, Parent.Nickname);
+                    MultyPlayer.BroadCast(roomId, oPacket, Parent.Client.Nickname);
                 }
                 return;
             }
@@ -79,14 +79,14 @@ public class SlotData
             {
                 var uni = iPacket.ReadByte();
                 var skill = iPacket.ReadShort();
-                List<short> skills = V2Specs.GetSkills(Parent.Nickname);
+                List<short> skills = V2Specs.GetSkills(Parent.Client.Nickname);
                 if (skills.Contains(13) && skill == 3)
                 {
                     AttackedSkill(roomId, id, Parent, type, uni, 10);
                 }
 
                 // Ensure profile is loaded before accessing
-                var parentConfig = ProfileService.GetProfileConfig(Parent.Nickname);
+                var parentConfig = ProfileService.GetProfileConfig(Parent.Client.Nickname);
                 if (kartConfig.SkillAttacked.TryGetValue(parentConfig.RiderItem.Set_Kart, out var kartSkills))
                 {
                     if (kartSkills.TryGetValue(skill, out var skillConfig))
@@ -104,14 +104,14 @@ public class SlotData
                 iPacket.ReadShort();
                 iPacket.ReadByte();
                 var skill = iPacket.ReadShort();
-                List<short> skills = V2Specs.GetSkills(Parent.Nickname);
+                List<short> skills = V2Specs.GetSkills(Parent.Client.Nickname);
                 if (skills.Contains(14) && skill == 5)
                 {
                     AddItemSkill(roomId, id, Parent, 6);
                 }
 
                 // Ensure profile is loaded before accessing
-                var parentConfig2 = ProfileService.GetProfileConfig(Parent.Nickname);
+                var parentConfig2 = ProfileService.GetProfileConfig(Parent.Client.Nickname);
                 if (kartConfig.SkillMappings.TryGetValue(parentConfig2.RiderItem.Set_Kart, out var kartSkills2))
                 {
                     if (kartSkills2.TryGetValue(skill, out var skillConfig2))
@@ -182,11 +182,11 @@ public class SlotData
         // 概率判断：不触发时直接返回，不发送数据包
         if (probability < 100 && _random.Next(100) >= probability)
         {
-            Console.WriteLine("[AddItemSkill] 玩家 {0} 技能 {1} 未触发 (概率: {2}%)", Parent.Nickname, skill, probability);
+            Console.WriteLine("[AddItemSkill] 玩家 {0} 技能 {1} 未触发 (概率: {2}%)", Parent.Client.Nickname, skill, probability);
             return;
         }
 
-        skill = GetItemSkill(Parent.Nickname, skill);
+        skill = GetItemSkill(Parent.Client.Nickname, skill);
         using (OutPacket oPacket = new OutPacket("GameSlotPacket"))
         {
             oPacket.WriteInt(id);
@@ -200,7 +200,7 @@ public class SlotData
             oPacket.WriteShort(skill);
             oPacket.WriteBytes(new byte[5]);
             Parent.Client.Send(oPacket);
-            BroadCast(roomId, id, Parent.Nickname, skill);
+            BroadCast(roomId, id, Parent.Client.Nickname, skill);
         }
     }
 
@@ -209,11 +209,11 @@ public class SlotData
         // 概率判断：不触发时直接返回，不发送数据包
         if (probability < 100 && _random.Next(100) >= probability)
         {
-            Console.WriteLine("[AttackedSkill] 玩家 {0} 技能 {1} 未触发 (概率: {2}%)", Parent.Nickname, skill, probability);
+            Console.WriteLine("[AttackedSkill] 玩家 {0} 技能 {1} 未触发 (概率: {2}%)", Parent.Client.Nickname, skill, probability);
             return;
         }
 
-        skill = GetItemSkill(Parent.Nickname, skill);
+        skill = GetItemSkill(Parent.Client.Nickname, skill);
         using (OutPacket oPacket = new OutPacket("GameSlotPacket"))
         {
             oPacket.WriteInt(id);
@@ -227,7 +227,7 @@ public class SlotData
             oPacket.WriteShort(skill);
             oPacket.WriteBytes(new byte[5]);
             Parent.Client.Send(oPacket);
-            BroadCast(roomId, id, Parent.Nickname, skill);
+            BroadCast(roomId, id, Parent.Client.Nickname, skill);
         }
     }
 

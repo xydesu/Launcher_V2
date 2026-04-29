@@ -13,7 +13,6 @@ namespace KartRider
             set;
         }
 
-        public string Nickname = "";
         public int TimeAttackStartTicks = 0;
         public int SendPlaneCount = 6;
         public int TotalSendPlaneCount = 6;

@@ -90,7 +90,7 @@ public static class TrackRankData
 			using (OutPacket outPacket = new OutPacket("PcSlaveNotice"))
 			{
 				outPacket.WriteString($"{newRank.Nickname} / {GetSpeedTypeName(SpeedType)}[{GetGameTypeName(GameType)}] / 第{ranking}名 / {RandomTrack.GetTrackName(track)} / {timeSpan.min}:{timeSpan.sec}:{timeSpan.mil}");
-                foreach (SessionGroup Session in ClientManager._clientSessions.Values)
+                foreach (SessionGroup Session in ClientManager.GetClients())
                 {
                     Session.Client.Send(outPacket);
                 }
