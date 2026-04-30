@@ -30,10 +30,10 @@ namespace KartRider
     {
         public static List<List<short>> Dictionary = new List<List<short>>();
         public static List<int> scenario = new List<int>();
-        public static List<int> quest = new List<int>();
+        public static List<uint> quest = new List<uint>();
         public static int seasonId = 0;
+        public static List<uint> QuestEncodeList = new List<uint>();
         public static Dictionary<byte, Channel> Channels = new Dictionary<byte, Channel>();
-        public static List<string> PatchUpdate = new List<string>();
 
         public static Keys[] keys = new Keys[]
         {
@@ -188,11 +188,24 @@ namespace KartRider
         public static void PrQuestUX2ndPacket(OutPacket outPacket)
         {
             int All_Quest = quest.Count;
-            outPacket.WriteInt(All_Quest);
+            outPacket.WriteInt(All_Quest + QuestEncodeList.Count);
             foreach (var item in quest)
             {
-                outPacket.WriteInt(item);
-                outPacket.WriteInt(item);
+                outPacket.WriteUInt(item);
+                outPacket.WriteUInt(item);
+                outPacket.WriteInt(0);
+                outPacket.WriteShort(-1);
+                outPacket.WriteShort(0);
+                outPacket.WriteInt(0);
+                outPacket.WriteInt(0);
+                outPacket.WriteInt(1);
+                outPacket.WriteInt(0);
+                outPacket.WriteByte(0);
+            }
+            foreach (var item in QuestEncodeList)
+            {
+                outPacket.WriteUInt(item);
+                outPacket.WriteUInt(item);
                 outPacket.WriteInt(0);
                 outPacket.WriteShort(-1);
                 outPacket.WriteShort(0);

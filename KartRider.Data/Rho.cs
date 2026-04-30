@@ -564,7 +564,7 @@ namespace KartRider
                                     foreach (XmlNode xn in QuestParams)
                                     {
                                         XmlElement xe = (XmlElement)xn;
-                                        int id = int.Parse(xe.GetAttribute("id"));
+                                        uint id = uint.Parse(xe.GetAttribute("id"));
                                         if (!(GameSupport.quest.Contains(id)))
                                         {
                                             GameSupport.quest.Add(id);
@@ -581,7 +581,26 @@ namespace KartRider
                             {
                                 XDocument doc = XDocument.Load(stream);
                                 XElement questInfo = doc.Descendants("kartPassQuestInfo").First();
-                                GameSupport.seasonId = int.Parse(questInfo.Attribute("seasonId").Value);
+
+                                string period = questInfo.Attribute("seasonPeriod").Value;
+                                var isInTime = IsCurrentTimeInPeriod(period);
+                                if (isInTime != null)
+                                {
+                                    GameSupport.seasonId = int.Parse(questInfo.Attribute("seasonId").Value);
+                                    List<uint> ids = new List<uint>();
+                                    foreach (int group in isInTime)
+                                    {
+                                        for (int index = 1; index <= 3; index++)
+                                        {
+                                            string groupStr = group.ToString("D2");  // 1 → 01
+                                            string indexStr = index.ToString("D2");  // 1 → 01
+                                            // 拼接：14500 + 组号 + 序号
+                                            uint id = uint.Parse($"14500{groupStr}{indexStr}");
+                                            ids.Add(id);
+                                        }
+                                    }
+                                    GameSupport.QuestEncodeList = ids;
+                                }
                             }
                         }
                         if (fullName == $"zeta/{regionCode}/scenario/scenario.bml")
@@ -1309,6 +1328,42 @@ namespace KartRider
                 Console.WriteLine($"Error extracting regionCode: {ex.Message}");
             }
             return regionCode;
+        }
+
+        private static List<int> IsCurrentTimeInPeriod(string period)
+        {
+            try
+            {
+                var times = period.Split('~');
+                string startStr = times[0];
+                string endStr = times[1];
+
+                DateTime startTime = DateTime.Parse(startStr);
+                DateTime endTime = DateTime.Parse(endStr);
+                DateTime now = DateTime.Now;
+
+                if (now < startTime || now > endTime)
+                    return null;
+
+                // 赛季总时长，平分成 3 段
+                TimeSpan totalDuration = endTime - startTime;
+                TimeSpan sectionDuration = totalDuration / 3;
+
+                // 3个分段节点
+                DateTime section1End = startTime + sectionDuration;
+                DateTime section2End = section1End + sectionDuration;
+
+                // 判断属于哪一段
+                if (now <= section1End)
+                    return new List<int>(){ 1, 2, 3, 4, 5, 6, 7 };
+                if (now <= section2End)
+                    return new List<int>(){ 8, 9, 10, 11, 12, 13, 14 };
+                return new List<int>(){ 15, 16, 17, 18, 19, 20, 21 };
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }
