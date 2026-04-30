@@ -1345,20 +1345,15 @@ namespace KartRider
                 if (now < startTime || now > endTime)
                     return null;
 
-                // 赛季总时长，平分成 3 段
-                TimeSpan totalDuration = endTime - startTime;
-                TimeSpan sectionDuration = totalDuration / 3;
-
-                // 3个分段节点
-                DateTime section1End = startTime + sectionDuration;
-                DateTime section2End = section1End + sectionDuration;
-
                 // 判断属于哪一段
-                if (now <= section1End)
+                if ((now.Day - startTime.Day) < 7)
                     return new List<int>(){ 1, 2, 3, 4, 5, 6, 7 };
-                if (now <= section2End)
+                if ((now.Day - startTime.Day) < 14)
                     return new List<int>(){ 8, 9, 10, 11, 12, 13, 14 };
-                return new List<int>(){ 15, 16, 17, 18, 19, 20, 21 };
+                if (now.Day < endTime.Day)
+                    return new List<int>(){ 15, 16, 17, 18, 19, 20, 21 };
+                else
+                    return null;
             }
             catch
             {
