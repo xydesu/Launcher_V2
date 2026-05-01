@@ -175,6 +175,9 @@ namespace KartRider
                         uint packetName = p.ReadUInt();
                         var packetValue = (PacketName)packetName;
 
+                        if (PacketDispatcher.Dispatch(typeof(UdpServer), packetValue, p, receiveBuffer, clientEP, this))
+                            return;
+
                         OutPacket outPacket = new OutPacket();
                         if (packetValue == PacketName.PqUdpEcho)
                         {

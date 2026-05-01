@@ -244,6 +244,9 @@ namespace KartRider
                         uint hash = inPacket.ReadUInt();
                         var packetValue = (PacketName)hash;
 
+                        if (PacketDispatcher.Dispatch(typeof(MsgrServer), packetValue, inPacket, receiveBuffer, clientState, this))
+                            return;
+
                         if (packetValue == PacketName.PqEnterChatServer)
                         {
                             uint userNO = inPacket.ReadUInt();
@@ -386,7 +389,7 @@ namespace KartRider
         /// </summary>
         /// <param name="clientState">客户端状态</param>
         /// <param name="outPacket">要发送的数据包</param>
-        private bool BeginSend(ClientState clientState, OutPacket outPacket)
+        public bool BeginSend(ClientState clientState, OutPacket outPacket)
         {
             if (!_isRunning || clientState.Client == null || !clientState.Client.Connected)
                 return false;
