@@ -389,7 +389,7 @@ namespace KartRider
         /// </summary>
         /// <param name="clientState">客户端状态</param>
         /// <param name="outPacket">要发送的数据包</param>
-        public bool BeginSend(ClientState clientState, OutPacket outPacket)
+        private bool BeginSend(ClientState clientState, OutPacket outPacket)
         {
             if (!_isRunning || clientState.Client == null || !clientState.Client.Connected)
                 return false;

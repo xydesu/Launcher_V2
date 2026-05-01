@@ -98,7 +98,7 @@ namespace KartRider
             {
                 try
                 {
-                    if (handler.Handle(context))
+                    if (handler.HandlePacket(context))
                     {
                         context.Handled = true;
                         return true;
