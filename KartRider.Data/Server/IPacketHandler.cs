@@ -9,8 +9,8 @@ namespace KartRider
 
         int Priority { get; }
 
-        HashSet<PacketName> InterestedPackets { get; }
+        HashSet<PacketName> TargetPackets { get; }
 
-        bool Handle(PacketContext context);
+        bool HandlePacket(PacketContext context);
     }
 }

@@ -14,13 +14,13 @@ namespace KartRider
 
         public static void RegisterHandler(IPacketHandler handler)
         {
-            if (handler.InterestedPackets == null || handler.InterestedPackets.Count == 0)
+            if (handler.TargetPackets == null || handler.TargetPackets.Count == 0)
                 return;
 
             _lock.EnterWriteLock();
             try
             {
-                foreach (var packetName in handler.InterestedPackets)
+                foreach (var packetName in handler.TargetPackets)
                 {
                     if (!_handlerMap.ContainsKey(packetName))
                         _handlerMap[packetName] = new List<IPacketHandler>();
@@ -38,14 +38,14 @@ namespace KartRider
 
         public static bool UnregisterHandler(IPacketHandler handler)
         {
-            if (handler.InterestedPackets == null || handler.InterestedPackets.Count == 0)
+            if (handler.TargetPackets == null || handler.TargetPackets.Count == 0)
                 return false;
 
             _lock.EnterWriteLock();
             try
             {
                 bool removed = false;
-                foreach (var packetName in handler.InterestedPackets)
+                foreach (var packetName in handler.TargetPackets)
                 {
                     if (_handlerMap.TryGetValue(packetName, out var handlers))
                     {

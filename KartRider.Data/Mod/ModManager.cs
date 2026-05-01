@@ -64,7 +64,7 @@ public static class ModManager
                     {
                         PacketDispatcher.RegisterHandler(packetHandler);
                         Console.WriteLine(
-                            $">>> Mod [{mod.Name}] 已注册数据包拦截，监听 {packetHandler.InterestedPackets.Count} 种数据包"
+                            $">>> Mod [{mod.Name}] 已注册数据包拦截，监听 {packetHandler.TargetPackets.Count} 种数据包"
                         );
                     }
 
