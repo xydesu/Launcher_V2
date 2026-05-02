@@ -60,6 +60,14 @@ public static class ModManager
                     // 添加到 Mod列表
                     ModList.Add(mod);
 
+                    if (mod is IPacketHandler packetHandler)
+                    {
+                        PacketDispatcher.RegisterHandler(packetHandler);
+                        Console.WriteLine(
+                            $">>> Mod [{mod.Name}] 已注册数据包拦截，监听 {packetHandler.TargetPackets.Count} 种数据包"
+                        );
+                    }
+
                     Console.WriteLine(
                         $">>> 成功加载 Mod: [{mod.Name}] 来自 {Path.GetFileName(file)}"
                     );

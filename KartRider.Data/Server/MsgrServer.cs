@@ -244,6 +244,9 @@ namespace KartRider
                         uint hash = inPacket.ReadUInt();
                         var packetValue = (PacketName)hash;
 
+                        if (PacketDispatcher.Dispatch(typeof(MsgrServer), packetValue, inPacket, receiveBuffer, clientState, this))
+                            return;
+
                         if (packetValue == PacketName.PqEnterChatServer)
                         {
                             uint userNO = inPacket.ReadUInt();

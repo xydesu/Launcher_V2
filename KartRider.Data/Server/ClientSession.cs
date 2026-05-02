@@ -47,6 +47,10 @@ namespace KartRider
             {
                 iPacket.Position = 0;
                 uint hash = iPacket.ReadUInt();
+
+                if (PacketDispatcher.Dispatch(typeof(MsgrServer), (PacketName)hash, iPacket, iPacket.ToArray(), this.Parent, null))
+                    return;
+
                 string currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 Console.WriteLine($"[{currentTime}][{this.Parent.Client.Nickname}] " + (PacketName)hash + ": " + BitConverter.ToString(iPacket.ToArray()).Replace("-", " "));
                 if (hash == Adler32Helper.GenerateAdler32_ASCII("PqCnAuthenLogin", 0))
