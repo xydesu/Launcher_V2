@@ -1,16 +1,11 @@
-using ExcData;
-using KartRider.Common.Data;
-using KartRider.Common.Utilities;
-using KartRider.IO.Packet;
-using LoggerLibrary;
-using Profile;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using LoggerLibrary;
+using Profile;
 
 namespace KartRider
 {
@@ -30,23 +25,29 @@ namespace KartRider
         /// <summary>
         /// 恢复备份的 PIN 文件
         /// </summary>
-        private void RestorePinFile()
+        /// <returns>是否恢复成功</returns>
+        private bool RestorePinFile()
         {
             if (string.IsNullOrEmpty(pinFileBak) || string.IsNullOrEmpty(pinFile))
-                return;
+                return false;
 
-            if (File.Exists(pinFileBak))
+            if (!File.Exists(pinFileBak))
             {
-                try
-                {
-                    if (File.Exists(pinFile))
-                        File.Delete(pinFile);
-                    File.Move(pinFileBak, pinFile);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"恢复 PIN 文件失败: {ex.Message}");
-                }
+                Console.WriteLine("[PIN] 备份文件不存在，无法恢复");
+                return false;
+            }
+
+            try
+            {
+                if (File.Exists(pinFile))
+                    File.Delete(pinFile);
+                File.Move(pinFileBak, pinFile);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[PIN] 恢复 PIN 文件失败: {ex.Message}");
+                return false;
             }
         }
 
@@ -57,24 +58,11 @@ namespace KartRider
 
         private void OnLoad(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(pinFile) || !File.Exists(pinFile))
-            {
-                MessageBox.Show("PIN 文件路径无效或文件不存在！", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            try
-            {
-                ClientVersion.Text = ProfileService.SettingConfig.ClientVersion.ToString();
-                Console.WriteLine($"ClientVersion: {ClientVersion.Text}");
-                Console.WriteLine($"程序编译时间: {CompileTime.Time}");
-                VersionLabel.Text = CompileTime.Time;
-                Console.WriteLine("Process: {0}", KartRider);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"加载 PIN 文件失败: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            ClientVersion.Text = ProfileService.SettingConfig.ClientVersion.ToString();
+            Console.WriteLine($"ClientVersion: {ClientVersion.Text}");
+            Console.WriteLine($"程序编译时间: {CompileTime.Time}");
+            VersionLabel.Text = CompileTime.Time;
+            Console.WriteLine("Process: {0}", KartRider);
         }
 
         private void Start_Button_Click(object sender, EventArgs e)
@@ -109,83 +97,14 @@ namespace KartRider
         /// </summary>
         private void LaunchGame()
         {
-            if (string.IsNullOrEmpty(pinFile) || !File.Exists(pinFile))
+            if (string.IsNullOrEmpty(pinFile))
             {
-                Console.WriteLine("PIN 文件不存在，无法启动游戏");
-                return;
-            }
-
-            RestorePinFile();
-
-            Console.WriteLine("Backing up old PinFile...");
-            Console.WriteLine(pinFile);
-
-            try
-            {
-                File.Copy(pinFile, pinFileBak, overwrite: true);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"备份 PIN 文件失败: {ex.Message}");
-                return;
-            }
-
-            PINFile val;
-            try
-            {
-                val = new PINFile(pinFile);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"读取 PIN 文件失败: {ex.Message}");
-                return;
-            }
-
-            if (val.AuthMethods != null)
-            {
-                foreach (PINFile.AuthMethod authMethod in val.AuthMethods)
-                {
-                    Console.WriteLine("Changing IP Addr to local... {0}", authMethod.Name);
-                    authMethod.LoginServers?.Clear();
-                    authMethod.LoginServers?.Add(new PINFile.IPEndPoint
-                    {
-                        IP = ProfileService.SettingConfig.ServerIP,
-                        Port = ProfileService.SettingConfig.ServerPort
-                    });
-                }
-            }
-
-            if (!ProfileService.SettingConfig.NgsOn && val.BmlObjects != null)
-            {
-                foreach (BmlObject bml in val.BmlObjects)
-                {
-                    if (bml.Name == "extra" && bml.SubObjects != null)
-                    {
-                        for (int i = bml.SubObjects.Count - 1; i >= 0; i--)
-                        {
-                            Console.WriteLine("Removing {0}", bml.SubObjects[i].Item1);
-                            if (bml.SubObjects[i].Item1 == "NgsOn")
-                            {
-                                bml.SubObjects.RemoveAt(i);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            try
-            {
-                File.WriteAllBytes(pinFile, val.GetEncryptedData());
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"写入 PIN 文件失败: {ex.Message}");
+                Console.WriteLine("[PIN] 文件不存在，无法启动游戏");
                 return;
             }
 
             var modifier = new MemoryModifier();
-            modifier.LaunchAndModifyMemory(kartRiderDirectory);
+            modifier.LaunchAndModifyMemory(kartRiderDirectory, pinFile, pinFileBak);
         }
 
         private void Setting_Button_Click(object sender, EventArgs e)
@@ -276,30 +195,6 @@ namespace KartRider
         {
             CachedConsoleWriter.SaveToFile();
             CachedConsoleWriter.cachedWriter.ClearCache();
-        }
-
-        /// <summary>
-        /// 检查指定名称的进程是否正在运行
-        /// </summary>
-        /// <param name="processName">进程名（不含.exe后缀）</param>
-        /// <returns>true=运行中，false=未运行</returns>
-        static bool IsProcessRunning(string processName)
-        {
-            try
-            {
-                // 关键方法：根据进程名获取所有正在运行的进程
-                // GetProcessesByName 会忽略大小写，且不需要.exe后缀
-                Process[] processes = Process.GetProcessesByName(processName);
-
-                // 如果数组长度大于0，说明进程正在运行
-                return processes.Length > 0;
-            }
-            catch (Exception ex)
-            {
-                // 捕获可能的异常（比如权限不足）
-                Console.WriteLine($"检查进程时出错：{ex.Message}");
-                return false;
-            }
         }
     }
 }
