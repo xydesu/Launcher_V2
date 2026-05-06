@@ -54,13 +54,13 @@ namespace KartRider
 		public static async Task CheckGameAsync(string kartRiderDirectory)
 		{
 			// 强制显示终端窗口
-			bool wasVisible = Program.isVisible;
-			if (!Program.isVisible)
-			{
-				Program.isVisible = true;
-				Program.ShowWindow(Program.consoleHandle, Program.SW_SHOW);
-			}
-			
+            bool wasVisible = Program.isVisible;
+            if (!Program.isVisible)
+            {
+                Program.isVisible = true;
+                Program.ShowWindow(Program.consoleHandle, Program.SW_SHOW);
+            }
+
 			try
 			{
 				string filePath = JsonHelper.GetFilePath();
@@ -78,34 +78,6 @@ namespace KartRider
 			catch (Exception ex)
 			{
 				MessageBox.Show($"更新过程发生错误：{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-			}
-			finally
-			{
-				Console.Clear();
-
-                if (ProfileService.SettingConfig.ServerIP != "127.0.0.1")
-                {
-                    PatchManager.StartUpdateAsync(kartRiderDirectory).Wait();
-                }
-
-                var packFolderManager = KartRhoFile.Dump(Path.GetFullPath(Path.Combine(kartRiderDirectory, @"Data\aaa.pk")));
-				if (packFolderManager == null)
-				{
-					MessageBox.Show("游戏文件校验失败，请检查更新服务器或手动修复游戏文件。", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-					Environment.Exit(1);
-				}
-				packFolderManager.Reset();
-				PINFile val = new PINFile(Path.GetFullPath(Path.Combine(kartRiderDirectory, @"KartRider.pin")));
-				ProfileService.SettingConfig.ClientVersion = val.Header.MinorVersion;
-				ProfileService.SettingConfig.LocaleID = val.Header.LocaleID;
-				ProfileService.SettingConfig.nClientLoc = val.Header.Unk2;
-				ProfileService.SaveSettings();
-				// 更新完成后，根据设置恢复终端显示状态
-				if (!wasVisible && !ProfileService.SettingConfig.Console)
-				{
-					Program.isVisible = false;
-					Program.ShowWindow(Program.consoleHandle, Program.SW_HIDE);
-				}
 			}
 		}
 
@@ -143,6 +115,10 @@ namespace KartRider
 			if (capturedException != null)
 			{
 				MessageBox.Show($"更新过程发生错误：{capturedException.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+			else
+			{
+				PatchManager.StartUpdateAsync(kartRiderDirectory);
 			}
 		}
 	}

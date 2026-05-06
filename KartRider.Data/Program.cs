@@ -130,29 +130,6 @@ namespace KartRider
                     ProfileService.SettingConfig.nClientLoc = val.Header.Unk2;
                     ProfileService.SaveSettings();
 
-                    var packFolderManager = KartRhoFile.Dump(Path.GetFullPath(Path.Combine(RootDirectory, @"Data\aaa.pk")));
-                    if (packFolderManager == null)
-                    {
-                        // 弹出“是否”确认框
-                        DialogResult result = MessageBox.Show(
-                            $"读取游戏文件失败，是否需要更新或校验游戏？",
-                            "确认操作",
-                            MessageBoxButtons.YesNo,
-                            MessageBoxIcon.Question
-                        );
-
-                        // 根据用户选择执行对应逻辑
-                        if (result == DialogResult.Yes)
-                        {
-                            LauncherSystem.CheckGame(RootDirectory);
-                        }
-                        else
-                        {
-                            return;
-                        }
-                    }
-                    packFolderManager.Reset();
-
                     if (!ProfileService.SettingConfig.Console)
                     {
                         ShowWindow(consoleHandle, SW_HIDE);

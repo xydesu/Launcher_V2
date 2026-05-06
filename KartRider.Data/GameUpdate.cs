@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Forms;
+using KartRider.Common.Data;
 using KartRider.IO.Packet;
 using Profile;
 
@@ -620,6 +621,7 @@ public class PatchManager
 
         if (string.IsNullOrWhiteSpace(updateUrl))
         {
+            RhoDump(RootDirectory);
             return;
         }
 
@@ -654,10 +656,60 @@ public class PatchManager
 
                 int exitCode = process.ExitCode;
             }
+            RhoDump(RootDirectory);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"更新启动失败：{ex.Message}");
+        }
+    }
+
+    public static void RhoDump(string RootDirectory)
+    {
+        // 锁定主窗口
+        if (Program.LauncherDlg != null)
+        {
+            Program.LauncherDlg.ControlBox = false;
+            Program.LauncherDlg.Enabled = false;
+        }
+
+        try
+        {
+            // 强制显示终端窗口
+            bool wasVisible = Program.isVisible;
+            if (!Program.isVisible)
+            {
+                Program.isVisible = true;
+                Program.ShowWindow(Program.consoleHandle, Program.SW_SHOW);
+            }
+
+            var packFolderManager = KartRhoFile.Dump(Path.GetFullPath(Path.Combine(RootDirectory, @"Data\aaa.pk")));
+            if (packFolderManager == null)
+            {
+                MessageBox.Show("游戏文件校验失败，请检查更新服务器或手动修复游戏文件。", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Environment.Exit(1);
+            }
+            packFolderManager.Reset();
+            PINFile val = new PINFile(Path.GetFullPath(Path.Combine(RootDirectory, @"KartRider.pin")));
+            ProfileService.SettingConfig.ClientVersion = val.Header.MinorVersion;
+            ProfileService.SettingConfig.LocaleID = val.Header.LocaleID;
+            ProfileService.SettingConfig.nClientLoc = val.Header.Unk2;
+            ProfileService.SaveSettings();
+            // 更新完成后，根据设置恢复终端显示状态
+            if (!wasVisible && !ProfileService.SettingConfig.Console)
+            {
+                Program.isVisible = false;
+                Program.ShowWindow(Program.consoleHandle, Program.SW_HIDE);
+            }
+        }
+        finally
+        {
+            // 解锁主窗口
+            if (Program.LauncherDlg != null)
+            {
+                Program.LauncherDlg.Enabled = true;
+                Program.LauncherDlg.ControlBox = true;
+            }
         }
     }
 
