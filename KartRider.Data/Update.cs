@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Windows.Forms;
 using Profile;
 
 namespace KartRider
@@ -94,7 +95,7 @@ namespace KartRider
                                     var downloadResult1 = await downloader.StartDownloadAsync();
                                     if (downloadResult1)
                                     {
-                                        ApplyUpdate(Update_File);
+                                        return ConfirmAndApplyUpdate(Update_File, launcherExeAsset.digest);
                                     }
                                     return downloadResult1;
                                 }
@@ -106,7 +107,7 @@ namespace KartRider
                                 var downloadResult2 = await downloader.StartDownloadAsync();
                                 if (downloadResult2)
                                 {
-                                    ApplyUpdate(Update_File);
+                                    return ConfirmAndApplyUpdate(Update_File, launcherExeAsset.digest);
                                 }
                                 return downloadResult2;
                             }
@@ -149,12 +150,77 @@ namespace KartRider
             }
         }
 
+        /// <summary>
+        /// 校验下载文件的完整性，并经用户确认后应用更新。
+        /// 不在后台静默替换自身——"下载后自动执行替换脚本并自杀"会被行为检测（PDM）判为恶意自更新。
+        /// </summary>
+        /// <param name="updateFilePath">下载到本地的更新文件路径</param>
+        /// <param name="expectedDigest">GitHub 公布的 sha256:xxxx 摘要</param>
+        /// <returns>是否已应用更新</returns>
+        private static bool ConfirmAndApplyUpdate(string updateFilePath, string expectedDigest)
+        {
+            try
+            {
+                // 1. 校验下载文件的 SHA256 与官方发布的 digest 一致，防止下载到损坏或被篡改的文件
+                string actualHash = "sha256:" + CalculateSHA256(updateFilePath);
+                if (!string.Equals(actualHash, expectedDigest, StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine("校验失败：下载文件的哈希与官方发布不一致，已取消更新");
+                    return false;
+                }
+
+                // 2. 弹窗让用户确认后再执行替换，避免"后台静默替换自身"的行为特征
+                DialogResult result = MessageBox.Show(
+                    "发现新版本，是否立即更新？\n\n更新过程中启动器会短暂关闭，完成后将自动重新打开。",
+                    "发现新版本",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (result != DialogResult.Yes)
+                {
+                    Console.WriteLine("用户取消更新，保留当前版本");
+                    return false;
+                }
+
+                // 3. 用户确认后执行替换
+                ApplyUpdate(updateFilePath);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"应用更新时出错: {ex.Message}");
+                return false;
+            }
+        }
+
         public static bool ApplyUpdate(string Update_FilePath)
         {
             string Update_Bat = Path.Combine(Path.GetDirectoryName(Update_FilePath), "Update.bat");
             try
             {
-                string script = @$"@echo off{Environment.NewLine}timeout /t 3 /nobreak{Environment.NewLine}del {"\"" + filePath + "\""}{Environment.NewLine}move {"\"" + Update_FilePath + "\""} {"\"" + filePath + "\""}{Environment.NewLine}start {"\"\" \"" + filePath + "\""}{Environment.NewLine}del %0";
+                // 替换脚本保留可见的提示信息与错误处理，行为更透明
+                string[] scriptLines = {
+                    "@echo off",
+                    "title Launcher 自动更新",
+                    "echo 正在应用更新，请勿关闭此窗口...",
+                    "timeout /t 3 /nobreak >nul",
+                    $"if exist \"{filePath}\" del /f /q \"{filePath}\"",
+                    $"if exist \"{Update_FilePath}\" (",
+                    $"    move /y \"{Update_FilePath}\" \"{filePath}\"",
+                    "    if errorlevel 1 (",
+                    "        echo 更新失败，请手动运行新版本。",
+                    "        pause",
+                    "        exit /b 1",
+                    "    )",
+                    ") else (",
+                    "    echo 未找到更新文件，已取消更新。",
+                    "    pause",
+                    "    exit /b 1",
+                    ")",
+                    $"start \"\" \"{filePath}\"",
+                    "del \"%~f0\""
+                };
+                string script = string.Join(Environment.NewLine, scriptLines);
                 try
                 {
                     File.WriteAllText(Update_Bat, script, Program.targetEncoding);
