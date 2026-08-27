@@ -247,6 +247,7 @@ namespace KartRider
             {
                 using (HttpClient client = new HttpClient())
                 {
+                    client.Timeout = TimeSpan.FromSeconds(10); // 与 GetLatestRelease 一致，避免默认100秒超时长时间阻塞
                     HttpResponseMessage response = await client.GetAsync("https://ipinfo.io/json");
                     if (response.IsSuccessStatusCode)
                     {

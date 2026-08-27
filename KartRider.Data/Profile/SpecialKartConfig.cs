@@ -209,6 +209,7 @@ public class SpecialKartConfig
             SkillChangeDesc = "特殊道具车：将指定道具变更为特殊道具",
             SkillChange = new Dictionary<ushort, Dictionary<short, SkillMappingConfig>>
             {
+                { 1635, new Dictionary<short, SkillMappingConfig> { {8, new SkillMappingConfig { TargetItemId = 83, Probability = 100 }}, { 5, new SkillMappingConfig { TargetItemId = 103, Probability = 100 }} } },
                 { 1631, new Dictionary<short, SkillMappingConfig> { {9, new SkillMappingConfig { TargetItemId = 44, Probability = 100 }}, { 6, new SkillMappingConfig { TargetItemId = 31, Probability = 100 }} } },
                 { 1630, new Dictionary<short, SkillMappingConfig> { {7, new SkillMappingConfig { TargetItemId = 102, Probability = 100 }}, { 9, new SkillMappingConfig { TargetItemId = 27, Probability = 100 }} } },
                 { 1625, new Dictionary<short, SkillMappingConfig> { {7, new SkillMappingConfig { TargetItemId = 104, Probability = 100 }} } },

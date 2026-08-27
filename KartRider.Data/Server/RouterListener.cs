@@ -96,16 +96,37 @@ namespace KartRider
                 RouterIPList = new List<string>();
                 RouterIPList = LanIpGetter.GetAllLocalLanIps();
                 RouterIPList.Add("127.0.0.1");
-                var ipInfo = Task.Run(async () => await Update.GetCountryAsync()).Result;
-                string ip = ipInfo?.Ip ?? "";
-                if (!string.IsNullOrEmpty(ip))
-                {
-                    RouterIPList.Add(ip);
-                }
                 foreach (var IP in RouterIPList)
                 {
                     Console.WriteLine("Load Server IP: {0}:{1}", IP, ProfileService.SettingConfig.ServerPort);
                 }
+
+                // 后台异步获取公网 IP，避免 .Result 同步阻塞服务器启动
+                // （GetCountryAsync 若网络不可达可能耗时数秒~数十秒，期间玩家将无法连接）
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        var ipInfo = await Update.GetCountryAsync();
+                        string ip = ipInfo?.Ip ?? "";
+                        if (!string.IsNullOrEmpty(ip))
+                        {
+                            lock (RouterIPList)
+                            {
+                                if (!RouterIPList.Contains(ip))
+                                {
+                                    RouterIPList.Add(ip);
+                                }
+                            }
+                            RouterListener.ServerIP = ip;
+                            Console.WriteLine("Load Server IP: {0}:{1}", ip, ProfileService.SettingConfig.ServerPort);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"获取公网 IP 失败: {ex.Message}");
+                    }
+                });
 
                 // 创建 Listener 后立即 Start，避免中间代码抛异常导致不一致状态
                 RouterListener.Listener = new TcpListener(IPAddress.Any, ProfileService.SettingConfig.ServerPort);

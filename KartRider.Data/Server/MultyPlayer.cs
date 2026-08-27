@@ -26,16 +26,22 @@ public static class MultyPlayer
     public static Dictionary<string, byte> StartTimeAttack = new Dictionary<string, byte>();
     public static int[] teamPoints = { 10, 8, 6, 5, 4, 3, 2, 1 };
 
+    // 记录正在等待全员就绪的房间，防止同一房间重复启动检测定时器（多个玩家可能同时触发 Start）
+    private static readonly ConcurrentDictionary<GameRoom, byte> _readyCheckRooms = new ConcurrentDictionary<GameRoom, byte>();
+
     public static IPEndPoint GetServerEndPoint(SessionGroup Parent)
     {
         IPEndPoint serverEndPoint = Parent.Client.Socket.LocalEndPoint as IPEndPoint;
         IPAddress clientEndPoint = ((IPEndPoint)Parent.Client.Socket.RemoteEndPoint).Address;
-        if (string.IsNullOrEmpty(RouterListener.ServerIP))
+
+        // ServerIP 由 RouterListener.Start() 后台异步填充；
+        // 若尚未填充完成则走下方回退分支（配置 IP），绝不在通讯路径上同步等待网络请求
+        bool isLocalIP;
+        lock (RouterListener.RouterIPList)
         {
-            var ipInfo = Task.Run(async () => await Update.GetCountryAsync()).Result;
-            RouterListener.ServerIP = ipInfo?.Ip ?? "";
+            isLocalIP = RouterListener.RouterIPList.Contains(clientEndPoint.ToString());
         }
-        if (RouterListener.RouterIPList.Contains(clientEndPoint.ToString()) || LanIpGetter.IsInLocalSubnet(clientEndPoint.ToString()))
+        if (isLocalIP || LanIpGetter.IsInLocalSubnet(clientEndPoint.ToString()))
         {
             return serverEndPoint;
         }
@@ -117,58 +123,86 @@ public static class MultyPlayer
             }
         }
 
-        // 标记是否所有值都为true
-        bool allReady = true;
-
-        // 第一步：遍历字典值，检查是否有false
-        // 假死玩家（TCP/UDP 双通道近期无活动）未就绪不再阻塞其他玩家开始游戏
-        foreach (KeyValuePair<string, bool> kv in room.Ready)
+        // 防止同一房间重复启动就绪检测（多个玩家可能同时触发 Start）
+        if (!_readyCheckRooms.TryAdd(room, 0))
         {
-            if (!kv.Value && HeartbeatMonitor.IsPlayerAlive(kv.Key))
-            {
-                allReady = false;
-                break; // 找到false后提前退出遍历，提升效率
-            }
+            Console.WriteLine($"房间 {roomId} 已有就绪检测在进行，跳过");
+            return;
         }
 
-        // 可选：添加退出条件，防止无限循环（比如超时）
-        // 示例：累计等待10秒后退出
-        int waitCount = 0;
-
-        // 第二步：用while循环判断（根据allReady的值执行逻辑）
-        // 场景1：等待所有值变为true（循环直到全部为true）
-        while (!allReady)
+        // 立即检查一次：若开局就全部就绪（如无存活玩家），直接启动，无需起定时器
+        if (IsAllReady(room))
         {
-            Console.WriteLine("存在未就绪的玩家，等待中...");
+            _readyCheckRooms.TryRemove(room, out _);
+            Set_startTrigger(Parent, room);
+            return;
+        }
 
-            // 模拟：重新检查字典值（实际场景中可替换为刷新数据的逻辑）
-            allReady = true;
+        // 定时器驱动就绪检测：每秒检查一次，全部就绪或超过 30 秒后启动游戏。
+        // 相比原 while + Thread.Sleep，不再占用玩家会话线程，等待期间该玩家 TCP 通道畅通
+        var readyTimer = new System.Timers.Timer();
+        readyTimer.Interval = 1000;
+        readyTimer.AutoReset = true;
+        int waitCount = 0;
+        readyTimer.Elapsed += (s, e) =>
+        {
+            try
+            {
+                waitCount++;
+                // 房间已解散则停止检测
+                if (RoomManager.GetRoom(room.RoomId) != room)
+                {
+                    readyTimer.Stop();
+                    readyTimer.Dispose();
+                    _readyCheckRooms.TryRemove(room, out _);
+                    Console.WriteLine($"房间 {room.RoomId} 已解散，就绪检测停止");
+                    return;
+                }
+
+                if (IsAllReady(room) || waitCount >= 30)
+                {
+                    readyTimer.Stop();
+                    readyTimer.Dispose();
+                    _readyCheckRooms.TryRemove(room, out _);
+                    Set_startTrigger(Parent, room);
+                }
+                else
+                {
+                    Console.WriteLine($"存在未就绪的玩家，等待中... ({waitCount}/30)");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"就绪检测异常: {ex.Message}");
+                readyTimer.Stop();
+                readyTimer.Dispose();
+                _readyCheckRooms.TryRemove(room, out _);
+                Set_startTrigger(Parent, room);
+            }
+        };
+        readyTimer.Start();
+    }
+
+    // 检查房间内所有存活玩家是否已就绪；假死玩家（TCP/UDP 双通道近期无活动）未就绪不阻塞开始
+    static bool IsAllReady(GameRoom room)
+    {
+        try
+        {
             foreach (KeyValuePair<string, bool> kv in room.Ready)
             {
                 // 假死玩家未就绪不影响其他玩家，直接跳过
                 if (!kv.Value && HeartbeatMonitor.IsPlayerAlive(kv.Key))
                 {
-                    allReady = false;
-                    break;
+                    return false;
                 }
             }
-
-            // 模拟等待（避免死循环，实际场景可替换为业务逻辑）
-            System.Threading.Thread.Sleep(1000);
-
-            waitCount++;
-            if (waitCount >= 30)
-            {
-                Set_startTrigger(Parent, room);
-                return;
-            }
+            return true;
         }
-
-        // 循环结束后输出结果
-        if (allReady)
+        catch (Exception ex)
         {
-            Set_startTrigger(Parent, room);
-            return;
+            // 玩家就绪包并发更新字典导致遍历异常时，返回 false 让下一轮重试
+            Console.WriteLine($"就绪状态检查异常: {ex.Message}");
+            return false;
         }
     }
 
