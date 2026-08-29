@@ -88,11 +88,8 @@ namespace KartRider
             else
             {
                 ProfileService.LoadSettings();
-                // 检查更新
-                if (ProfileService.SettingConfig.AutoUpdate)
-                {
-                    await Update.UpdateDataAsync();
-                }
+                // 检查更新：AutoUpdate 开启时静默更新，关闭时弹窗提示
+                await Update.UpdateDataAsync(ProfileService.SettingConfig.AutoUpdate);
                 string TCGame = "HKEY_CURRENT_USER\\Software\\TCGame\\kart";
                 string RootDirectory = (string)Registry.GetValue(TCGame, "gamepath", null);
                 if (File.Exists(FileName.pinFile) && File.Exists(FileName.KartRider))

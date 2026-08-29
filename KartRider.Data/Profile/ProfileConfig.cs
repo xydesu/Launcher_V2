@@ -53,7 +53,7 @@ namespace Profile
 
         public bool NgsOn { get; set; } = false;
 
-        public bool AutoUpdate { get; set; } = true;
+        public bool AutoUpdate { get; set; } = false;
 
         public bool EnableMod { get; set; } = false;
 

@@ -23,7 +23,7 @@ namespace KartRider
         static string name;
         static string filePath;
 
-        public static async Task<bool> UpdateDataAsync()
+        public static async Task<bool> UpdateDataAsync(bool silent = false)
         {
             filePath = JsonHelper.GetFilePath();
             Console.WriteLine("当前程序路径: " + filePath);
@@ -31,13 +31,8 @@ namespace KartRider
             // 计算文件的SHA256哈希值
             string sha256Hash = "sha256:" + CalculateSHA256(filePath);
             Console.WriteLine("当前程序SHA256: " + sha256Hash);
-            // 删除旧的Update文件夹（如果存在）
             string Update_Folder = Path.Combine(Path.GetDirectoryName(filePath), "Update");
             string Update_File = Path.Combine(Update_Folder, name);
-            if (Directory.Exists(Update_Folder))
-            {
-                Directory.Delete(Update_Folder, true);
-            }
             Console.WriteLine("开始读取GitHub Releases API数据...");
             Console.WriteLine("==============================");
             try
@@ -76,8 +71,26 @@ namespace KartRider
                     Console.WriteLine("==============================");
                     if (launcherExeAsset.digest != sha256Hash)
                     {
+                        // 非静默模式（AutoUpdate 关闭）：先弹窗询问，用户确认后才开始下载
+                        if (!silent)
+                        {
+                            DialogResult result = MessageBox.Show(
+                                "发现新版本，是否立即更新？\n\n更新过程中启动器会短暂关闭，完成后将自动重新打开。",
+                                "发现新版本",
+                                MessageBoxButtons.YesNo,
+                                MessageBoxIcon.Question);
+
+                            if (result != DialogResult.Yes)
+                            {
+                                Console.WriteLine("用户取消更新，保留当前版本");
+                                return false;
+                            }
+                        }
+
                         try
                         {
+                            // 选择下载地址：CN 地区优先使用代理，否则直连
+                            string downloadUrl = launcherExeAsset.browser_download_url;
                             var ipInfo = await GetCountryAsync();
                             string country = ipInfo == null ? "" : ipInfo.Country;
                             if (country != "" && country == "CN")
@@ -90,27 +103,18 @@ namespace KartRider
                                 }
                                 if (await GetUrl(url2))
                                 {
-                                    int threadCount = 1; // 可根据需要调整线程数
-                                    var downloader = new MultiThreadedDownloader(url2, Update_File, threadCount);
-                                    var downloadResult1 = await downloader.StartDownloadAsync();
-                                    if (downloadResult1)
-                                    {
-                                        return ConfirmAndApplyUpdate(Update_File, launcherExeAsset.digest);
-                                    }
-                                    return downloadResult1;
+                                    downloadUrl = url2;
                                 }
                             }
-                            else
+
+                            int threadCount = 1; // 可根据需要调整线程数
+                            var downloader = new MultiThreadedDownloader(downloadUrl, Update_File, threadCount);
+                            var downloadResult = await downloader.StartDownloadAsync();
+                            if (downloadResult)
                             {
-                                int threadCount = 1; // 可根据需要调整线程数
-                                var downloader = new MultiThreadedDownloader(launcherExeAsset.browser_download_url, Update_File, threadCount);
-                                var downloadResult2 = await downloader.StartDownloadAsync();
-                                if (downloadResult2)
-                                {
-                                    return ConfirmAndApplyUpdate(Update_File, launcherExeAsset.digest);
-                                }
-                                return downloadResult2;
+                                return ConfirmAndApplyUpdate(Update_File, launcherExeAsset.digest);
                             }
+                            return downloadResult;
                         }
                         catch (Exception ex)
                         {
@@ -151,8 +155,9 @@ namespace KartRider
         }
 
         /// <summary>
-        /// 校验下载文件的完整性，并经用户确认后应用更新。
-        /// 不在后台静默替换自身——"下载后自动执行替换脚本并自杀"会被行为检测（PDM）判为恶意自更新。
+        /// 校验下载文件的完整性，并应用更新。
+        /// 用户确认已在进行下载之前完成；不在后台静默替换自身——
+        /// "下载后自动执行替换脚本并自杀"会被行为检测（PDM）判为恶意自更新。
         /// </summary>
         /// <param name="updateFilePath">下载到本地的更新文件路径</param>
         /// <param name="expectedDigest">GitHub 公布的 sha256:xxxx 摘要</param>
@@ -169,20 +174,7 @@ namespace KartRider
                     return false;
                 }
 
-                // 2. 弹窗让用户确认后再执行替换，避免"后台静默替换自身"的行为特征
-                DialogResult result = MessageBox.Show(
-                    "发现新版本，是否立即更新？\n\n更新过程中启动器会短暂关闭，完成后将自动重新打开。",
-                    "发现新版本",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question);
-
-                if (result != DialogResult.Yes)
-                {
-                    Console.WriteLine("用户取消更新，保留当前版本");
-                    return false;
-                }
-
-                // 3. 用户确认后执行替换
+                // 2. 校验通过后执行替换
                 ApplyUpdate(updateFilePath);
                 return true;
             }
@@ -195,7 +187,8 @@ namespace KartRider
 
         public static bool ApplyUpdate(string Update_FilePath)
         {
-            string Update_Bat = Path.Combine(Path.GetDirectoryName(Update_FilePath), "Update.bat");
+            string Update_Folder = Path.GetDirectoryName(Update_FilePath);
+            string Update_Bat = Path.Combine(Update_Folder, "Update.bat");
             try
             {
                 // 替换脚本保留可见的提示信息与错误处理，行为更透明
@@ -218,7 +211,9 @@ namespace KartRider
                     "    exit /b 1",
                     ")",
                     $"start \"\" \"{filePath}\"",
-                    "del \"%~f0\""
+                    // 更新成功：切离更新目录后销毁整个 Update 目录（含本脚本），由启动器下次启动前按需重建
+                    "cd /d \"%SystemRoot%\"",
+                    $"rd /s /q \"{Update_Folder}\""
                 };
                 string script = string.Join(Environment.NewLine, scriptLines);
                 try
