@@ -458,6 +458,56 @@ namespace ExcData
                     Kart.driftGaugeFactor = 2f;
                     Kart.chargeAntiCollideBalance = 0.8f;
                 }
+                else if (Kart.defaultExceedType == 99)//小东B+
+                {
+                    Kart.chargeInstAccelGaugeByBoost = 0.024f;
+                    Kart.chargeInstAccelGaugeByGrip = 0.06f;
+                    Kart.chargeInstAccelGaugeByWall = 0.15f;
+                    Kart.instAccelFactor = 1.19f;
+                    Kart.instAccelGaugeCooldownTime = 3000;
+                    Kart.instAccelGaugeLength = 2400f;
+                    Kart.instAccelGaugeMinUsable = 400f;
+                    Kart.instAccelGaugeMinVelBound = 0f;
+                    Kart.instAccelGaugeMinVelLoss = 50f;
+                    Kart.useExtendedAfterBoosterMore = 0;
+                    Kart.wallCollGaugeCooldownTime = 3000;
+                    Kart.wallCollGaugeMaxVelLoss = 200f;
+                    Kart.wallCollGaugeMinVelBound = 200f;
+                    Kart.wallCollGaugeMinVelLoss = 50f;
+
+                    Kart.chargeInstAccelGaugeByWallAdded = 0.09f;
+                    Kart.chargeInstAccelGaugeByBoostAdded = 0.03f;
+                    Kart.chargerSystemboosterUseCount = 4;
+                    Kart.chargerSystemUseTime = 3000f;
+                    Kart.chargeBoostBySpeedAdded = 350f;
+                    Kart.driftGaugeFactor = 2f;
+                    Kart.chargeAntiCollideBalance = 0.8f;
+                }
+                else if (Kart.defaultExceedType == 100)//小东C
+                {
+                    Kart.chargeInstAccelGaugeByBoost = 0.03f;
+                    Kart.chargeInstAccelGaugeByGrip = 0.06f;
+                    Kart.chargeInstAccelGaugeByWall = 0.1f;
+                    Kart.instAccelFactor = 1.18f;
+                    Kart.instAccelGaugeCooldownTime = 3000;
+                    Kart.instAccelGaugeLength = 1500f;
+                    Kart.instAccelGaugeMinUsable = 180f;
+                    Kart.instAccelGaugeMinVelBound = 0f;
+                    Kart.instAccelGaugeMinVelLoss = 50f;
+                    Kart.useExtendedAfterBoosterMore = 0;
+                    Kart.wallCollGaugeCooldownTime = 3000;
+                    Kart.wallCollGaugeMaxVelLoss = 200f;
+                    Kart.wallCollGaugeMinVelBound = 210f;
+                    Kart.wallCollGaugeMinVelLoss = 50f;
+
+                    Kart.chargeInstAccelGaugeByWallAdded = 0.09f;
+                    Kart.chargeInstAccelGaugeByBoostAdded = 0.03f;
+                    Kart.chargerSystemboosterUseCount = 4;
+                    Kart.chargerSystemUseTime = 3000f;
+                    Kart.chargeBoostBySpeedAdded = 350f;
+                    Kart.driftGaugeFactor = 2f;
+                    Kart.chargeAntiCollideBalance = 0.8f;
+                }
                 else
                 {
                     Kart.chargeInstAccelGaugeByBoost = 0.02f;
