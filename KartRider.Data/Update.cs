@@ -185,54 +185,83 @@ namespace KartRider
             }
         }
 
+        /// <summary>
+        /// 应用更新：采用"重命名替换"方案，不使用 bat 脚本、不自杀、不删除自身文件，
+        /// 以避免 PDM 行为检测（自删/替换/销毁目录/强制终止进程属于高危特征）。
+        /// Windows 允许重命名正在运行的映像文件，因此：
+        ///   1. 将运行中的自身 exe 重命名为 *.old
+        ///   2. 将下载的新 exe 移入主路径
+        ///   3. 清理更新目录（托管 API，不经过 cmd）
+        ///   4. 启动新版本（携带 /updated 参数，由新实例清理 *.old 备份）
+        /// </summary>
+        /// <param name="Update_FilePath">下载到本地的更新文件路径</param>
+        /// <returns>是否已应用更新</returns>
         public static bool ApplyUpdate(string Update_FilePath)
         {
-            string Update_Folder = Path.GetDirectoryName(Update_FilePath);
-            string Update_Bat = Path.Combine(Update_Folder, "Update.bat");
             try
             {
-                // 替换脚本保留可见的提示信息与错误处理，行为更透明
-                string[] scriptLines = {
-                    "@echo off",
-                    "title Launcher 自动更新",
-                    "echo 正在应用更新，请勿关闭此窗口...",
-                    "timeout /t 3 /nobreak >nul",
-                    $"if exist \"{filePath}\" del /f /q \"{filePath}\"",
-                    $"if exist \"{Update_FilePath}\" (",
-                    $"    move /y \"{Update_FilePath}\" \"{filePath}\"",
-                    "    if errorlevel 1 (",
-                    "        echo 更新失败，请手动运行新版本。",
-                    "        pause",
-                    "        exit /b 1",
-                    "    )",
-                    ") else (",
-                    "    echo 未找到更新文件，已取消更新。",
-                    "    pause",
-                    "    exit /b 1",
-                    ")",
-                    $"start \"\" \"{filePath}\"",
-                    // 更新成功：切离更新目录后销毁整个 Update 目录（含本脚本），由启动器下次启动前按需重建
-                    "cd /d \"%SystemRoot%\"",
-                    $"rd /s /q \"{Update_Folder}\""
-                };
-                string script = string.Join(Environment.NewLine, scriptLines);
+                string oldFile = filePath + ".old";
+                string updateFolder = Path.GetDirectoryName(Update_FilePath);
+
+                // 1. 重命名运行中的自身（若残留旧备份先清理）
+                if (File.Exists(oldFile))
+                {
+                    File.Delete(oldFile);
+                }
+                File.Move(filePath, oldFile);
+
+                // 2. 新 exe 移入主路径
+                File.Move(Update_FilePath, filePath);
+
+                // 3. 清理更新目录（含已无用的下载文件）
                 try
                 {
-                    File.WriteAllText(Update_Bat, script, Program.targetEncoding);
-                    Console.WriteLine("\n写入文件成功。");
+                    if (Directory.Exists(updateFolder))
+                    {
+                        Directory.Delete(updateFolder, true);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"\n写入文件时出错: {ex.Message}");
+                    Console.WriteLine($"清理更新目录时出错: {ex.Message}");
                 }
-                Process.Start(Update_Bat);
-                Process.GetCurrentProcess().Kill();
+
+                // 4. 启动新版本，由新实例完成旧备份清理
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = filePath,
+                    Arguments = "/updated",
+                    UseShellExecute = true
+                });
+
+                // 正常退出当前进程（非强制终止）
+                Environment.Exit(0);
                 return true;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"\n应用更新时出错: {ex.Message}");
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// 新版本实例启动后调用：清理上一次更新遗留的旧版本备份文件（*.old）。
+        /// </summary>
+        public static void CleanupOldVersion()
+        {
+            try
+            {
+                string oldFile = filePath + ".old";
+                if (File.Exists(oldFile))
+                {
+                    File.Delete(oldFile);
+                    Console.WriteLine("已清理旧版本备份: " + oldFile);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"清理旧版本备份时出错: {ex.Message}");
             }
         }
 

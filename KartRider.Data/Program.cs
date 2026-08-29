@@ -81,7 +81,14 @@ namespace KartRider
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             SetAdaptiveConsoleEncoding();
 
-            if (args != null && args.Length > 0)
+            // 自更新后由新实例启动：清理旧版本备份文件，随后继续正常主流程
+            bool isUpdatedRestart = args != null && args.Length > 0 && string.Equals(args[0], "/updated", StringComparison.OrdinalIgnoreCase);
+            if (isUpdatedRestart)
+            {
+                Update.CleanupOldVersion();
+            }
+
+            if (args != null && args.Length > 0 && !isUpdatedRestart)
             {
                 RhoPacker.PackTool(args);
             }

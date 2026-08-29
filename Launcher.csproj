@@ -17,6 +17,7 @@
     <AssemblyName>Launcher</AssemblyName>
     <RootNamespace>Launcher</RootNamespace>
     <ApplicationIcon>Properties\favicon.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
 
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
