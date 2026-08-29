@@ -69,9 +69,9 @@ namespace KartRider
         {
             new("draftMulAccelFactor", 0M, 1M, 1M, val => draftMulAccelFactor = (float)val),
             new("draftTick", 0M, 0M, 1M, val => draftTick = (int)val),
-            new("driftBoostMulAccelFactor", 0M, 1.31M, 1M, val => driftBoostMulAccelFactor = (float)val),
+            new("driftBoostMulAccelFactor", 0M, 1M, 1M, val => driftBoostMulAccelFactor = (float)val),
             new("driftBoostTick", 0M, 0M, 1M, val => driftBoostTick = (int)val),
-            new("chargeBoostBySpeed", 0M, 2M, 1M, val => chargeBoostBySpeed = (float)val),
+            new("chargeBoostBySpeed", 0M, 0M, 1M, val => chargeBoostBySpeed = (float)val),
             new("SpeedSlotCapacity", 0M, 2M, 1M, val => SpeedSlotCapacity = (byte)val),
             new("ItemSlotCapacity", 0M, 2M, 1M, val => ItemSlotCapacity = (byte)val),
             new("SpecialSlotCapacity", 0M, 1M, 1M, val => SpecialSlotCapacity = (byte)val),
